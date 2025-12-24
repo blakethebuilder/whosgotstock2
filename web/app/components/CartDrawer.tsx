@@ -2,16 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import OrderModal from './OrderModal';
-
-export interface CartItem {
-    id: number;
-    name: string;
-    brand: string;
-    supplier_sku: string;
-    supplier_name: string;
-    price_ex_vat: string;
-    quantity: number;
-}
+import { CartItem } from '../types';
 
 interface CartDrawerProps {
     isOpen: boolean;

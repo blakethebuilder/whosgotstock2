@@ -3,28 +3,12 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import MegaFilterDropdown from './components/MegaFilterDropdown';
-import CartDrawer, { CartItem } from './components/CartDrawer';
+import CartDrawer from './components/CartDrawer';
 import ProductDetailModal from './components/ProductDetailModal';
+import ComparisonModal from './components/ComparisonModal';
+import { Product, Supplier, CartItem } from './types';
 
 // Pricing logic: Guest = +15%, Account = Raw Price
-interface Product {
-  id: number;
-  name: string;
-  brand: string;
-  price_ex_vat: string;
-  qty_on_hand: number;
-  supplier_sku: string;
-  supplier_name: string;
-  image_url: string;
-  category: string;
-  raw_data: string;
-}
-
-interface Supplier {
-  name: string;
-  slug: string;
-}
-
 export default function Home() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Product[]>([]);
@@ -36,6 +20,10 @@ export default function Home() {
   const [totalResults, setTotalResults] = useState(0);
   const [guestMarkup, setGuestMarkup] = useState(15);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  // Comparison State
+  const [compareList, setCompareList] = useState<Product[]>([]);
+  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
 
   // Filters
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -219,6 +207,19 @@ export default function Home() {
       exVat: markedUp.toFixed(2),
       incVat: withVat.toFixed(2)
     };
+  };
+
+  const toggleCompare = (product: Product) => {
+    setCompareList(prev => {
+      const exists = prev.find(p => p.id === product.id);
+      if (exists) return prev.filter(p => p.id !== product.id);
+      if (prev.length >= 4) return prev; // Limit to 4
+      return [...prev, product];
+    });
+  };
+
+  const removeFromCompare = (productId: number) => {
+    setCompareList(prev => prev.filter(p => p.id !== productId));
   };
 
   const clearSearch = () => {
@@ -461,6 +462,18 @@ export default function Home() {
                     <div className="absolute top-3 left-3">
                       <span className="bg-white/80 backdrop-blur px-2 py-0.5 rounded-full text-[9px] font-bold text-blue-600 border border-blue-50 tracking-wider uppercase">{product.brand}</span>
                     </div>
+                    <div className="absolute top-3 right-3 flex flex-col gap-2">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); toggleCompare(product); }}
+                        className={`p-2 rounded-full backdrop-blur shadow-sm transition-all border ${compareList.find(p => p.id === product.id)
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'bg-white/80 text-gray-400 border-gray-100 hover:text-blue-600'
+                          }`}
+                        title="Add to Compare"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" /></svg>
+                      </button>
+                    </div>
                   </div>
                   <div className="p-5 flex-1 flex flex-col">
                     <h4 className="font-bold text-gray-900 text-sm line-clamp-2 mb-3 group-hover:text-blue-600 transition-colors">{product.name}</h4>
@@ -552,6 +565,18 @@ export default function Home() {
                         <div className="absolute top-4 left-4">
                           <span className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold text-blue-600 border border-blue-50 tracking-wider uppercase shadow-sm">{product.brand}</span>
                         </div>
+                        <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); toggleCompare(product); }}
+                            className={`p-2.5 rounded-2xl backdrop-blur-md shadow-xl transition-all border ${compareList.find(p => p.id === product.id)
+                              ? 'bg-blue-600 text-white border-blue-600 scale-110'
+                              : 'bg-white/90 text-gray-500 border-gray-100 hover:text-blue-600 hover:scale-105'
+                              }`}
+                            title="Compare this item"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" /></svg>
+                          </button>
+                        </div>
                       </div>
                       <h4 className="font-bold text-gray-900 text-base line-clamp-2 mb-6 group-hover:text-blue-600 transition-colors leading-snug">{product.name}</h4>
                       <div className="mt-auto flex items-center justify-between pt-6 border-t border-gray-50">
@@ -589,6 +614,65 @@ export default function Home() {
         isOpen={selectedProduct !== null}
         onClose={() => setSelectedProduct(null)}
         onAddToCart={addToCart}
+        onToggleCompare={toggleCompare}
+        isInCompare={!!selectedProduct && !!compareList.find(p => p.id === selectedProduct.id)}
+        calculatePrice={calculatePrice}
+        isAccount={isAccount}
+      />
+
+      {/* Floating Compare Bar */}
+      {compareList.length > 0 && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[150] animate-in slide-in-from-bottom-10 duration-500">
+          <div className="bg-white/80 backdrop-blur-xl border border-gray-100 shadow-2xl rounded-[2.5rem] p-3 flex items-center gap-6 pr-6 min-w-[320px]">
+            <div className="flex -space-x-4 pl-3">
+              {compareList.map(p => (
+                <div key={p.id} className="w-14 h-14 bg-white rounded-2xl border-2 border-gray-50 shadow-sm flex items-center justify-center p-2 relative group overflow-hidden">
+                  {p.image_url ? (
+                    <img src={p.image_url} alt={p.name} className="max-h-full max-w-full object-contain mix-blend-multiply" />
+                  ) : (
+                    <div className="w-4 h-4 bg-gray-100 rounded-full" />
+                  )}
+                  <button
+                    onClick={() => removeFromCompare(p.id)}
+                    className="absolute inset-0 bg-red-600/90 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                </div>
+              ))}
+              {compareList.length < 4 && Array.from({ length: 4 - compareList.length }).map((_, i) => (
+                <div key={i} className="w-14 h-14 border-2 border-dashed border-gray-100 rounded-2xl flex items-center justify-center text-gray-100">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                </div>
+              ))}
+            </div>
+
+            <div className="h-10 w-px bg-gray-100 mx-2" />
+
+            <div className="flex flex-col">
+              <p className="text-xs font-black text-gray-900 uppercase tracking-widest">{compareList.length} Selected</p>
+              <p className="text-[10px] font-bold text-gray-400">Side-by-side comparison</p>
+            </div>
+
+            <button
+              onClick={() => setIsCompareModalOpen(true)}
+              disabled={compareList.length < 2}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 text-white px-8 py-3.5 rounded-[1.5rem] font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-blue-100 active:scale-95 flex items-center gap-2"
+            >
+              Compare
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+            </button>
+          </div>
+        </div>
+      )}
+
+      <ComparisonModal
+        products={compareList}
+        isOpen={isCompareModalOpen}
+        onClose={() => setIsCompareModalOpen(false)}
+        onRemove={removeFromCompare}
+        onAddToCart={addToCart}
+        formatPrice={formatPrice}
         calculatePrice={calculatePrice}
         isAccount={isAccount}
       />

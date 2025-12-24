@@ -1,27 +1,27 @@
 import React from 'react';
-
-interface Product {
-    id: number;
-    name: string;
-    brand: string;
-    supplier_name: string;
-    price_ex_vat: string;
-    qty_on_hand: number;
-    image_url: string;
-    category: string;
-    raw_data: string;
-}
+import { Product } from '../types';
 
 interface ProductDetailModalProps {
     product: Product | null;
     isOpen: boolean;
     onClose: () => void;
     onAddToCart: (product: any) => void;
+    onToggleCompare: (product: Product) => void;
+    isInCompare: boolean;
     calculatePrice: (base: string) => { exVat: string; incVat: string };
     isAccount: boolean;
 }
 
-export default function ProductDetailModal({ product, isOpen, onClose, onAddToCart, calculatePrice, isAccount }: ProductDetailModalProps) {
+export default function ProductDetailModal({
+    product,
+    isOpen,
+    onClose,
+    onAddToCart,
+    onToggleCompare,
+    isInCompare,
+    calculatePrice,
+    isAccount
+}: ProductDetailModalProps) {
     if (!isOpen || !product) return null;
 
     const formatPrice = (amount: string) => {
@@ -144,13 +144,23 @@ export default function ProductDetailModal({ product, isOpen, onClose, onAddToCa
                         </div>
                     </div>
 
-                    <div className="mt-8 pt-6 border-t border-gray-100">
+                    <div className="mt-8 pt-6 border-t border-gray-100 flex gap-4">
                         <button
                             onClick={() => { onAddToCart(product); onClose(); }}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-200 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+                            className="flex-[2] bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-200 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-                            Add to Quotation
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                            Add to Quote
+                        </button>
+                        <button
+                            onClick={() => onToggleCompare(product)}
+                            className={`flex-1 font-bold py-4 rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-3 border ${isInCompare
+                                    ? 'bg-blue-50 text-blue-600 border-blue-200 shadow-inner'
+                                    : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-white hover:border-blue-100'
+                                }`}
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" /></svg>
+                            {isInCompare ? 'In Compare' : 'Compare'}
                         </button>
                     </div>
                 </div>
