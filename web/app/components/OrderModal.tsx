@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { CartItem } from './CartDrawer';
+import { CartItem } from '../types';
 
 interface OrderModalProps {
     isOpen: boolean;
