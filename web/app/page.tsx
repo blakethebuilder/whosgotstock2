@@ -31,6 +31,7 @@ export default function Home() {
   const [hasSearched, setHasSearched] = useState(false);
   const [page, setPage] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
+  const [guestMarkup, setGuestMarkup] = useState(15);
 
   // Filters
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -199,12 +200,13 @@ export default function Home() {
 
   const calculatePrice = (basePrice: string) => {
     const price = parseFloat(basePrice);
-    const markedUp = isAccount ? price : price * 1.15;
-    const incVat = markedUp * 1.15;
+    const markupFactor = 1 + (guestMarkup / 100);
+    const markedUp = isAccount ? price : price * markupFactor;
+    const withVat = markedUp * 1.15;
 
     return {
       exVat: markedUp.toFixed(2),
-      incVat: incVat.toFixed(2)
+      incVat: withVat.toFixed(2)
     };
   };
 

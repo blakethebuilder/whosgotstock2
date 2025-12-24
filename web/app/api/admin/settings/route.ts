@@ -4,10 +4,19 @@ import pool from '@/lib/db';
 export async function GET() {
     try {
         const client = await pool.connect();
-        const result = await client.query("SELECT value FROM settings WHERE key = 'update_interval_minutes'");
+        const result = await client.query("SELECT key, value FROM settings");
         client.release();
-        const val = result.rows.length > 0 ? result.rows[0].value : '60';
-        return NextResponse.json({ interval: val });
+
+        const settings: Record<string, string> = {};
+        result.rows.forEach(row => {
+            settings[row.key] = row.value;
+        });
+
+        // Default values
+        if (!settings.update_interval_minutes) settings.update_interval_minutes = '60';
+        if (!settings.guest_markup) settings.guest_markup = '15';
+
+        return NextResponse.json(settings);
     } catch (err: any) {
         return NextResponse.json({ error: err.message }, { status: 500 });
     }
@@ -15,12 +24,16 @@ export async function GET() {
 
 export async function POST(request: Request) {
     try {
-        const { interval } = await request.json();
+        const body = await request.json();
         const client = await pool.connect();
-        await client.query(
-            "INSERT INTO settings (key, value) VALUES ('update_interval_minutes', $1) ON CONFLICT (key) DO UPDATE SET value = $1",
-            [interval.toString()]
-        );
+
+        for (const [key, value] of Object.entries(body)) {
+            await client.query(
+                "INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2",
+                [key, (value as any).toString()]
+            );
+        }
+
         client.release();
         return NextResponse.json({ success: true });
     } catch (err: any) {

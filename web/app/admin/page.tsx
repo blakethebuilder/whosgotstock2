@@ -4,7 +4,10 @@ import { useState, useEffect } from 'react';
 
 export default function AdminPage() {
     const [suppliers, setSuppliers] = useState<any[]>([]);
-    const [interval, setIntervalVal] = useState('');
+    const [settings, setSettings] = useState({
+        update_interval_minutes: '60',
+        guest_markup: '15'
+    });
     const [loading, setLoading] = useState(true);
 
     // New Supplier Form
@@ -23,7 +26,7 @@ export default function AdminPage() {
             const supData = await supRes.json();
             const setData = await setRes.json();
             setSuppliers(supData);
-            setIntervalVal(setData.interval);
+            setSettings(setData);
         } catch (e) {
             console.error(e);
         } finally {
@@ -35,12 +38,12 @@ export default function AdminPage() {
         refreshData();
     }, []);
 
-    const handleUpdateInterval = async () => {
+    const handleUpdateSettings = async () => {
         await fetch('/api/admin/settings', {
             method: 'POST',
-            body: JSON.stringify({ interval: interval })
+            body: JSON.stringify(settings)
         });
-        alert('Interval updated');
+        alert('Settings updated');
     };
 
     const handleToggle = async (id: number, current: boolean) => {
@@ -82,16 +85,31 @@ export default function AdminPage() {
 
                 {/* Settings Section */}
                 <div className="bg-white p-6 rounded shadow mb-8">
-                    <h2 className="text-xl font-semibold mb-4">Worker Settings</h2>
-                    <div className="flex items-center gap-4">
-                        <label>Update Interval (minutes):</label>
-                        <input
-                            type="number"
-                            value={interval}
-                            onChange={e => setIntervalVal(e.target.value)}
-                            className="border p-2 rounded w-24"
-                        />
-                        <button onClick={handleUpdateInterval} className="bg-blue-600 text-white px-4 py-2 rounded">Save</button>
+                    <h2 className="text-xl font-semibold mb-4">System Settings</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                        <div>
+                            <label className="block text-sm text-gray-600 mb-1">Update Interval (minutes):</label>
+                            <input
+                                type="number"
+                                value={settings.update_interval_minutes}
+                                onChange={e => setSettings({ ...settings, update_interval_minutes: e.target.value })}
+                                className="border p-2 rounded w-full"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm text-gray-600 mb-1">Guest Markup Percentage (%):</label>
+                            <input
+                                type="number"
+                                value={settings.guest_markup}
+                                onChange={e => setSettings({ ...settings, guest_markup: e.target.value })}
+                                className="border p-2 rounded w-full"
+                            />
+                        </div>
+                        <div className="md:col-span-2">
+                            <button onClick={handleUpdateSettings} className="bg-blue-600 text-white px-6 py-2 rounded font-semibold hover:bg-blue-700 transition-colors w-full md:w-auto">
+                                Save All Settings
+                            </button>
+                        </div>
                     </div>
                 </div>
 
