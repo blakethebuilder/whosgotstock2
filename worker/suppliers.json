@@ -1,0 +1,23 @@
+[
+  {
+    "id": "scoop",
+    "name": "Scoop",
+    "url": "https://scoop.co.za/scoop_pricelist.xml",
+    "type": "xml",
+    "enabled": true
+  },
+  {
+    "id": "pinnacle",
+    "name": "Pinnacle",
+    "url": "https://api.pinnacle.co.za/feed.xml",
+    "type": "xml",
+    "enabled": false
+  },
+  {
+    "id": "mustek",
+    "name": "Mustek",
+    "url": "https://api.mustek.co.za/stock.xml",
+    "type": "xml",
+    "enabled": false
+  }
+]

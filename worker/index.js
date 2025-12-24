@@ -2,23 +2,33 @@ require('dotenv').config();
 const { Client } = require('pg');
 const { ingestData } = require('./src/ingestor');
 
-const client = new Client({
-  connectionString: process.env.DATABASE_URL,
-});
-
+// Create a dummy client interface if connection fails, so we can pass 'null' or handle it
 async function main() {
+  let client = null;
   try {
-    await client.connect();
-    console.log('Connected to PostgreSQL');
-    
+    if (process.env.DATABASE_URL) {
+      client = new Client({
+        connectionString: process.env.DATABASE_URL,
+      });
+      await client.connect();
+      console.log('Connected to PostgreSQL');
+    } else {
+      console.log('No DATABASE_URL provided. Running in file-only mode.');
+    }
+  } catch (err) {
+    console.error('Could not connect to PostgreSQL:', err.message);
+    console.log('Proceeding in file-only mode.');
+    client = null;
+  }
+
+  try {
     // Run ingestion
     await ingestData(client);
-    
     console.log('Ingestion complete');
   } catch (err) {
     console.error('Error in worker:', err);
   } finally {
-    await client.end();
+    if (client) await client.end();
   }
 }
 
