@@ -3,15 +3,16 @@ FROM node:18-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install dependencies based on package.json in the current context
-COPY package.json package-lock.json* ./
+# Copy dependency files from the web subfolder
+COPY web/package.json web/package-lock.json* ./
 RUN npm ci
 
 # 2. Build the app
 FROM node:18-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+# Copy all web source files into the builder app directory
+COPY web/ .
 
 # Next.js optimization env vars
 ENV NODE_ENV=production
