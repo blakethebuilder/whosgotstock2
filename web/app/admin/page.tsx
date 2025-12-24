@@ -11,6 +11,7 @@ export default function AdminPage() {
     const [newName, setNewName] = useState('');
     const [newSlug, setNewSlug] = useState('');
     const [newUrl, setNewUrl] = useState('');
+    const [newType, setNewType] = useState('scoop');
 
     const refreshData = async () => {
         setLoading(true);
@@ -63,9 +64,9 @@ export default function AdminPage() {
         e.preventDefault();
         await fetch('/api/admin/suppliers', {
             method: 'POST',
-            body: JSON.stringify({ action: 'create', name: newName, slug: newSlug, url: newUrl })
+            body: JSON.stringify({ action: 'create', name: newName, slug: newSlug, url: newUrl, type: newType })
         });
-        setNewName(''); setNewSlug(''); setNewUrl('');
+        setNewName(''); setNewSlug(''); setNewUrl(''); setNewType('scoop');
         refreshData();
     };
 
@@ -103,6 +104,7 @@ export default function AdminPage() {
                             <tr className="border-b">
                                 <th className="p-2">Name</th>
                                 <th className="p-2">Slug (ID)</th>
+                                <th className="p-2">Parser Type</th>
                                 <th className="p-2">URL</th>
                                 <th className="p-2">Status</th>
                                 <th className="p-2">Actions</th>
@@ -113,6 +115,7 @@ export default function AdminPage() {
                                 <tr key={s.id} className="border-b hover:bg-gray-50">
                                     <td className="p-2 font-medium">{s.name}</td>
                                     <td className="p-2 text-gray-600">{s.slug}</td>
+                                    <td className="p-2 text-xs font-mono bg-gray-100 rounded">{s.type}</td>
                                     <td className="p-2 text-xs text-gray-500 truncate max-w-xs">{s.url}</td>
                                     <td className="p-2">
                                         <span className={`px-2 py-1 rounded text-xs ${s.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
@@ -147,10 +150,19 @@ export default function AdminPage() {
                         <input
                             placeholder="XML Feed URL"
                             value={newUrl} onChange={e => setNewUrl(e.target.value)}
-                            className="border p-2 rounded md:col-span-2"
+                            className="border p-2 rounded md:col-span-1"
                             required
                         />
-                        <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded md:col-start-4">Add Supplier</button>
+                        <select
+                            value={newType}
+                            onChange={e => setNewType(e.target.value)}
+                            className="border p-2 rounded"
+                        >
+                            <option value="scoop">Scoop Parser</option>
+                            <option value="esquire">Esquire Parser</option>
+                            <option value="syntech">Syntech Parser</option>
+                        </select>
+                        <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded">Add Supplier</button>
                     </form>
                 </div>
             </div>

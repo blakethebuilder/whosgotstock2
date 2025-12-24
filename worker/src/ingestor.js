@@ -62,21 +62,21 @@ async function ingestData(client) {
         }
     }
 
-    const parser = new XMLParser();
-
     for (const supplier of suppliers) {
         if (!supplier.enabled) continue;
 
-        console.log(`Starting ingest for ${supplier.name}...`);
+        console.log(`Starting ingest for ${supplier.name} (Type: ${supplier.type})...`);
 
         try {
             const xmlData = await fetchXmlFeed(supplier.url);
+            const parser = new XMLParser();
             const parsed = parser.parse(xmlData);
 
             let products = [];
 
             // Normalize data based on supplier structure (Schema Mapping)
-            if (supplier.id === 'scoop') {
+            // Use supplier.type to determine which parser to use
+            if (supplier.type === 'scoop') {
                 // Scoop format: <products><product><sku>...</sku>...</product>...</products>
                 const raw = Array.isArray(parsed.products.product)
                     ? parsed.products.product
@@ -94,7 +94,7 @@ async function ingestData(client) {
                     master_sku: `${supplier.id}-${p.sku}`,
                     raw_data: JSON.stringify(p)
                 }));
-            } else if (supplier.id === 'esquire') {
+            } else if (supplier.type === 'esquire') {
                 // Esquire format
                 let raw = [];
                 if (parsed.ROOT?.products?.product) {
@@ -117,11 +117,8 @@ async function ingestData(client) {
                     master_sku: `${supplier.id}-${p.ProductCode}`,
                     raw_data: JSON.stringify(p)
                 }));
-            } else if (supplier.id === 'syntech') {
+            } else if (supplier.type === 'syntech') {
                 // Syntech format: <syntechstock><stock><product>...</product></stock></syntechstock>
-                // fast-xml-parser usually handles this. Structure seen in curl:
-                // parsed.syntechstock.stock.product
-
                 let raw = [];
                 if (parsed.syntechstock?.stock?.product) {
                     raw = parsed.syntechstock.stock.product;
