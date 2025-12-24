@@ -7,7 +7,11 @@ async function fetchXmlFeed(url) {
         // Mock data fallback
         return ``;
     }
-    const res = await fetch(url);
+    const res = await fetch(url, {
+        headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+    });
     if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.statusText}`);
     return await res.text();
 }
@@ -73,10 +77,12 @@ async function ingestData(client) {
             const parsed = parser.parse(xmlData);
 
             let products = [];
+            const activeType = (supplier.type && supplier.type !== 'xml' && supplier.type !== 'json')
+                ? supplier.type.toLowerCase()
+                : supplier.id.toLowerCase();
 
             // Normalize data based on supplier structure (Schema Mapping)
-            // Use supplier.type to determine which parser to use
-            if (supplier.type === 'scoop') {
+            if (activeType === 'scoop') {
                 // Scoop format: <products><product><sku>...</sku>...</product>...</products>
                 const raw = Array.isArray(parsed.products.product)
                     ? parsed.products.product
@@ -94,7 +100,7 @@ async function ingestData(client) {
                     master_sku: `${supplier.id}-${p.sku}`,
                     raw_data: JSON.stringify(p)
                 }));
-            } else if (supplier.type === 'esquire') {
+            } else if (activeType === 'esquire') {
                 // Esquire format
                 let raw = [];
                 if (parsed.ROOT?.products?.product) {
@@ -109,29 +115,33 @@ async function ingestData(client) {
                     supplier_sku: p.ProductCode ? String(p.ProductCode) : 'UNKNOWN',
                     supplier_name: supplier.name,
                     name: p.ProductName,
-                    brand: 'Esquire', // No specific brand field easily found, or use mapping later
+                    brand: 'Esquire',
                     price_ex_vat: parseFloat(p.Price || 0),
                     qty_on_hand: parseInt(p.AvailableQty) || (p.AvailableQty === 'Yes' ? 100 : 0),
                     image_url: p.image,
-                    category: p.Category, // Esquire uses 'Category'
+                    category: p.Category,
                     master_sku: `${supplier.id}-${p.ProductCode}`,
                     raw_data: JSON.stringify(p)
                 }));
-            } else if (supplier.type === 'syntech') {
-                // Syntech format: <syntechstock><stock><product>...</product></stock></syntechstock>
+            } else if (activeType === 'syntech' || activeType === 'pinnacle') {
+                // Syntech/Pinnacle format: <syntechstock><stock><product>...</product></stock></syntechstock>
                 let raw = [];
                 if (parsed.syntechstock?.stock?.product) {
                     raw = parsed.syntechstock.stock.product;
                 } else if (parsed.stock?.product) {
                     raw = parsed.stock.product;
+                } else if (parsed.pinnaclestock?.stock?.product) {
+                    raw = parsed.pinnaclestock.stock.product;
                 }
 
                 if (!Array.isArray(raw)) raw = [raw];
 
                 products = raw.map(p => {
-                    // Stock is split into regions
-                    const stock = (parseInt(p.cptstock) || 0) + (parseInt(p.jhbstock) || 0) + (parseInt(p.dbnstock) || 0);
-                    // Categories are comma separated, take the first one or the whole string
+                    // Stock is split into regions (CPT, JHB, DBN) - sometimes names vary
+                    const stock = (parseInt(p.cptstock || p.cpt_stock || 0)) +
+                        (parseInt(p.jhbstock || p.jhb_stock || 0)) +
+                        (parseInt(p.dbnstock || p.dbn_stock || 0));
+
                     const catRaw = p.categories || p.category || '';
                     const mainCat = catRaw.split(',')[0].trim();
 
@@ -139,10 +149,10 @@ async function ingestData(client) {
                         supplier_sku: p.sku ? String(p.sku) : 'UNKNOWN',
                         supplier_name: supplier.name,
                         name: p.name,
-                        brand: p.attributes?.brand || 'Syntech',
+                        brand: p.attributes?.brand || p.brand || (activeType === 'pinnacle' ? 'Pinnacle' : 'Syntech'),
                         price_ex_vat: parseFloat(p.price || 0),
                         qty_on_hand: stock,
-                        image_url: p.featured_image,
+                        image_url: p.featured_image || p.image_url,
                         category: mainCat,
                         master_sku: `${supplier.id}-${p.sku}`,
                         raw_data: JSON.stringify(p)

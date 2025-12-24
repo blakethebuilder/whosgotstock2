@@ -261,7 +261,7 @@ export default function Home() {
       <div className={`transition-all duration-500 ease-in-out ${hasSearched ? 'pt-24 pb-8 min-h-[auto]' : 'h-[60vh] flex flex-col justify-center items-center bg-gradient-to-br from-indigo-50 to-blue-100'}`}>
         <div className={`w-full max-w-4xl px-4 mx-auto ${hasSearched ? '' : 'text-center'}`}>
           {!hasSearched && (
-            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight">
               Find IT Stock, <span className="text-blue-600">Instantly.</span>
             </h2>
           )}
@@ -274,7 +274,7 @@ export default function Home() {
                 </div>
                 <input
                   type="text"
-                  className="flex-1 p-4 text-lg focus:outline-none min-w-0"
+                  className="flex-1 p-4 text-base sm:text-lg focus:outline-none min-w-0"
                   placeholder="Search products..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
