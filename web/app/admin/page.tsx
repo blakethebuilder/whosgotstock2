@@ -161,6 +161,7 @@ export default function AdminPage() {
                             <option value="scoop">Scoop Parser</option>
                             <option value="esquire">Esquire Parser</option>
                             <option value="syntech">Syntech Parser</option>
+                            <option value="pinnacle">Pinnacle Parser</option>
                         </select>
                         <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded">Add Supplier</button>
                     </form>

@@ -83,16 +83,22 @@ async function ingestData(client) {
             const parsed = parser.parse(xmlData);
 
             let products = [];
-            const activeType = (supplier.type && supplier.type !== 'xml' && supplier.type !== 'json')
+            let activeType = (supplier.type && supplier.type !== 'xml' && supplier.type !== 'json')
                 ? supplier.type.toLowerCase()
                 : supplier.id.toLowerCase();
+
+            // SENSITIVE DETECTION: If structure doesn't match Type, try to auto-detect
+            if (activeType === 'syntech' && parsed.Pinnacle) activeType = 'pinnacle';
+            if (activeType === 'pinnacle' && parsed.syntechstock) activeType = 'syntech';
+            if (parsed.syntechstock && activeType !== 'syntech') activeType = 'syntech';
+            if (parsed.Pinnacle && activeType !== 'pinnacle') activeType = 'pinnacle';
 
             // Normalize data based on supplier structure (Schema Mapping)
             if (activeType === 'scoop') {
                 // Scoop format: <products><product><sku>...</sku>...</product>...</products>
-                const raw = Array.isArray(parsed.products.product)
+                const raw = Array.isArray(parsed.products?.product)
                     ? parsed.products.product
-                    : [parsed.products.product];
+                    : (parsed.products?.product ? [parsed.products.product] : []);
 
                 products = raw.map(p => ({
                     supplier_sku: p.sku ? String(p.sku) : 'UNKNOWN',
@@ -115,7 +121,7 @@ async function ingestData(client) {
                     raw = parsed.products.product;
                 }
 
-                if (!Array.isArray(raw)) raw = [raw];
+                if (!Array.isArray(raw)) raw = raw ? [raw] : [];
 
                 products = raw.map(p => ({
                     supplier_sku: p.ProductCode ? String(p.ProductCode) : 'UNKNOWN',
@@ -129,63 +135,61 @@ async function ingestData(client) {
                     master_sku: `${supplier.id}-${p.ProductCode}`,
                     raw_data: JSON.stringify(p)
                 }));
-            } else if (activeType === 'syntech' || activeType === 'pinnacle') {
+            } else if (activeType === 'syntech') {
                 // Syntech mapping
-                if (activeType === 'syntech') {
-                    let raw = [];
-                    if (parsed.syntechstock?.stock?.product) {
-                        raw = parsed.syntechstock.stock.product;
-                    } else if (parsed.stock?.product) {
-                        raw = parsed.stock.product;
-                    }
-
-                    if (!Array.isArray(raw)) raw = raw ? [raw] : [];
-
-                    products = raw.map(p => {
-                        const stock = (parseInt(p.cptstock || p.cpt_stock || 0)) +
-                            (parseInt(p.jhbstock || p.jhb_stock || 0)) +
-                            (parseInt(p.dbnstock || p.dbn_stock || 0));
-                        const catRaw = p.categories || p.category || '';
-                        const mainCat = catRaw.split(',')[0].trim();
-
-                        return {
-                            supplier_sku: p.sku ? String(p.sku) : 'UNKNOWN',
-                            supplier_name: supplier.name,
-                            name: p.name,
-                            brand: p.attributes?.brand || p.brand || 'Syntech',
-                            price_ex_vat: parseFloat(p.price || 0),
-                            qty_on_hand: stock,
-                            image_url: p.featured_image || p.image_url,
-                            category: mainCat,
-                            master_sku: `${supplier.id}-${p.sku}`,
-                            raw_data: JSON.stringify(p)
-                        };
-                    });
+                let raw = [];
+                if (parsed.syntechstock?.stock?.product) {
+                    raw = parsed.syntechstock.stock.product;
+                } else if (parsed.stock?.product) {
+                    raw = parsed.stock.product;
                 }
-                // Pinnacle mapping
-                else if (activeType === 'pinnacle') {
-                    // Pinnacle often has a top-level <Pinnacle> then many items like <PTH_XaltPL_Feed_SPSMA064>
-                    // Fast-xml-parser leaves items directly under root if no container
-                    const items = parsed.Pinnacle ? Object.values(parsed.Pinnacle).flat() : [];
-                    const raw = items.filter(i => typeof i === 'object' && (i.StockCode || i.ProdName));
 
-                    products = raw.map(p => ({
-                        supplier_sku: p.StockCode ? String(p.StockCode) : 'UNKNOWN',
+                if (!Array.isArray(raw)) raw = raw ? [raw] : [];
+
+                products = raw.map(p => {
+                    const stock = (parseInt(p.cptstock || p.cpt_stock || 0)) +
+                        (parseInt(p.jhbstock || p.jhb_stock || 0)) +
+                        (parseInt(p.dbnstock || p.dbn_stock || 0));
+                    const catRaw = p.categories || p.category || '';
+                    const mainCat = catRaw.split(',')[0].trim();
+
+                    return {
+                        supplier_sku: p.sku ? String(p.sku) : 'UNKNOWN',
                         supplier_name: supplier.name,
-                        name: p.ProdName,
-                        brand: p.Brand || 'Pinnacle',
-                        price_ex_vat: parseFloat(p.ProdPriceExclVAT || 0),
-                        qty_on_hand: parseInt(p.ProdQty || 0),
-                        image_url: p.ProdImg,
-                        category: p.TopCat || p.category_tree || 'IT',
-                        master_sku: `${supplier.id}-${p.StockCode || Math.random()}`,
+                        name: p.name,
+                        brand: p.attributes?.brand || p.brand || 'Syntech',
+                        price_ex_vat: parseFloat(p.price || 0),
+                        qty_on_hand: stock,
+                        image_url: p.featured_image || p.image_url,
+                        category: mainCat,
+                        master_sku: `${supplier.id}-${p.sku}`,
                         raw_data: JSON.stringify(p)
-                    }));
-                }
+                    };
+                });
+            } else if (activeType === 'pinnacle') {
+                // Pinnacle: <Pinnacle><PTH_XaltPL_Feed_SPSMA064>...
+                const root = parsed.Pinnacle || parsed;
+                const keys = Object.keys(root);
+                // Look for the specific dynamic tag that contains the products
+                const productKey = keys.find(k => k.startsWith('PTH_'));
+                const raw = productKey ? (Array.isArray(root[productKey]) ? root[productKey] : [root[productKey]]) : [];
+
+                products = raw.map(p => ({
+                    supplier_sku: p.StockCode ? String(p.StockCode) : 'UNKNOWN',
+                    supplier_name: supplier.name,
+                    name: p.ProdName,
+                    brand: p.Brand || 'Pinnacle',
+                    price_ex_vat: parseFloat(p.ProdPriceExclVAT || 0),
+                    qty_on_hand: parseInt(p.ProdQty || 0),
+                    image_url: p.ProdImg,
+                    category: p.TopCat || p.category_tree || 'IT',
+                    master_sku: `${supplier.id}-${p.StockCode || Math.random()}`,
+                    raw_data: JSON.stringify(p)
+                }));
             }
 
             if (products.length === 0) {
-                console.log(`Warning: 0 products found for ${supplier.name}. Check XML structure.`);
+                console.log(`Warning: 0 products found for ${supplier.name}. Active Parser: ${activeType}`);
                 // console.log('Parsed Sample:', JSON.stringify(parsed).substring(0, 500));
             }
 
