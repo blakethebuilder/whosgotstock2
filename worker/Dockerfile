@@ -1,10 +1,11 @@
 FROM node:20-alpine
-
 WORKDIR /app
 
-COPY package*.json ./
+# Copy dependency files from the worker subfolder
+COPY worker/package*.json ./
 RUN npm install --production
 
-COPY . .
+# Copy all worker source files into the current /app directory
+COPY worker/ .
 
 CMD ["node", "index.js"]
