@@ -15,7 +15,6 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { action, id, name, url, slug, enabled } = body;
         const { action, id, name, url, slug, enabled, type } = body;
         const client = await pool.connect();
 
