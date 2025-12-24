@@ -7,13 +7,19 @@ async function fetchXmlFeed(url) {
         // Mock data fallback
         return ``;
     }
-    const res = await fetch(url, {
-        headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-    });
-    if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.statusText}`);
-    return await res.text();
+    try {
+        const res = await fetch(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36'
+            },
+            signal: AbortSignal.timeout(30000) // 30 second timeout
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        return await res.text();
+    } catch (err) {
+        console.error(`Fetch inner error for ${url}:`, err.message);
+        throw err;
+    }
 }
 
 async function saveToLocalFile(products) {
@@ -124,40 +130,63 @@ async function ingestData(client) {
                     raw_data: JSON.stringify(p)
                 }));
             } else if (activeType === 'syntech' || activeType === 'pinnacle') {
-                // Syntech/Pinnacle format: <syntechstock><stock><product>...</product></stock></syntechstock>
-                let raw = [];
-                if (parsed.syntechstock?.stock?.product) {
-                    raw = parsed.syntechstock.stock.product;
-                } else if (parsed.stock?.product) {
-                    raw = parsed.stock.product;
-                } else if (parsed.pinnaclestock?.stock?.product) {
-                    raw = parsed.pinnaclestock.stock.product;
+                // Syntech mapping
+                if (activeType === 'syntech') {
+                    let raw = [];
+                    if (parsed.syntechstock?.stock?.product) {
+                        raw = parsed.syntechstock.stock.product;
+                    } else if (parsed.stock?.product) {
+                        raw = parsed.stock.product;
+                    }
+
+                    if (!Array.isArray(raw)) raw = raw ? [raw] : [];
+
+                    products = raw.map(p => {
+                        const stock = (parseInt(p.cptstock || p.cpt_stock || 0)) +
+                            (parseInt(p.jhbstock || p.jhb_stock || 0)) +
+                            (parseInt(p.dbnstock || p.dbn_stock || 0));
+                        const catRaw = p.categories || p.category || '';
+                        const mainCat = catRaw.split(',')[0].trim();
+
+                        return {
+                            supplier_sku: p.sku ? String(p.sku) : 'UNKNOWN',
+                            supplier_name: supplier.name,
+                            name: p.name,
+                            brand: p.attributes?.brand || p.brand || 'Syntech',
+                            price_ex_vat: parseFloat(p.price || 0),
+                            qty_on_hand: stock,
+                            image_url: p.featured_image || p.image_url,
+                            category: mainCat,
+                            master_sku: `${supplier.id}-${p.sku}`,
+                            raw_data: JSON.stringify(p)
+                        };
+                    });
                 }
+                // Pinnacle mapping
+                else if (activeType === 'pinnacle') {
+                    // Pinnacle often has a top-level <Pinnacle> then many items like <PTH_XaltPL_Feed_SPSMA064>
+                    // Fast-xml-parser leaves items directly under root if no container
+                    const items = parsed.Pinnacle ? Object.values(parsed.Pinnacle).flat() : [];
+                    const raw = items.filter(i => typeof i === 'object' && (i.StockCode || i.ProdName));
 
-                if (!Array.isArray(raw)) raw = [raw];
-
-                products = raw.map(p => {
-                    // Stock is split into regions (CPT, JHB, DBN) - sometimes names vary
-                    const stock = (parseInt(p.cptstock || p.cpt_stock || 0)) +
-                        (parseInt(p.jhbstock || p.jhb_stock || 0)) +
-                        (parseInt(p.dbnstock || p.dbn_stock || 0));
-
-                    const catRaw = p.categories || p.category || '';
-                    const mainCat = catRaw.split(',')[0].trim();
-
-                    return {
-                        supplier_sku: p.sku ? String(p.sku) : 'UNKNOWN',
+                    products = raw.map(p => ({
+                        supplier_sku: p.StockCode ? String(p.StockCode) : 'UNKNOWN',
                         supplier_name: supplier.name,
-                        name: p.name,
-                        brand: p.attributes?.brand || p.brand || (activeType === 'pinnacle' ? 'Pinnacle' : 'Syntech'),
-                        price_ex_vat: parseFloat(p.price || 0),
-                        qty_on_hand: stock,
-                        image_url: p.featured_image || p.image_url,
-                        category: mainCat,
-                        master_sku: `${supplier.id}-${p.sku}`,
+                        name: p.ProdName,
+                        brand: p.Brand || 'Pinnacle',
+                        price_ex_vat: parseFloat(p.ProdPriceExclVAT || 0),
+                        qty_on_hand: parseInt(p.ProdQty || 0),
+                        image_url: p.ProdImg,
+                        category: p.TopCat || p.category_tree || 'IT',
+                        master_sku: `${supplier.id}-${p.StockCode || Math.random()}`,
                         raw_data: JSON.stringify(p)
-                    };
-                });
+                    }));
+                }
+            }
+
+            if (products.length === 0) {
+                console.log(`Warning: 0 products found for ${supplier.name}. Check XML structure.`);
+                // console.log('Parsed Sample:', JSON.stringify(parsed).substring(0, 500));
             }
 
             // Deduplicate products based on supplier_sku before insertion
