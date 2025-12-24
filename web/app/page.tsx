@@ -266,30 +266,35 @@ export default function Home() {
             </h2>
           )}
 
-          <div className={`bg-white rounded-xl shadow-lg transition-all relative z-50 ${hasSearched ? 'ring-1 ring-gray-200' : 'scale-105'}`}>
-            <form onSubmit={handleSearch} className="flex items-center w-full border-b border-gray-100">
-              <div className="pl-4 text-gray-400">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          <div className={`bg-white rounded-xl shadow-lg transition-all relative z-50 overflow-hidden ${hasSearched ? 'ring-1 ring-gray-200' : 'scale-105'}`}>
+            <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-stretch sm:items-center w-full border-b border-gray-100">
+              <div className="flex items-center flex-1">
+                <div className="pl-4 text-gray-400 hidden sm:block">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                </div>
+                <input
+                  type="text"
+                  className="flex-1 p-4 text-lg focus:outline-none min-w-0"
+                  placeholder="Search products..."
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
               </div>
-              <input
-                type="text"
-                className="flex-1 p-4 text-lg focus:outline-none"
-                placeholder="Search products..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-              <button
-                type="button"
-                onClick={() => setShowFilters(!showFilters)}
-                className={`p-4 text-sm font-medium border-l border-r border-gray-100 hover:bg-gray-50 flex items-center gap-2 ${showFilters ? 'text-blue-600 bg-blue-50' : 'text-gray-500'}`}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
-                Filters
-                {(selectedBrands.length > 0 || selectedSupplier || selectedCategories.length > 0 || inStockOnly || minPrice || maxPrice) && <span className="w-2 h-2 rounded-full bg-blue-500"></span>}
-              </button>
-              <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 font-bold transition-colors">
-                Search
-              </button>
+
+              <div className="flex border-t sm:border-t-0 sm:border-l border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`flex-1 sm:flex-none p-4 text-sm font-medium border-r border-gray-100 hover:bg-gray-50 flex items-center justify-center gap-2 ${showFilters ? 'text-blue-600 bg-blue-50' : 'text-gray-500'}`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+                  <span className="sm:inline">Filters</span>
+                  {(selectedBrands.length > 0 || selectedSupplier || selectedCategories.length > 0 || inStockOnly || minPrice || maxPrice) && <span className="w-2 h-2 rounded-full bg-blue-500"></span>}
+                </button>
+                <button type="submit" className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 font-bold transition-colors">
+                  Search
+                </button>
+              </div>
             </form>
 
             {/* Expanded Filters Panel */}
