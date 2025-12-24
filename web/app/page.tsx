@@ -101,12 +101,7 @@ export default function Home() {
         return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
       }
       return [...prev, {
-        id: product.id,
-        name: product.name,
-        brand: product.brand,
-        supplier_sku: product.supplier_sku,
-        supplier_name: product.supplier_name,
-        price_ex_vat: product.price_ex_vat,
+        ...product,
         quantity: 1
       }];
     });
