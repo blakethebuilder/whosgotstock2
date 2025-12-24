@@ -2,23 +2,26 @@ version: '3.8'
 
 services:
   web:
-    build: 
+    build:
       context: ./web
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/whosgotstock
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
     depends_on:
       - postgres
     restart: always
 
   worker:
-    build: 
+    build:
       context: ./worker
       dockerfile: Dockerfile
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/whosgotstock
+      - NODE_ENV=production
     depends_on:
       - postgres
     restart: always
