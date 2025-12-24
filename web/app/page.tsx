@@ -27,7 +27,10 @@ export default function Home() {
   const [results, setResults] = useState<Product[]>([]);
   const [isAccount, setIsAccount] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalResults, setTotalResults] = useState(0);
 
   // Filters
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -155,10 +158,42 @@ export default function Home() {
       const res = await fetch(`/api/search?${params.toString()}`);
       const data = await res.json();
       setResults(data.results || []);
+      setTotalResults(data.total || 0);
+      setPage(1);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMore = async () => {
+    if (loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const params = new URLSearchParams({
+        q: query,
+        page: nextPage.toString()
+      });
+
+      if (selectedSupplier) params.append('supplier', selectedSupplier);
+      if (selectedBrands.length > 0) params.append('brand', selectedBrands.join(','));
+      if (selectedCategories.length > 0) params.append('category', selectedCategories.join(','));
+      if (minPrice) params.append('min_price', minPrice);
+      if (maxPrice) params.append('max_price', maxPrice);
+      if (inStockOnly) params.append('in_stock', 'true');
+      if (sortBy) params.append('sort', sortBy);
+
+      const res = await fetch(`/api/search?${params.toString()}`);
+      const data = await res.json();
+
+      setResults(prev => [...prev, ...(data.results || [])]);
+      setPage(nextPage);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingMore(false);
     }
   };
 
@@ -359,7 +394,7 @@ export default function Home() {
               <h3 className="text-xl font-semibold text-gray-800">
                 Results
                 {query && <span> for "{query}"</span>}
-                <span className="text-gray-400 text-sm font-normal ml-2">({results.length} found)</span>
+                <span className="text-gray-400 text-sm font-normal ml-2">({totalResults} found)</span>
               </h3>
               <button onClick={clearSearch} className="text-sm text-gray-500 hover:text-red-500">Clear Search</button>
             </div>
@@ -413,6 +448,29 @@ export default function Home() {
                 </div>
               ))}
             </div>
+
+            {/* Load More Button */}
+            {results.length < totalResults && (
+              <div className="mt-12 flex justify-center">
+                <button
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  className="bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-10 border rounded-full shadow-md transition-all active:scale-95 disabled:opacity-50 flex items-center gap-3"
+                >
+                  {loadingMore ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <span>Load More Results</span>
+                      <span className="text-gray-400 text-sm font-normal">({totalResults - results.length} remaining)</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           /* Featured / Landing View */

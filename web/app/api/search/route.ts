@@ -16,6 +16,11 @@ export async function GET(request: Request) {
   const sort = searchParams.get('sort'); // price_asc, price_desc, newest
   const category = searchParams.get('category');
 
+  // Pagination
+  const page = parseInt(searchParams.get('page') || '1');
+  const limit = 50;
+  const offset = (page - 1) * limit;
+
   let sql = `
     SELECT p.*, s.name as supplier_name 
     FROM products p
@@ -69,6 +74,9 @@ export async function GET(request: Request) {
     sql += ` AND p.qty_on_hand > 0`;
   }
 
+  // Count Query (before sorting and pagination)
+  const countSql = `SELECT COUNT(*) FROM (${sql}) as total`;
+
   // Sorting
   if (sort === 'price_asc') {
     sql += ` ORDER BY p.price_ex_vat ASC`;
@@ -81,13 +89,22 @@ export async function GET(request: Request) {
     sql += ` ORDER BY p.qty_on_hand DESC, p.price_ex_vat ASC`;
   }
 
-  sql += ` LIMIT 50`;
+  sql += ` LIMIT ${limit} OFFSET ${offset}`;
 
   try {
     const client = await pool.connect();
-    const res = await client.query(sql, params);
+    const [countRes, dataRes] = await Promise.all([
+      client.query(countSql, params),
+      client.query(sql, params)
+    ]);
     client.release();
-    return NextResponse.json({ results: res.rows });
+
+    return NextResponse.json({
+      results: dataRes.rows,
+      total: parseInt(countRes.rows[0].count),
+      page,
+      limit
+    });
   } catch (err: any) {
     console.warn('Database query failed, falling back to local file:', err);
     // Fallback: Read from web/data/products.json
