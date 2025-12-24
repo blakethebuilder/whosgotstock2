@@ -83,15 +83,15 @@ async function ingestData(client) {
                     : [parsed.products.product];
 
                 products = raw.map(p => ({
-                    supplier_sku: p.code ? String(p.code) : 'UNKNOWN',
+                    supplier_sku: p.sku ? String(p.sku) : 'UNKNOWN',
                     supplier_name: supplier.name,
-                    name: p.description, // Scoop uses 'description'
-                    brand: p.brand,
-                    price_ex_vat: parseFloat(p.price || 0),
-                    qty_on_hand: parseInt(p.stock || 0),
-                    image_url: p.image, // Scoop uses 'image'
-                    category: p.category, // Scoop uses 'category'
-                    master_sku: `${supplier.id}-${p.code}`,
+                    name: p.description,
+                    brand: p.manufacturer,
+                    price_ex_vat: parseFloat(p.dealer_price || 0),
+                    qty_on_hand: parseInt(p.total_stock || 0),
+                    image_url: p.image_url,
+                    category: 'Network', // Scoop doesn't provide category in this feed, defaulting to Network
+                    master_sku: `${supplier.id}-${p.sku}`,
                     raw_data: JSON.stringify(p)
                 }));
             } else if (supplier.id === 'esquire') {
