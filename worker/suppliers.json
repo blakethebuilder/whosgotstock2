@@ -7,6 +7,13 @@
     "enabled": true
   },
   {
+    "id": "esquire",
+    "name": "Esquire",
+    "url": "https://api.esquire.co.za/api/DataFeed?u=blake@smartintegrate.co.za&p=Smart@1991&t=xml&m=10&o=ascending&r=RoundNone&rm=10&min=0",
+    "type": "xml",
+    "enabled": true
+  },
+  {
     "id": "pinnacle",
     "name": "Pinnacle",
     "url": "https://api.pinnacle.co.za/feed.xml",

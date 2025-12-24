@@ -1,0 +1,159 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+
+export default function AdminPage() {
+    const [suppliers, setSuppliers] = useState<any[]>([]);
+    const [interval, setIntervalVal] = useState('');
+    const [loading, setLoading] = useState(true);
+
+    // New Supplier Form
+    const [newName, setNewName] = useState('');
+    const [newSlug, setNewSlug] = useState('');
+    const [newUrl, setNewUrl] = useState('');
+
+    const refreshData = async () => {
+        setLoading(true);
+        try {
+            const [supRes, setRes] = await Promise.all([
+                fetch('/api/admin/suppliers'),
+                fetch('/api/admin/settings')
+            ]);
+            const supData = await supRes.json();
+            const setData = await setRes.json();
+            setSuppliers(supData);
+            setIntervalVal(setData.interval);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        refreshData();
+    }, []);
+
+    const handleUpdateInterval = async () => {
+        await fetch('/api/admin/settings', {
+            method: 'POST',
+            body: JSON.stringify({ interval: interval })
+        });
+        alert('Interval updated');
+    };
+
+    const handleToggle = async (id: number, current: boolean) => {
+        await fetch('/api/admin/suppliers', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'toggle', id, enabled: !current })
+        });
+        refreshData();
+    };
+
+    const handleDelete = async (id: number) => {
+        if (!confirm("Delete supplier?")) return;
+        await fetch('/api/admin/suppliers', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'delete', id })
+        });
+        refreshData();
+    };
+
+    const handleCreate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        await fetch('/api/admin/suppliers', {
+            method: 'POST',
+            body: JSON.stringify({ action: 'create', name: newName, slug: newSlug, url: newUrl })
+        });
+        setNewName(''); setNewSlug(''); setNewUrl('');
+        refreshData();
+    };
+
+    if (loading) return <div className="p-8">Loading...</div>;
+
+    return (
+        <main className="min-h-screen p-8 bg-gray-50 text-gray-900">
+            <div className="max-w-5xl mx-auto">
+                <div className="flex justify-between items-center mb-8">
+                    <h1 className="text-3xl font-bold">Admin Portal</h1>
+                    <a href="/" className="text-blue-600 hover:underline">Back to Search</a>
+                </div>
+
+                {/* Settings Section */}
+                <div className="bg-white p-6 rounded shadow mb-8">
+                    <h2 className="text-xl font-semibold mb-4">Worker Settings</h2>
+                    <div className="flex items-center gap-4">
+                        <label>Update Interval (minutes):</label>
+                        <input
+                            type="number"
+                            value={interval}
+                            onChange={e => setIntervalVal(e.target.value)}
+                            className="border p-2 rounded w-24"
+                        />
+                        <button onClick={handleUpdateInterval} className="bg-blue-600 text-white px-4 py-2 rounded">Save</button>
+                    </div>
+                </div>
+
+                {/* Suppliers Section */}
+                <div className="bg-white p-6 rounded shadow">
+                    <h2 className="text-xl font-semibold mb-4">Suppliers</h2>
+
+                    <table className="w-full text-left mb-6">
+                        <thead>
+                            <tr className="border-b">
+                                <th className="p-2">Name</th>
+                                <th className="p-2">Slug (ID)</th>
+                                <th className="p-2">URL</th>
+                                <th className="p-2">Status</th>
+                                <th className="p-2">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {suppliers.map(s => (
+                                <tr key={s.id} className="border-b hover:bg-gray-50">
+                                    <td className="p-2 font-medium">{s.name}</td>
+                                    <td className="p-2 text-gray-600">{s.slug}</td>
+                                    <td className="p-2 text-xs text-gray-500 truncate max-w-xs">{s.url}</td>
+                                    <td className="p-2">
+                                        <span className={`px-2 py-1 rounded text-xs ${s.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                            {s.enabled ? 'Active' : 'Disabled'}
+                                        </span>
+                                    </td>
+                                    <td className="p-2 flex gap-2">
+                                        <button onClick={() => handleToggle(s.id, s.enabled)} className="text-sm text-blue-600 hover:underline">
+                                            {s.enabled ? 'Disable' : 'Enable'}
+                                        </button>
+                                        <button onClick={() => handleDelete(s.id)} className="text-sm text-red-600 hover:underline">Delete</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+
+                    <h3 className="font-semibold mb-2">Add New Supplier</h3>
+                    <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <input
+                            placeholder="Name (e.g. MyStore)"
+                            value={newName} onChange={e => setNewName(e.target.value)}
+                            className="border p-2 rounded"
+                            required
+                        />
+                        <input
+                            placeholder="Unique Slug (e.g. mystore)"
+                            value={newSlug} onChange={e => setNewSlug(e.target.value)}
+                            className="border p-2 rounded"
+                            required
+                        />
+                        <input
+                            placeholder="XML Feed URL"
+                            value={newUrl} onChange={e => setNewUrl(e.target.value)}
+                            className="border p-2 rounded md:col-span-2"
+                            required
+                        />
+                        <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded md:col-start-4">Add Supplier</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    );
+}
