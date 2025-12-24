@@ -202,6 +202,13 @@ export default function Home() {
     }
   };
 
+  const formatPrice = (amount: string) => {
+    return parseFloat(amount).toLocaleString('en-ZA', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
+
   const calculatePrice = (basePrice: string) => {
     const price = parseFloat(basePrice);
     const markupFactor = 1 + (guestMarkup / 100);
@@ -464,8 +471,14 @@ export default function Home() {
 
                     <div className="mt-auto pt-4 border-t border-gray-50 flex items-end justify-between">
                       <div>
-                        <p className="text-lg font-black text-gray-900 leading-tight">R {calculatePrice(product.price_ex_vat).exVat}</p>
-                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Excluding VAT</p>
+                        <div className="mb-1">
+                          <p className="text-xl font-black text-gray-900 leading-tight">R {formatPrice(calculatePrice(product.price_ex_vat).exVat)}</p>
+                          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Excluding VAT</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-gray-500 leading-tight">R {formatPrice(calculatePrice(product.price_ex_vat).incVat)}</p>
+                          <p className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">Including VAT</p>
+                        </div>
                       </div>
                       <div className="flex flex-col items-end gap-2">
                         <div className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${product.qty_on_hand > 0 ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-600'}`}>
@@ -491,28 +504,6 @@ export default function Home() {
                   onClick={loadMore}
                   disabled={loadingMore}
                   className="bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-10 border rounded-full shadow-md transition-all active:scale-95 disabled:opacity-50 flex items-center gap-3"
-                >
-                  {loadingMore ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                      Loading...
-                    </>
-                  ) : (
-                    <>
-                      <span>Load More Results</span>
-                      <span className="text-gray-400 text-sm font-normal">({totalResults - results.length} remaining)</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
-            {/* Load More Button */}
-            {results.length < totalResults && (
-              <div className="mt-12 flex justify-center pb-20">
-                <button
-                  onClick={loadMore}
-                  disabled={loadingMore}
-                  className="bg-white hover:bg-gray-50 text-gray-700 font-bold py-4 px-12 border rounded-3xl shadow-lg transition-all active:scale-95 disabled:opacity-50 flex items-center gap-3 border-gray-100"
                 >
                   {loadingMore ? (
                     <>
@@ -565,7 +556,7 @@ export default function Home() {
                       <h4 className="font-bold text-gray-900 text-base line-clamp-2 mb-6 group-hover:text-blue-600 transition-colors leading-snug">{product.name}</h4>
                       <div className="mt-auto flex items-center justify-between pt-6 border-t border-gray-50">
                         <div>
-                          <p className="text-xl font-black text-gray-900 leading-none">R {calculatePrice(product.price_ex_vat).exVat}</p>
+                          <p className="text-xl font-black text-gray-900 leading-none">R {formatPrice(calculatePrice(product.price_ex_vat).exVat)}</p>
                           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter mt-1">Excl. VAT</p>
                         </div>
                         <button

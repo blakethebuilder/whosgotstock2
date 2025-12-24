@@ -24,11 +24,29 @@ interface ProductDetailModalProps {
 export default function ProductDetailModal({ product, isOpen, onClose, onAddToCart, calculatePrice, isAccount }: ProductDetailModalProps) {
     if (!isOpen || !product) return null;
 
+    const formatPrice = (amount: string) => {
+        return parseFloat(amount).toLocaleString('en-ZA', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    };
+
     const prices = calculatePrice(product.price_ex_vat);
-    const raw = JSON.parse(product.raw_data || '{}');
+
+    let raw = {};
+    if (typeof product.raw_data === 'string') {
+        try {
+            raw = JSON.parse(product.raw_data);
+        } catch (e) {
+            console.error("Failed to parse raw_data", e);
+        }
+    } else {
+        raw = product.raw_data || {};
+    }
 
     // Extract description - varies by supplier
-    const description = raw.description || raw.ProductSummary || raw.ProdName || 'No additional description provided.';
+    const rawAny = raw as any;
+    const description = rawAny.description || rawAny.ProductSummary || rawAny.ProdName || 'No additional description provided.';
 
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
@@ -79,12 +97,12 @@ export default function ProductDetailModal({ product, isOpen, onClose, onAddToCa
 
                         <div className="flex items-center gap-4 py-4 border-y border-gray-100 mb-6">
                             <div>
-                                <p className="text-3xl font-black text-blue-600">R {prices.exVat}</p>
+                                <p className="text-3xl font-black text-blue-600">R {formatPrice(prices.exVat)}</p>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Excluding VAT</p>
                             </div>
                             <div className="h-10 w-px bg-gray-100" />
                             <div>
-                                <p className="text-lg font-bold text-gray-600">R {prices.incVat}</p>
+                                <p className="text-lg font-bold text-gray-600">R {formatPrice(prices.incVat)}</p>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Including VAT</p>
                             </div>
                             {!isAccount && (
@@ -117,7 +135,7 @@ export default function ProductDetailModal({ product, isOpen, onClose, onAddToCa
                         <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
                             <div>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase">Supplier SKU</p>
-                                <p className="text-xs font-mono text-gray-700">{(raw.sku || raw.ProductCode || raw.StockCode || 'N/A')}</p>
+                                <p className="text-xs font-mono text-gray-700">{(rawAny.sku || rawAny.ProductCode || rawAny.StockCode || 'N/A')}</p>
                             </div>
                             <div>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase">Category</p>
