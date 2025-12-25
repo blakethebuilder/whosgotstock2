@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { CartItem } from '../types';
+import { CartItem, UserRole } from '../types';
 
 interface OrderModalProps {
     isOpen: boolean;
@@ -9,18 +9,20 @@ interface OrderModalProps {
     items: CartItem[];
     totalExVat: number;
     totalIncVat: number;
+    userRole: UserRole;
 }
 
-export default function OrderModal({ isOpen, onClose, items, totalExVat, totalIncVat }: OrderModalProps) {
+export default function OrderModal({ isOpen, onClose, items, totalExVat, totalIncVat, userRole }: OrderModalProps) {
     if (!isOpen) return null;
 
     // Group items by supplier
     const itemsBySupplier: Record<string, CartItem[]> = {};
     items.forEach(item => {
-        if (!itemsBySupplier[item.supplier_name]) {
-            itemsBySupplier[item.supplier_name] = [];
+        const key = userRole === 'public' ? 'Smart Integrate' : item.supplier_name;
+        if (!itemsBySupplier[key]) {
+            itemsBySupplier[key] = [];
         }
-        itemsBySupplier[item.supplier_name].push(item);
+        itemsBySupplier[key].push(item);
     });
 
     const copyToClipboard = (text: string, label: string) => {
@@ -30,11 +32,13 @@ export default function OrderModal({ isOpen, onClose, items, totalExVat, totalIn
     };
 
     const getTemplateForSupplier = (supplier: string, supplierItems: CartItem[]) => {
-        let template = `--- ORDER REQUEST: ${supplier.toUpperCase()} ---\n\n`;
-        template += "Dear Account Manager,\n\nPlease process the following order:\n\n";
+        let template = `--- ${userRole === 'public' ? 'QUOTE' : 'ORDER'} REQUEST: ${supplier.toUpperCase()} ---\n\n`;
+        template += "Dear " + (userRole === 'public' ? "Support Team" : "Account Manager") + ",\n\n";
+        template += "Please process the following " + (userRole === 'public' ? "quote request" : "order") + ":\n\n";
 
         supplierItems.forEach(item => {
-            template += `- SKU: ${item.supplier_sku} | Qty: ${item.quantity} | Item: ${item.name}\n`;
+            const supplierSlug = (item as any).raw_data ? JSON.parse(item.raw_data).supplier_slug || 'N/A' : 'N/A';
+            template += `- SKU: ${item.supplier_sku} ${userRole === 'public' ? `[Ref: ${item.supplier_name}]` : ''} | Qty: ${item.quantity} | Item: ${item.name}\n`;
         });
 
         const supplierTotalEx = supplierItems.reduce((sum, i) => sum + (parseFloat(i.price_ex_vat) * (1.15) * i.quantity), 0); // Assuming 15% markup logic consistent with calculatePrice

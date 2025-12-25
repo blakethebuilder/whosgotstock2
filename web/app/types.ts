@@ -1,3 +1,5 @@
+export type UserRole = 'public' | 'staff' | 'manager';
+
 export interface Product {
     id: number;
     name: string;

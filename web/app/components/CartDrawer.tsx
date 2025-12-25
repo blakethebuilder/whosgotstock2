@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import OrderModal from './OrderModal';
-import { CartItem } from '../types';
+import { CartItem, UserRole } from '../types';
 
 interface CartDrawerProps {
     isOpen: boolean;
@@ -10,10 +10,10 @@ interface CartDrawerProps {
     items: CartItem[];
     updateQuantity: (id: number, delta: number) => void;
     removeItem: (id: number) => void;
-    isAccount: boolean;
+    userRole: UserRole;
 }
 
-export default function CartDrawer({ isOpen, onClose, items, updateQuantity, removeItem, isAccount }: CartDrawerProps) {
+export default function CartDrawer({ isOpen, onClose, items, updateQuantity, removeItem, userRole }: CartDrawerProps) {
     const [mounted, setMounted] = useState(false);
     const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
@@ -23,18 +23,22 @@ export default function CartDrawer({ isOpen, onClose, items, updateQuantity, rem
 
     if (!mounted) return null;
 
-    const calculatePrice = (basePrice: string) => {
-        const price = parseFloat(basePrice);
-        const markedUp = isAccount ? price : price * 1.15;
-        const incVat = markedUp * 1.15;
+    const calculatePrice = (base: string) => {
+        const raw = parseFloat(base);
+        let markup = 15; // Default for public
+        if (userRole === 'staff') markup = 10;
+        if (userRole === 'manager') markup = 5;
+
+        const markedUp = raw * (1 + (markup / 100));
+        const withVat = markedUp * 1.15;
         return {
             exVat: markedUp.toFixed(2),
-            incVat: incVat.toFixed(2)
+            incVat: withVat.toFixed(2)
         };
     };
 
     const totalExVat = items.reduce((sum, item) => sum + parseFloat(calculatePrice(item.price_ex_vat).exVat) * item.quantity, 0);
-    const totalIncVat = totalExVat * 1.15;
+    const totalIncVat = items.reduce((sum, item) => sum + parseFloat(calculatePrice(item.price_ex_vat).incVat) * item.quantity, 0);
 
     const generateEmailTemplate = () => {
         setIsOrderModalOpen(true);
@@ -145,6 +149,7 @@ export default function CartDrawer({ isOpen, onClose, items, updateQuantity, rem
                 items={items}
                 totalExVat={totalExVat}
                 totalIncVat={totalIncVat}
+                userRole={userRole}
             />
         </>
     );

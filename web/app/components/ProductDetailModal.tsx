@@ -1,5 +1,5 @@
 import React from 'react';
-import { Product } from '../types';
+import { Product, UserRole } from '../types';
 
 interface ProductDetailModalProps {
     product: Product | null;
@@ -9,7 +9,7 @@ interface ProductDetailModalProps {
     onToggleCompare: (product: Product) => void;
     isInCompare: boolean;
     calculatePrice: (base: string) => { exVat: string; incVat: string };
-    isAccount: boolean;
+    userRole: UserRole;
 }
 
 export default function ProductDetailModal({
@@ -20,7 +20,7 @@ export default function ProductDetailModal({
     onToggleCompare,
     isInCompare,
     calculatePrice,
-    isAccount
+    userRole
 }: ProductDetailModalProps) {
     if (!isOpen || !product) return null;
 
@@ -88,14 +88,16 @@ export default function ProductDetailModal({
                 {/* Right: Details Panel */}
                 <div className="w-full md:w-1/2 p-8 overflow-y-auto flex flex-col">
                     <div className="mb-6">
-                        <div className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">
-                            <span>{product.category}</span>
-                            <span>•</span>
-                            <span className="text-indigo-600 font-bold">{product.supplier_name}</span>
+                        <h3 className="text-2xl font-black text-gray-900 leading-tight mb-2">{product.name}</h3>
+                        <div className="flex items-center gap-3">
+                            <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-bold uppercase tracking-wider">
+                                {userRole === 'public' ? 'Verified Stock' : product.supplier_name}
+                            </span>
+                            <span className="text-gray-300">|</span>
+                            <span className="text-gray-500 text-sm font-medium">{product.brand}</span>
                         </div>
-                        <h2 className="text-2xl font-extrabold text-gray-900 leading-tight mb-4">{product.name}</h2>
 
-                        <div className="flex items-center gap-4 py-4 border-y border-gray-100 mb-6">
+                        <div className="flex items-center gap-4 py-4 border-y border-gray-100 mb-6 mt-4">
                             <div>
                                 <p className="text-3xl font-black text-blue-600">R {formatPrice(prices.exVat)}</p>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Excluding VAT</p>
@@ -105,7 +107,7 @@ export default function ProductDetailModal({
                                 <p className="text-lg font-bold text-gray-600">R {formatPrice(prices.incVat)}</p>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Including VAT</p>
                             </div>
-                            {!isAccount && (
+                            {userRole === 'public' && (
                                 <div className="ml-auto bg-blue-50 text-blue-700 px-3 py-1 rounded-lg text-[10px] font-bold border border-blue-100">
                                     Guest Price
                                 </div>
@@ -155,8 +157,8 @@ export default function ProductDetailModal({
                         <button
                             onClick={() => onToggleCompare(product)}
                             className={`flex-1 font-bold py-4 rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-3 border ${isInCompare
-                                    ? 'bg-blue-50 text-blue-600 border-blue-200 shadow-inner'
-                                    : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-white hover:border-blue-100'
+                                ? 'bg-blue-50 text-blue-600 border-blue-200 shadow-inner'
+                                : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-white hover:border-blue-100'
                                 }`}
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" /></svg>

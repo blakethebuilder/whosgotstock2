@@ -6,18 +6,23 @@ import MegaFilterDropdown from './components/MegaFilterDropdown';
 import CartDrawer from './components/CartDrawer';
 import ProductDetailModal from './components/ProductDetailModal';
 import ComparisonModal from './components/ComparisonModal';
-import { Product, Supplier, CartItem } from './types';
+import { Product, Supplier, CartItem, UserRole } from './types';
 
 // Pricing logic: Guest = +15%, Account = Raw Price
 export default function Home() {
+  const [userRole, setUserRole] = useState<UserRole>('public');
+  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [passphrase, setPassphrase] = useState('');
+  const [passphraseError, setPassphraseError] = useState('');
+
+  // Search
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Product[]>([]);
-  const [isAccount, setIsAccount] = useState(false);
+  const [totalResults, setTotalResults] = useState(0);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [page, setPage] = useState(1);
-  const [totalResults, setTotalResults] = useState(0);
   const [guestMarkup, setGuestMarkup] = useState(15);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
@@ -87,12 +92,22 @@ export default function Home() {
         console.error("Failed to parse cart", e);
       }
     }
+    // Load user role from localStorage
+    const savedRole = localStorage.getItem('whosgotstock_user_role');
+    if (savedRole && ['public', 'staff', 'manager'].includes(savedRole)) {
+      setUserRole(savedRole as UserRole);
+    }
   }, []);
 
   // Save cart to localStorage
   useEffect(() => {
     localStorage.setItem('whosgotstock_cart', JSON.stringify(cart));
   }, [cart]);
+
+  // Save user role to localStorage
+  useEffect(() => {
+    localStorage.setItem('whosgotstock_user_role', userRole);
+  }, [userRole]);
 
   const addToCart = (product: Product) => {
     setCart(prev => {
@@ -193,15 +208,44 @@ export default function Home() {
   };
 
   const calculatePrice = (basePrice: string) => {
-    const price = parseFloat(basePrice);
-    const markupFactor = 1 + (guestMarkup / 100);
-    const markedUp = isAccount ? price : price * markupFactor;
-    const withVat = markedUp * 1.15;
+    const raw = parseFloat(basePrice);
+
+    // Higher markup for public, lower for staff/managers
+    let markup = guestMarkup; // Default 15%
+    if (userRole === 'staff') markup = 10;
+    if (userRole === 'manager') markup = 5;
+
+    const markedUp = raw * (1 + (markup / 100));
+    const withVat = markedUp * 1.15; // 15% VAT
 
     return {
       exVat: markedUp.toFixed(2),
       incVat: withVat.toFixed(2)
     };
+  };
+
+  const handleRoleSwitch = () => {
+    if (userRole !== 'public') {
+      setUserRole('public');
+      return;
+    }
+    setShowRoleModal(true);
+  };
+
+  const verifyPassphrase = () => {
+    if (passphrase === 'Smart@staff') {
+      setUserRole('staff');
+      setShowRoleModal(false);
+      setPassphrase('');
+      setPassphraseError('');
+    } else if (passphrase === 'Smart@managers') {
+      setUserRole('manager');
+      setShowRoleModal(false);
+      setPassphrase('');
+      setPassphraseError('');
+    } else {
+      setPassphraseError('Invalid passphrase');
+    }
   };
 
   const toggleCompare = (product: Product) => {
@@ -214,7 +258,7 @@ export default function Home() {
   };
 
   const removeFromCompare = (productId: number) => {
-    setCompareList(prev => prev.filter(p => p.id !== productId));
+    setCompareList(prev => prev.filter(item => item.id !== productId));
   };
 
   const clearSearch = () => {
@@ -254,15 +298,12 @@ export default function Home() {
             )}
           </button>
 
-          <div className="flex items-center space-x-2 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-2xl text-[13px] shadow-sm border border-white/50">
-            <span className={!isAccount ? "font-bold text-gray-800" : "text-gray-400 font-medium"}>Guest</span>
-            <button
-              onClick={() => setIsAccount(!isAccount)}
-              className={"w-11 h-6 rounded-full p-1 transition-all duration-300 " + (isAccount ? "bg-indigo-600 shadow-inner" : "bg-gray-200")}
-            >
-              <div className={"bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 " + (isAccount ? "translate-x-5" : "")}></div>
-            </button>
-            <span className={isAccount ? "font-bold text-gray-800" : "text-gray-400 font-medium"}>Account</span>
+          <div
+            onClick={handleRoleSwitch}
+            className={`flex items-center space-x-2 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-2xl text-[13px] shadow-sm border border-white/50 cursor-pointer hover:shadow-md transition-all ${userRole !== 'public' ? 'ring-2 ring-blue-100' : ''}`}
+          >
+            <span className="font-bold text-gray-800 capitalize">{userRole}</span>
+            <div className={`w-2 h-2 rounded-full ${userRole === 'public' ? 'bg-gray-300' : userRole === 'staff' ? 'bg-blue-500' : 'bg-green-500'}`}></div>
           </div>
           <Link href="/admin" className="text-sm font-bold text-gray-500 hover:text-blue-600 px-4 py-1.5 bg-white/70 backdrop-blur-md rounded-2xl border border-white/50 shadow-sm transition-all hover:shadow-md">Admin</Link>
         </div>
@@ -336,6 +377,7 @@ export default function Home() {
                   <select
                     value={selectedSupplier}
                     onChange={e => setSelectedSupplier(e.target.value)}
+                    className="w-full p-2 rounded border border-gray-200 text-sm"
                   >
                     <option value="">All Suppliers</option>
                     {suppliers.map(s => (
@@ -474,7 +516,9 @@ export default function Home() {
                     <h4 className="font-bold text-gray-900 text-sm line-clamp-2 mb-3 group-hover:text-blue-600 transition-colors">{product.name}</h4>
 
                     <div className="flex items-center gap-2 mb-4">
-                      <span className="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded uppercase">{product.supplier_name}</span>
+                      <span className="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded uppercase">
+                        {userRole === 'public' ? 'Verified Stock' : product.supplier_name}
+                      </span>
                     </div>
 
                     <div className="mt-auto pt-4 border-t border-gray-50 flex items-end justify-between">
@@ -601,7 +645,7 @@ export default function Home() {
         items={cart}
         updateQuantity={updateCartQuantity}
         removeItem={removeCartItem}
-        isAccount={isAccount}
+        userRole={userRole}
       />
 
       <ProductDetailModal
@@ -612,8 +656,39 @@ export default function Home() {
         onToggleCompare={toggleCompare}
         isInCompare={!!selectedProduct && !!compareList.find(p => p.id === selectedProduct.id)}
         calculatePrice={calculatePrice}
-        isAccount={isAccount}
+        userRole={userRole}
       />
+
+      {/* Role Passphrase Modal */}
+      {showRoleModal && (
+        <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowRoleModal(false)} />
+          <div className="relative bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full animate-in zoom-in-95 duration-200">
+            <h3 className="text-xl font-black text-gray-900 mb-2">Elevated Access</h3>
+            <p className="text-sm text-gray-500 mb-6">Enter passphrase to unlock staff or manager pricing tiers.</p>
+
+            <div className="space-y-4">
+              <input
+                type="password"
+                value={passphrase}
+                onChange={e => setPassphrase(e.target.value)}
+                placeholder="Passphrase"
+                className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-mono"
+                onKeyDown={e => e.key === 'Enter' && verifyPassphrase()}
+                autoFocus
+              />
+              {passphraseError && <p className="text-xs font-bold text-red-500">{passphraseError}</p>}
+
+              <button
+                onClick={verifyPassphrase}
+                className="w-full bg-blue-600 text-white font-black py-3 rounded-xl shadow-lg shadow-blue-100 hover:bg-blue-700 active:scale-95 transition-all text-sm uppercase tracking-widest"
+              >
+                Unlock Access
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Floating Compare Bar */}
       {compareList.length > 0 && (
@@ -669,7 +744,7 @@ export default function Home() {
         onAddToCart={addToCart}
         formatPrice={formatPrice}
         calculatePrice={calculatePrice}
-        isAccount={isAccount}
+        userRole={userRole}
       />
 
       <style jsx global>{`

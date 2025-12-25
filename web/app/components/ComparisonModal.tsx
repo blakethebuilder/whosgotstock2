@@ -1,5 +1,5 @@
 import React from 'react';
-import { Product } from '../types';
+import { Product, UserRole } from '../types';
 
 interface ComparisonModalProps {
     products: Product[];
@@ -9,7 +9,7 @@ interface ComparisonModalProps {
     onAddToCart: (product: Product) => void;
     formatPrice: (amount: string) => string;
     calculatePrice: (base: string) => { exVat: string; incVat: string };
-    isAccount: boolean;
+    userRole: UserRole;
 }
 
 export default function ComparisonModal({
@@ -20,7 +20,7 @@ export default function ComparisonModal({
     onAddToCart,
     formatPrice,
     calculatePrice,
-    isAccount
+    userRole
 }: ComparisonModalProps) {
     if (!isOpen) return null;
 
@@ -113,7 +113,11 @@ export default function ComparisonModal({
                                             {/* Attributes */}
                                             {attributes.map(attr => (
                                                 <div key={attr.label} className="h-10 flex items-center">
-                                                    <p className="text-sm font-semibold text-gray-700">{(product as any)[attr.key]}</p>
+                                                    <p className="text-sm font-semibold text-gray-700">
+                                                        {attr.key === 'supplier_name' && userRole === 'public'
+                                                            ? 'Verified Stock'
+                                                            : (product as any)[attr.key]}
+                                                    </p>
                                                 </div>
                                             ))}
 
