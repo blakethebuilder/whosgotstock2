@@ -10,6 +10,7 @@ export interface Product {
     supplier_name: string;
     image_url: string;
     category: string;
+    description?: string;
     raw_data: any;
 }
 

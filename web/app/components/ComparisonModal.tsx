@@ -30,6 +30,7 @@ export default function ComparisonModal({
         { label: 'Category', key: 'category' },
         { label: 'Pricing', key: 'pricing' },
         { label: 'Availability', key: 'availability' },
+        { label: 'Description', key: 'description' },
     ];
 
     return (
@@ -41,7 +42,7 @@ export default function ComparisonModal({
             />
 
             {/* Modal Content */}
-            <div className="relative bg-white w-full max-w-6xl max-h-[90vh] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+            <div className="relative bg-white w-full max-w-6xl max-h-[90vh] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 mx-auto">
                 {/* Header */}
                 <div className="p-6 sm:p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                     <h2 className="text-xl sm:text-2xl font-black text-gray-900 flex items-center gap-3">
@@ -69,13 +70,13 @@ export default function ComparisonModal({
                             <p className="font-bold">No products selected</p>
                         </div>
                     ) : (
-                        <div className="p-4 sm:p-10 min-w-max">
-                            <div className="grid gap-8" style={{ gridTemplateColumns: `180px repeat(${products.length}, 280px)` }}>
+                        <div className="p-4 sm:p-10">
+                            <div className="grid gap-8" style={{ gridTemplateColumns: `180px repeat(${products.length}, 320px)` }}>
 
                                 {/* Labels Column */}
                                 <div className="space-y-6 pt-[260px] sticky left-0 z-20">
                                     {attributes.map(attr => (
-                                        <div key={attr.label} className="h-12 flex items-center">
+                                        <div key={attr.label} className={`${attr.key === 'description' ? 'h-32' : 'h-12'} flex items-center`}>
                                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">{attr.label}</p>
                                         </div>
                                     ))}
@@ -133,6 +134,15 @@ export default function ComparisonModal({
                                                             <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isStocked ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'}`}>
                                                                 {isStocked ? `${product.qty_on_hand} In Stock` : 'Out of Stock'}
                                                             </span>
+                                                        </div>
+                                                    );
+                                                }
+                                                if (attr.key === 'description') {
+                                                    return (
+                                                        <div key={attr.label} className="h-32 bg-white/60 rounded-2xl px-5 py-3 border border-white shadow-sm overflow-y-auto">
+                                                            <p className="text-[11px] font-medium text-gray-600 leading-relaxed">
+                                                                {product.description || 'No detailed description available.'}
+                                                            </p>
                                                         </div>
                                                     );
                                                 }

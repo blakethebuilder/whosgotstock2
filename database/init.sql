@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS products (
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     raw_data JSONB,
     image_url TEXT,
+    description TEXT,
     UNIQUE(supplier_name, supplier_sku)
 );
 

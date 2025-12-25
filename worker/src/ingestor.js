@@ -104,6 +104,7 @@ async function ingestData(client) {
                     supplier_sku: p.sku ? String(p.sku) : 'UNKNOWN',
                     supplier_name: supplier.name,
                     name: p.description,
+                    description: p.description,
                     brand: p.manufacturer,
                     price_ex_vat: parseFloat(p.dealer_price || 0),
                     qty_on_hand: parseInt(p.total_stock || 0),
@@ -127,6 +128,7 @@ async function ingestData(client) {
                     supplier_sku: p.ProductCode ? String(p.ProductCode) : 'UNKNOWN',
                     supplier_name: supplier.name,
                     name: p.ProductName,
+                    description: p.ProductDescription || '',
                     brand: 'Esquire',
                     price_ex_vat: parseFloat(p.Price || 0),
                     qty_on_hand: parseInt(p.AvailableQty) || (p.AvailableQty === 'Yes' ? 100 : 0),
@@ -157,6 +159,7 @@ async function ingestData(client) {
                         supplier_sku: p.sku ? String(p.sku) : 'UNKNOWN',
                         supplier_name: supplier.name,
                         name: p.name,
+                        description: p.description || '',
                         brand: p.attributes?.brand || p.brand || 'Syntech',
                         price_ex_vat: parseFloat(p.price || 0),
                         qty_on_hand: stock,
@@ -178,6 +181,7 @@ async function ingestData(client) {
                     supplier_sku: p.StockCode ? String(p.StockCode) : 'UNKNOWN',
                     supplier_name: supplier.name,
                     name: p.ProdName,
+                    description: p.ProdDesc || '',
                     brand: p.Brand || 'Pinnacle',
                     price_ex_vat: parseFloat(p.ProdPriceExclVAT || 0),
                     qty_on_hand: parseInt(p.ProdQty || 0),
@@ -219,25 +223,26 @@ async function ingestData(client) {
                             let paramIdx = 1;
 
                             chunk.forEach(p => {
-                                valueParams.push(`($${paramIdx}, $${paramIdx + 1}, $${paramIdx + 2}, $${paramIdx + 3}, $${paramIdx + 4}, $${paramIdx + 5}, $${paramIdx + 6}, $${paramIdx + 7}, $${paramIdx + 8}, $${paramIdx + 9}, CURRENT_TIMESTAMP)`);
-                                values.push(p.master_sku, p.supplier_sku, p.supplier_name, p.name, p.brand, p.price_ex_vat, p.qty_on_hand, p.raw_data, p.image_url, p.category);
-                                paramIdx += 10;
+                                valueParams.push(`($${paramIdx}, $${paramIdx + 1}, $${paramIdx + 2}, $${paramIdx + 3}, $${paramIdx + 4}, $${paramIdx + 5}, $${paramIdx + 6}, $${paramIdx + 7}, $${paramIdx + 8}, $${paramIdx + 9}, $${paramIdx + 10}, CURRENT_TIMESTAMP)`);
+                                values.push(p.master_sku, p.supplier_sku, p.supplier_name, p.name, p.description, p.brand, p.price_ex_vat, p.qty_on_hand, p.raw_data, p.image_url, p.category);
+                                paramIdx += 11;
                             });
 
                             const query = `
-                                INSERT INTO products (master_sku, supplier_sku, supplier_name, name, brand, price_ex_vat, qty_on_hand, raw_data, image_url, category, last_updated)
-                                VALUES ${valueParams.join(',')}
-                                ON CONFLICT (supplier_name, supplier_sku) 
-                                DO UPDATE SET 
-                                    name = EXCLUDED.name,
-                                    brand = EXCLUDED.brand,
-                                    price_ex_vat = EXCLUDED.price_ex_vat,
-                                    qty_on_hand = EXCLUDED.qty_on_hand,
-                                    raw_data = EXCLUDED.raw_data,
-                                    image_url = EXCLUDED.image_url,
-                                    category = EXCLUDED.category,
-                                    last_updated = CURRENT_TIMESTAMP;
-                            `;
+                                 INSERT INTO products (master_sku, supplier_sku, supplier_name, name, description, brand, price_ex_vat, qty_on_hand, raw_data, image_url, category, last_updated)
+                                 VALUES ${valueParams.join(',')}
+                                 ON CONFLICT (supplier_name, supplier_sku) 
+                                 DO UPDATE SET 
+                                     name = EXCLUDED.name,
+                                     description = EXCLUDED.description,
+                                     brand = EXCLUDED.brand,
+                                     price_ex_vat = EXCLUDED.price_ex_vat,
+                                     qty_on_hand = EXCLUDED.qty_on_hand,
+                                     raw_data = EXCLUDED.raw_data,
+                                     image_url = EXCLUDED.image_url,
+                                     category = EXCLUDED.category,
+                                     last_updated = CURRENT_TIMESTAMP;
+                             `;
 
                             await client.query(query, values);
                         }
