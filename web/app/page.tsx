@@ -137,11 +137,14 @@ export default function Home() {
     setCart(prev => prev.filter(item => item.id !== id));
   };
 
-  const handleSearch = async (e?: React.FormEvent) => {
+  const handleSearch = async (e?: React.FormEvent, overrideQuery?: string, overrideSupplier?: string) => {
     if (e) e.preventDefault();
 
+    const currentQuery = overrideQuery !== undefined ? overrideQuery : query;
+    const currentSupplier = overrideSupplier !== undefined ? overrideSupplier : selectedSupplier;
+
     // Allow search if params exist even if query is empty
-    if (!query && !selectedSupplier && selectedBrands.length === 0 && selectedCategories.length === 0) {
+    if (!currentQuery && !currentSupplier && selectedBrands.length === 0 && selectedCategories.length === 0) {
       if (!hasSearched) return;
     }
 
@@ -149,8 +152,8 @@ export default function Home() {
     setHasSearched(true);
     try {
       const params = new URLSearchParams();
-      if (query) params.append('q', query);
-      if (selectedSupplier) params.append('supplier', selectedSupplier);
+      if (currentQuery) params.append('q', currentQuery);
+      if (currentSupplier) params.append('supplier', currentSupplier);
       if (selectedBrands.length > 0) params.append('brand', selectedBrands.join(','));
       if (selectedCategories.length > 0) params.append('category', selectedCategories.join(','));
       if (minPrice) params.append('min_price', minPrice);
@@ -573,68 +576,121 @@ export default function Home() {
             )}
           </div>
         ) : (
-          /* Featured / Landing View */
-          <div className="max-w-7xl mx-auto px-4 py-20 space-y-24 animate-in fade-in duration-700 delay-100">
-            {suppliers.filter(s => featured[s.name] && featured[s.name].length > 0).map(supplier => (
-              <div key={supplier.slug} className="relative">
-                <div className="flex items-center justify-between mb-8">
-                  <h3 className="text-3xl font-black text-gray-900 flex items-center gap-3 tracking-tight">
-                    <span className="w-2.5 h-10 bg-gradient-to-b from-blue-600 to-indigo-600 rounded-full"></span>
-                    {supplier.name}
-                    <span className="text-sm font-bold text-gray-400 ml-2 uppercase tracking-widest">New Arrivals</span>
-                  </h3>
-                </div>
+          /* Modern Discovery / Landing View */
+          <div className="max-w-7xl mx-auto px-6 py-16 space-y-32 animate-in fade-in duration-700 delay-100">
 
-                {/* Horizontal Scroll Container */}
-                <div className="flex overflow-x-auto pb-10 gap-6 scrollbar-hide snap-x px-4 -mx-4">
-                  {featured[supplier.name].map(product => (
-                    <div
-                      key={product.id}
-                      onClick={() => setSelectedProduct(product)}
-                      className="snap-start flex-shrink-0 w-80 bg-white rounded-[2rem] shadow-sm border border-gray-100 hover:shadow-2xl hover:-translate-y-3 transition-all duration-500 cursor-pointer p-6 flex flex-col group active:scale-[0.97]"
-                    >
-                      <div className="h-52 bg-gray-50/50 rounded-[1.5rem] mb-6 flex items-center justify-center p-6 relative overflow-hidden">
-                        {product.image_url ? (
-                          <img src={product.image_url} alt={product.name} className="h-full w-full object-contain mix-blend-multiply transition-transform group-hover:scale-110 duration-700" />
-                        ) : (
-                          <div className="text-gray-200">
-                            <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                          </div>
-                        )}
-                        <div className="absolute top-4 left-4">
-                          <span className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold text-blue-600 border border-blue-50 tracking-wider uppercase shadow-sm">{product.brand}</span>
-                        </div>
-                        <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={(e) => { e.stopPropagation(); toggleCompare(product); }}
-                            className={`p-2.5 rounded-2xl backdrop-blur-md shadow-xl transition-all border ${compareList.find(p => p.id === product.id)
-                              ? 'bg-blue-600 text-white border-blue-600 scale-110'
-                              : 'bg-white/90 text-gray-500 border-gray-100 hover:text-blue-600 hover:scale-105'
-                              }`}
-                            title="Compare this item"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" /></svg>
-                          </button>
-                        </div>
-                      </div>
-                      <h4 className="font-bold text-gray-900 text-base line-clamp-2 mb-6 group-hover:text-blue-600 transition-colors leading-snug">{product.name}</h4>
-                      <div className="mt-auto flex items-center justify-between pt-6 border-t border-gray-50">
-                        <div>
-                          <p className="text-xl font-black text-gray-900 leading-none">R {formatPrice(calculatePrice(product.price_ex_vat).exVat)}</p>
-                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter mt-1">Excl. VAT</p>
-                        </div>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); addToCart(product); }}
-                          className="bg-blue-600 hover:bg-blue-700 text-white p-2.5 rounded-2xl shadow-xl shadow-blue-200 transition-all active:scale-90"
-                        >
-                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+            {/* Value Proposition & About Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              <div className="space-y-8">
+                <div className="inline-block px-4 py-2 bg-blue-50 text-blue-600 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em]">
+                  The Ultimate IT Sourcing Engine
+                </div>
+                <h3 className="text-4xl md:text-5xl font-black text-gray-900 leading-[1.1] tracking-tight">
+                  One Search. <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
+                    10,000+ Products.
+                  </span>
+                </h3>
+                <div className="space-y-4 text-gray-500 text-lg font-medium leading-relaxed max-w-xl">
+                  <p>
+                    WhosGotStock is built to streamline the way you source IT hardware in South Africa. We aggregate live inventory from the nation's biggest distributors into a single, lightning-fast interface.
+                  </p>
+                  <p className="text-sm">
+                    Stop opening 10 browser tabs. Compare pricing across suppliers, verify real-time stock levels, and generate professional quote templates in seconds.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-4 pt-4">
+                  <div className="bg-gray-50 px-6 py-4 rounded-3xl border border-gray-100 shadow-sm">
+                    <p className="text-2xl font-black text-gray-900">10,000+</p>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Active Items</p>
+                  </div>
+                  <div className="bg-gray-50 px-6 py-4 rounded-3xl border border-gray-100 shadow-sm">
+                    <p className="text-2xl font-black text-gray-900">Live</p>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Stock Feeds</p>
+                  </div>
+                  <div className="bg-gray-50 px-6 py-4 rounded-3xl border border-gray-100 shadow-sm">
+                    <p className="text-2xl font-black text-gray-900">4+</p>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Master Suppliers</p>
+                  </div>
                 </div>
               </div>
-            ))}
+
+              {/* Discovery Tiles Grid (Icons) */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {[
+                  { label: 'Laptops', icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg> },
+                  { label: 'Networking', icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.345 8.99c5.287-5.288 13.854-5.288 19.141 0" /></svg> },
+                  { label: 'Servers', icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" /></svg> },
+                  { label: 'Storage', icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" /></svg> },
+                  { label: 'Security', icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg> },
+                  { label: 'Components', icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" /></svg> },
+                ].map((tile, i) => (
+                  <div
+                    key={i}
+                    onClick={() => { setQuery(tile.label); handleSearch(undefined, tile.label); }}
+                    className="aspect-square bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center justify-center p-4 hover:shadow-xl hover:border-blue-100 hover:-translate-y-1 transition-all cursor-pointer group"
+                  >
+                    <div className="text-gray-300 group-hover:text-blue-600 transition-colors mb-4 scale-125">
+                      {tile.icon}
+                    </div>
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-gray-900 transition-colors">{tile.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Supplier Sourcing Section */}
+            <div className="space-y-12">
+              <div className="text-center max-w-2xl mx-auto space-y-4">
+                <h3 className="text-3xl font-black text-gray-900 tracking-tight">Source Direct.</h3>
+                <p className="text-gray-500 font-medium">Why buy through middlemen when you can source direct from SA's largest distributors? Search live inventory across these master suppliers.</p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                {suppliers.map(s => (
+                  <div
+                    key={s.slug}
+                    onClick={() => { setSelectedSupplier(s.slug); handleSearch(undefined, undefined, s.slug); }}
+                    className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all cursor-pointer group flex flex-col items-center text-center space-y-6"
+                  >
+                    <div className="h-20 w-20 bg-gray-50 rounded-3xl flex items-center justify-center group-hover:bg-blue-50 transition-colors">
+                      <span className="text-2xl font-black text-gray-200 group-hover:text-blue-600 transition-colors">
+                        {s.name.charAt(0)}
+                      </span>
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-black text-gray-900 mb-1">{s.name}</h4>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Master Supplier</p>
+                    </div>
+                    <div className="pt-2">
+                      <span className="text-xs font-bold text-blue-600 px-4 py-2 bg-blue-50/50 rounded-full group-hover:bg-blue-600 group-hover:text-white transition-all">
+                        View Inventory
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Brands Carousel Section */}
+            <div className="space-y-8">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-black text-gray-400 uppercase tracking-widest">Explore Top Brands</h4>
+                <div className="h-px flex-1 bg-gray-100 mx-8"></div>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-8 opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700">
+                {['HP', 'Dell', 'Lenovo', 'Cisco', 'MikroTik', 'Ubiquiti', 'TP-Link', 'Seagate', 'Western Digital'].map(brand => (
+                  <span
+                    key={brand}
+                    onClick={() => { setQuery(brand); handleSearch(undefined, brand); }}
+                    className="text-xl md:text-2xl font-black text-gray-400 cursor-pointer hover:text-blue-600 transition-colors"
+                  >
+                    {brand.toUpperCase()}
+                  </span>
+                ))}
+              </div>
+            </div>
+
           </div>
         )}
       </div>
@@ -660,81 +716,85 @@ export default function Home() {
       />
 
       {/* Role Passphrase Modal */}
-      {showRoleModal && (
-        <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowRoleModal(false)} />
-          <div className="relative bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full animate-in zoom-in-95 duration-200">
-            <h3 className="text-xl font-black text-gray-900 mb-2">Elevated Access</h3>
-            <p className="text-sm text-gray-500 mb-6">Enter passphrase to unlock staff or manager pricing tiers.</p>
+      {
+        showRoleModal && (
+          <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowRoleModal(false)} />
+            <div className="relative bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full animate-in zoom-in-95 duration-200">
+              <h3 className="text-xl font-black text-gray-900 mb-2">Elevated Access</h3>
+              <p className="text-sm text-gray-500 mb-6">Enter passphrase to unlock staff or manager pricing tiers.</p>
 
-            <div className="space-y-4">
-              <input
-                type="password"
-                value={passphrase}
-                onChange={e => setPassphrase(e.target.value)}
-                placeholder="Passphrase"
-                className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-mono"
-                onKeyDown={e => e.key === 'Enter' && verifyPassphrase()}
-                autoFocus
-              />
-              {passphraseError && <p className="text-xs font-bold text-red-500">{passphraseError}</p>}
+              <div className="space-y-4">
+                <input
+                  type="password"
+                  value={passphrase}
+                  onChange={e => setPassphrase(e.target.value)}
+                  placeholder="Passphrase"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-mono"
+                  onKeyDown={e => e.key === 'Enter' && verifyPassphrase()}
+                  autoFocus
+                />
+                {passphraseError && <p className="text-xs font-bold text-red-500">{passphraseError}</p>}
+
+                <button
+                  onClick={verifyPassphrase}
+                  className="w-full bg-blue-600 text-white font-black py-3 rounded-xl shadow-lg shadow-blue-100 hover:bg-blue-700 active:scale-95 transition-all text-sm uppercase tracking-widest"
+                >
+                  Unlock Access
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      {/* Floating Compare Bar */}
+      {
+        compareList.length > 0 && (
+          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[150] animate-in slide-in-from-bottom-10 duration-500">
+            <div className="bg-white/80 backdrop-blur-xl border border-gray-100 shadow-2xl rounded-[2.5rem] p-3 flex items-center gap-6 pr-6 min-w-[320px]">
+              <div className="flex -space-x-4 pl-3">
+                {compareList.map(p => (
+                  <div key={p.id} className="w-14 h-14 bg-white rounded-2xl border-2 border-gray-50 shadow-sm flex items-center justify-center p-2 relative group overflow-hidden">
+                    {p.image_url ? (
+                      <img src={p.image_url} alt={p.name} className="max-h-full max-w-full object-contain mix-blend-multiply" />
+                    ) : (
+                      <div className="w-4 h-4 bg-gray-100 rounded-full" />
+                    )}
+                    <button
+                      onClick={() => removeFromCompare(p.id)}
+                      className="absolute inset-0 bg-red-600/90 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                  </div>
+                ))}
+                {compareList.length < 4 && Array.from({ length: 4 - compareList.length }).map((_, i) => (
+                  <div key={i} className="w-14 h-14 border-2 border-dashed border-gray-100 rounded-2xl flex items-center justify-center text-gray-100">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                  </div>
+                ))}
+              </div>
+
+              <div className="h-10 w-px bg-gray-100 mx-2" />
+
+              <div className="flex flex-col">
+                <p className="text-xs font-black text-gray-900 uppercase tracking-widest">{compareList.length} Selected</p>
+                <p className="text-[10px] font-bold text-gray-400">Side-by-side comparison</p>
+              </div>
 
               <button
-                onClick={verifyPassphrase}
-                className="w-full bg-blue-600 text-white font-black py-3 rounded-xl shadow-lg shadow-blue-100 hover:bg-blue-700 active:scale-95 transition-all text-sm uppercase tracking-widest"
+                onClick={() => setIsCompareModalOpen(true)}
+                disabled={compareList.length < 2}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 text-white px-8 py-3.5 rounded-[1.5rem] font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-blue-100 active:scale-95 flex items-center gap-2"
               >
-                Unlock Access
+                Compare
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
               </button>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Floating Compare Bar */}
-      {compareList.length > 0 && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[150] animate-in slide-in-from-bottom-10 duration-500">
-          <div className="bg-white/80 backdrop-blur-xl border border-gray-100 shadow-2xl rounded-[2.5rem] p-3 flex items-center gap-6 pr-6 min-w-[320px]">
-            <div className="flex -space-x-4 pl-3">
-              {compareList.map(p => (
-                <div key={p.id} className="w-14 h-14 bg-white rounded-2xl border-2 border-gray-50 shadow-sm flex items-center justify-center p-2 relative group overflow-hidden">
-                  {p.image_url ? (
-                    <img src={p.image_url} alt={p.name} className="max-h-full max-w-full object-contain mix-blend-multiply" />
-                  ) : (
-                    <div className="w-4 h-4 bg-gray-100 rounded-full" />
-                  )}
-                  <button
-                    onClick={() => removeFromCompare(p.id)}
-                    className="absolute inset-0 bg-red-600/90 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
-                  </button>
-                </div>
-              ))}
-              {compareList.length < 4 && Array.from({ length: 4 - compareList.length }).map((_, i) => (
-                <div key={i} className="w-14 h-14 border-2 border-dashed border-gray-100 rounded-2xl flex items-center justify-center text-gray-100">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                </div>
-              ))}
-            </div>
-
-            <div className="h-10 w-px bg-gray-100 mx-2" />
-
-            <div className="flex flex-col">
-              <p className="text-xs font-black text-gray-900 uppercase tracking-widest">{compareList.length} Selected</p>
-              <p className="text-[10px] font-bold text-gray-400">Side-by-side comparison</p>
-            </div>
-
-            <button
-              onClick={() => setIsCompareModalOpen(true)}
-              disabled={compareList.length < 2}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 text-white px-8 py-3.5 rounded-[1.5rem] font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-blue-100 active:scale-95 flex items-center gap-2"
-            >
-              Compare
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-            </button>
-          </div>
-        </div>
-      )}
+        )
+      }
 
       <ComparisonModal
         products={compareList}
