@@ -280,17 +280,17 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-50 text-gray-900 font-sans selection:bg-blue-100 selection:text-blue-900">
       {/* Navbarish Header */}
-      <div className="absolute top-0 w-full p-6 flex justify-between items-center z-50">
-        <div className="pointer-events-auto">
-          <h1 className="text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 cursor-pointer hover:opacity-80 transition-opacity" onClick={clearSearch}>
+      <div className="absolute top-0 w-full p-4 sm:p-6 flex justify-between items-center z-50 gap-4">
+        <div className="flex-shrink-0">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 cursor-pointer hover:opacity-80 transition-opacity" onClick={clearSearch}>
             WhosGotStock
           </h1>
         </div>
-        <div className="flex gap-4 items-center pointer-events-auto">
+        <div className="flex gap-2 sm:gap-4 items-center">
           {/* Cart Trigger */}
           <button
             onClick={() => setIsCartOpen(true)}
-            className="relative p-2.5 text-gray-600 hover:text-blue-600 transition-all bg-white/70 backdrop-blur-md rounded-2xl shadow-sm border border-white/50 hover:shadow-md hover:scale-105"
+            className="flex-shrink-0 p-2 sm:p-2.5 text-gray-600 hover:text-blue-600 transition-all bg-white/70 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-sm border border-white/50 hover:shadow-md active:scale-95"
             title="View Quote Cart"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
@@ -303,12 +303,15 @@ export default function Home() {
 
           <div
             onClick={handleRoleSwitch}
-            className={`flex items-center space-x-2 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-2xl text-[13px] shadow-sm border border-white/50 cursor-pointer hover:shadow-md transition-all ${userRole !== 'public' ? 'ring-2 ring-blue-100' : ''}`}
+            className={`flex-shrink-0 flex items-center space-x-2 bg-white/70 backdrop-blur-md px-3 sm:px-4 py-1.5 rounded-xl sm:rounded-2xl text-[11px] sm:text-[13px] shadow-sm border border-white/50 cursor-pointer hover:shadow-md transition-all ${userRole !== 'public' ? 'ring-2 ring-blue-100' : ''}`}
           >
-            <span className="font-bold text-gray-800 capitalize">{userRole}</span>
-            <div className={`w-2 h-2 rounded-full ${userRole === 'public' ? 'bg-gray-300' : userRole === 'staff' ? 'bg-blue-500' : 'bg-green-500'}`}></div>
+            <span className="font-bold text-gray-800 capitalize truncate max-w-[50px] sm:max-w-none">{userRole}</span>
+            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${userRole === 'public' ? 'bg-gray-300' : userRole === 'staff' ? 'bg-blue-500' : 'bg-green-500'}`}></div>
           </div>
-          <Link href="/admin" className="text-sm font-bold text-gray-500 hover:text-blue-600 px-4 py-1.5 bg-white/70 backdrop-blur-md rounded-2xl border border-white/50 shadow-sm transition-all hover:shadow-md">Admin</Link>
+
+          {userRole === 'manager' && (
+            <Link href="/admin" className="flex-shrink-0 text-[11px] sm:text-sm font-bold text-gray-500 hover:text-blue-600 px-3 sm:px-4 py-1.5 bg-white/70 backdrop-blur-md rounded-xl sm:rounded-2xl border border-white/50 shadow-sm transition-all hover:shadow-md">Admin</Link>
+          )}
         </div>
       </div>
 
@@ -751,11 +754,11 @@ export default function Home() {
       {/* Floating Compare Bar */}
       {
         compareList.length > 0 && (
-          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[150] animate-in slide-in-from-bottom-10 duration-500">
-            <div className="bg-white/80 backdrop-blur-xl border border-gray-100 shadow-2xl rounded-[2.5rem] p-3 flex items-center gap-6 pr-6 min-w-[320px]">
-              <div className="flex -space-x-4 pl-3">
+          <div className="fixed bottom-6 sm:bottom-8 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 z-[150] animate-in slide-in-from-bottom-10 duration-500 max-w-lg sm:mx-auto">
+            <div className="bg-white/80 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] sm:rounded-[2.5rem] p-2 sm:p-3 flex items-center justify-between gap-2 sm:gap-6 sm:pr-6">
+              <div className="flex -space-x-4 pl-1 sm:pl-3 overflow-hidden">
                 {compareList.map(p => (
-                  <div key={p.id} className="w-14 h-14 bg-white rounded-2xl border-2 border-gray-50 shadow-sm flex items-center justify-center p-2 relative group overflow-hidden">
+                  <div key={p.id} className="w-12 h-12 sm:w-14 sm:h-14 bg-white rounded-xl sm:rounded-2xl border-2 border-gray-50 shadow-sm flex items-center justify-center p-2 relative group flex-shrink-0">
                     {p.image_url ? (
                       <img src={p.image_url} alt={p.name} className="max-h-full max-w-full object-contain mix-blend-multiply" />
                     ) : (
@@ -763,32 +766,32 @@ export default function Home() {
                     )}
                     <button
                       onClick={() => removeFromCompare(p.id)}
-                      className="absolute inset-0 bg-red-600/90 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                      className="absolute inset-0 bg-red-600/90 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl sm:rounded-2xl"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                   </div>
                 ))}
                 {compareList.length < 4 && Array.from({ length: 4 - compareList.length }).map((_, i) => (
-                  <div key={i} className="w-14 h-14 border-2 border-dashed border-gray-100 rounded-2xl flex items-center justify-center text-gray-100">
+                  <div key={i} className="w-12 h-12 sm:w-14 sm:h-14 border-2 border-dashed border-gray-100 rounded-xl sm:rounded-2xl flex items-center justify-center text-gray-100 flex-shrink-0">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                   </div>
                 ))}
               </div>
 
-              <div className="h-10 w-px bg-gray-100 mx-2" />
+              <div className="hidden sm:block h-10 w-px bg-gray-100" />
 
-              <div className="flex flex-col">
-                <p className="text-xs font-black text-gray-900 uppercase tracking-widest">{compareList.length} Selected</p>
-                <p className="text-[10px] font-bold text-gray-400">Side-by-side comparison</p>
+              <div className="flex flex-col flex-1 sm:flex-none">
+                <p className="text-[10px] sm:text-xs font-black text-gray-900 uppercase tracking-widest">{compareList.length} Selected</p>
+                <p className="text-[9px] sm:text-[10px] font-bold text-gray-400">Comparison</p>
               </div>
 
               <button
                 onClick={() => setIsCompareModalOpen(true)}
                 disabled={compareList.length < 2}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 text-white px-8 py-3.5 rounded-[1.5rem] font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-blue-100 active:scale-95 flex items-center gap-2"
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 text-white px-4 sm:px-8 py-3 rounded-xl sm:rounded-[1.5rem] font-black text-[10px] sm:text-xs uppercase tracking-widest transition-all shadow-xl shadow-blue-100 active:scale-95 flex items-center gap-2"
               >
-                Compare
+                <span className="hidden sm:inline">Compare</span>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
               </button>
             </div>
