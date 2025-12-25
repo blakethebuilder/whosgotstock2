@@ -10,7 +10,7 @@ export interface Product {
     supplier_name: string;
     image_url: string;
     category: string;
-    raw_data: string;
+    raw_data: any;
 }
 
 export interface Supplier {

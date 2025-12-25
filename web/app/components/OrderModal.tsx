@@ -37,8 +37,14 @@ export default function OrderModal({ isOpen, onClose, items, totalExVat, totalIn
         template += "Please process the following " + (userRole === 'public' ? "quote request" : "order") + ":\n\n";
 
         supplierItems.forEach(item => {
-            const supplierSlug = (item as any).raw_data ? JSON.parse(item.raw_data).supplier_slug || 'N/A' : 'N/A';
-            template += `- SKU: ${item.supplier_sku} ${userRole === 'public' ? `[Ref: ${item.supplier_name}]` : ''} | Qty: ${item.quantity} | Item: ${item.name}\n`;
+            let data = typeof item.raw_data === 'string' ? {} : item.raw_data;
+            if (typeof item.raw_data === 'string') {
+                try { data = JSON.parse(item.raw_data); } catch (e) { data = {}; }
+            }
+
+            // For public role, we hide the supplier name and use a slug or generic ref if possible
+            const supplierRef = userRole === 'public' ? `[Ref: ${data.supplier_slug || item.supplier_name.toLowerCase().replace(/\s+/g, '-')}]` : '';
+            template += `- SKU: ${item.supplier_sku} ${supplierRef} | Qty: ${item.quantity} | Item: ${item.name}\n`;
         });
 
         const supplierTotalEx = supplierItems.reduce((sum, i) => sum + (parseFloat(i.price_ex_vat) * (1.15) * i.quantity), 0); // Assuming 15% markup logic consistent with calculatePrice
