@@ -17,6 +17,8 @@ COPY web/ .
 # Next.js optimization env vars
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+# Force webpack instead of turbopack for Docker stability
+ENV NEXT_PRIVATE_DISABLE_TURBOPACK=1
 
 RUN npm run build
 
