@@ -24,7 +24,7 @@ export default function Home() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [page, setPage] = useState(1);
-  const [guestMarkup, setGuestMarkup] = useState(15);
+  const [guestMarkup] = useState(15);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // Comparison State
@@ -460,12 +460,85 @@ export default function Home() {
         {/* Category Tiles - Show when not searching */}
         {!hasSearched && (
           <div className="py-16 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
-            <CategoryTiles 
-              onCategoryClick={(searchTerm) => {
-                setQuery(searchTerm);
-                performSearch(searchTerm);
-              }}
-            />
+            {/* Hero Value Proposition */}
+            <div className="text-center mb-16">
+              <div className="inline-block px-4 py-2 bg-blue-50 text-blue-600 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] mb-6">
+                The Ultimate IT Sourcing Engine
+              </div>
+              <h3 className="text-4xl md:text-5xl font-black text-gray-900 leading-[1.1] tracking-tight mb-6">
+                One Search. <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
+                  10,000+ Products.
+                </span>
+              </h3>
+              <div className="text-gray-500 text-lg font-medium leading-relaxed max-w-2xl mx-auto mb-8">
+                <p>
+                  WhosGotStock is built to streamline the way you source IT hardware in South Africa. We aggregate live inventory from the nation's biggest distributors into a single, lightning-fast interface.
+                </p>
+                <p className="text-sm mt-4">
+                  Stop opening 10 browser tabs. Compare pricing across suppliers, verify real-time stock levels, and generate professional quote templates in seconds.
+                </p>
+              </div>
+              <div className="flex flex-wrap justify-center gap-4 mb-12">
+                <div className="bg-gray-50 px-6 py-4 rounded-3xl border border-gray-100 shadow-sm">
+                  <p className="text-2xl font-black text-gray-900">10,000+</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Active Items</p>
+                </div>
+                <div className="bg-gray-50 px-6 py-4 rounded-3xl border border-gray-100 shadow-sm">
+                  <p className="text-2xl font-black text-gray-900">Live</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Stock Feeds</p>
+                </div>
+                <div className="bg-gray-50 px-6 py-4 rounded-3xl border border-gray-100 shadow-sm">
+                  <p className="text-2xl font-black text-gray-900">4+</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Master Suppliers</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Popular Categories */}
+            <div className="mb-16">
+              <div className="text-center mb-8">
+                <div className="inline-block px-4 py-2 bg-blue-50 text-blue-600 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] mb-4">
+                  Popular Categories
+                </div>
+                <h3 className="text-2xl md:text-3xl font-black text-gray-900 mb-2">
+                  What are you looking for?
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  Click a category to search thousands of products instantly
+                </p>
+              </div>
+
+              <CategoryTiles 
+                onCategoryClick={(searchTerm) => {
+                  setQuery(searchTerm);
+                  performSearch(searchTerm);
+                }}
+              />
+            </div>
+
+            {/* Popular Brands */}
+            <div className="mb-16">
+              <div className="text-center mb-8">
+                <h4 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-4">Explore Top Brands</h4>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-6 opacity-60 hover:opacity-100 transition-all duration-700">
+                {[
+                  'HP', 'Dell', 'Lenovo', 'Cisco', 'MikroTik', 'Ubiquiti', 'TP-Link', 
+                  'Seagate', 'Western Digital', 'Intel', 'AMD', 'NVIDIA', 'ASUS', 
+                  'MSI', 'Gigabyte', 'Samsung', 'Kingston', 'Corsair', 'Logitech', 
+                  'Microsoft', 'Apple', 'Canon', 'Epson', 'Brother'
+                ].map(brand => (
+                  <span
+                    key={brand}
+                    onClick={() => { setQuery(brand); performSearch(brand); }}
+                    className="text-lg md:text-xl font-black text-gray-400 cursor-pointer hover:text-blue-600 transition-colors px-2 py-1 rounded hover:bg-blue-50"
+                  >
+                    {brand.toUpperCase()}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
@@ -825,6 +898,60 @@ export default function Home() {
         calculatePrice={calculatePrice}
         userRole={userRole}
       />
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-16 mt-20">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <div className="space-y-6">
+            <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight">
+              Built by <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">BlaketheBuilder</span> & AI
+            </h3>
+            <p className="text-gray-400 font-medium max-w-2xl mx-auto leading-relaxed">
+              Combining human creativity with artificial intelligence to deliver South Africa's most advanced IT sourcing platform. 
+              Every feature designed to save you time and money.
+            </p>
+            
+            {/* Feature highlights */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto pt-8">
+              <div className="space-y-3">
+                <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <h4 className="font-bold text-white">Lightning Fast</h4>
+                <p className="text-sm text-gray-400">Search thousands of products in milliseconds with intelligent matching</p>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="w-12 h-12 bg-green-600 rounded-2xl flex items-center justify-center mx-auto">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h4 className="font-bold text-white">Always Accurate</h4>
+                <p className="text-sm text-gray-400">Real-time inventory updates from verified suppliers across SA</p>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="w-12 h-12 bg-purple-600 rounded-2xl flex items-center justify-center mx-auto">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                </div>
+                <h4 className="font-bold text-white">Built for You</h4>
+                <p className="text-sm text-gray-400">Designed by IT professionals who understand your sourcing challenges</p>
+              </div>
+            </div>
+
+            <div className="pt-8 border-t border-gray-800">
+              <p className="text-gray-500 text-sm">
+                © 2024 WhosGotStock. All rights reserved. | South Africa's Ultimate IT Sourcing Engine
+              </p>
+            </div>
+          </div>
+        </div>
+      </footer>
 
       <style jsx global>{`
         .scrollbar-hide::-webkit-scrollbar {

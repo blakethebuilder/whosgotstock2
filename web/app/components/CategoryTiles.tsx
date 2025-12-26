@@ -39,7 +39,7 @@ const popularCategories = [
     searchTerms: ['router', 'switch', 'access point'],
     icon: (
       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.345 8.99c5.287-5.288 13.854-5.288 19.141 0" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.111 16.404a5.5 5.5 0 717.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.345 8.99c5.287-5.288 13.854-5.288 19.141 0" />
       </svg>
     )
   },
@@ -75,7 +75,7 @@ const popularCategories = [
     searchTerms: ['server', 'rack', 'enterprise'],
     icon: (
       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 712-2h14a2 2 0 712 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
       </svg>
     )
   },
@@ -126,112 +126,41 @@ export default function CategoryTiles({ onCategoryClick }: CategoryTilesProps) {
   };
 
   return (
-    <div className="w-full">
-      {/* Combined Header Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mb-16">
-        {/* Left: Value Proposition */}
-        <div className="space-y-8">
-          <div className="inline-block px-4 py-2 bg-blue-50 text-blue-600 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em]">
-            The Ultimate IT Sourcing Engine
-          </div>
-          <h3 className="text-4xl md:text-5xl font-black text-gray-900 leading-[1.1] tracking-tight">
-            One Search. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
-              10,000+ Products.
-            </span>
-          </h3>
-          <div className="space-y-4 text-gray-500 text-lg font-medium leading-relaxed max-w-xl">
-            <p>
-              WhosGotStock is built to streamline the way you source IT hardware in South Africa. We aggregate live inventory from the nation's biggest distributors into a single, lightning-fast interface.
-            </p>
-            <p className="text-sm">
-              Stop opening 10 browser tabs. Compare pricing across suppliers, verify real-time stock levels, and generate professional quote templates in seconds.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-4 pt-4">
-            <div className="bg-gray-50 px-6 py-4 rounded-3xl border border-gray-100 shadow-sm">
-              <p className="text-2xl font-black text-gray-900">10,000+</p>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Active Items</p>
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      {popularCategories.map((category, index) => (
+        <div
+          key={category.name}
+          onClick={() => handleCategoryClick(category)}
+          onMouseEnter={() => setHoveredIndex(index)}
+          onMouseLeave={() => setHoveredIndex(null)}
+          className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-blue-100 hover:-translate-y-1 transition-all cursor-pointer p-6 text-center min-h-[120px] flex flex-col items-center justify-center relative overflow-hidden"
+        >
+          {/* Background gradient on hover */}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity" />
+          
+          {/* Content */}
+          <div className="relative z-10 flex flex-col items-center justify-center space-y-3">
+            <div className="text-gray-300 group-hover:text-blue-600 transition-colors transform group-hover:scale-110 transition-transform">
+              {category.icon}
             </div>
-            <div className="bg-gray-50 px-6 py-4 rounded-3xl border border-gray-100 shadow-sm">
-              <p className="text-2xl font-black text-gray-900">Live</p>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Stock Feeds</p>
-            </div>
-            <div className="bg-gray-50 px-6 py-4 rounded-3xl border border-gray-100 shadow-sm">
-              <p className="text-2xl font-black text-gray-900">4+</p>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Master Suppliers</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Right: Category Grid */}
-        <div className="space-y-8">
-          <div className="text-center">
-            <div className="inline-block px-4 py-2 bg-blue-50 text-blue-600 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] mb-4">
-              Popular Categories
-            </div>
-            <h3 className="text-2xl md:text-3xl font-black text-gray-900 mb-2">
-              What are you looking for?
-            </h3>
-            <p className="text-gray-500 text-sm">
-              Click a category to search thousands of products instantly
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {popularCategories.map((category, index) => (
-              <div
-                key={category.name}
-                onClick={() => handleCategoryClick(category)}
-                onMouseEnter={() => setHoveredIndex(index)}
-                onMouseLeave={() => setHoveredIndex(null)}
-                className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-blue-100 hover:-translate-y-1 transition-all cursor-pointer p-6 text-center min-h-[120px] flex flex-col items-center justify-center relative overflow-hidden"
-              >
-                {/* Background gradient on hover */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity" />
-                
-                {/* Content */}
-                <div className="relative z-10 flex flex-col items-center justify-center space-y-3">
-                  <div className="text-gray-300 group-hover:text-blue-600 transition-colors transform group-hover:scale-110 transition-transform">
-                    {category.icon}
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <span className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors block leading-tight">
-                      {category.name}
-                    </span>
-                    
-                    {hoveredIndex === index && (
-                      <div className="text-xs text-gray-500 animate-in fade-in duration-200">
-                        Click to search
-                      </div>
-                    )}
-                  </div>
+            
+            <div className="space-y-1">
+              <span className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors block leading-tight">
+                {category.name}
+              </span>
+              
+              {hoveredIndex === index && (
+                <div className="text-xs text-gray-500 animate-in fade-in duration-200">
+                  Click to search
                 </div>
-
-                {/* Hover effect border */}
-                <div className="absolute inset-0 border-2 border-blue-500 rounded-2xl opacity-0 group-hover:opacity-20 transition-opacity" />
-              </div>
-            ))}
-          </div>
-
-          {/* Quick search suggestions */}
-          <div className="text-center">
-            <p className="text-xs text-gray-400 mb-3">Or try searching for:</p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {['HP EliteBook', 'Cisco Router', 'Samsung SSD', 'Dell Monitor', 'MikroTik Switch'].map(term => (
-                <button
-                  key={term}
-                  onClick={() => onCategoryClick(term)}
-                  className="px-3 py-1 bg-gray-100 hover:bg-blue-100 text-xs text-gray-600 hover:text-blue-600 rounded-full transition-colors"
-                >
-                  {term}
-                </button>
-              ))}
+              )}
             </div>
           </div>
+
+          {/* Hover effect border */}
+          <div className="absolute inset-0 border-2 border-blue-500 rounded-2xl opacity-0 group-hover:opacity-20 transition-opacity" />
         </div>
-      </div>
+      ))}
     </div>
   );
 }
