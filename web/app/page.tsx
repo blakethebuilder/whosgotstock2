@@ -236,12 +236,16 @@ export default function Home() {
   };
 
   const verifyPassphrase = () => {
-    if (passphrase === 'Smart@staff2024!') {
+    // Get passphrases from environment variables
+    const staffPassphrase = process.env.NEXT_PUBLIC_STAFF_PASSPHRASE || 'Smart@staff2024!';
+    const managerPassphrase = process.env.NEXT_PUBLIC_MANAGER_PASSPHRASE || 'Smart@managers2024!';
+    
+    if (passphrase === staffPassphrase) {
       setUserRole('staff');
       setShowRoleModal(false);
       setPassphrase('');
       setPassphraseError('');
-    } else if (passphrase === 'Smart@managers2024!') {
+    } else if (passphrase === managerPassphrase) {
       setUserRole('manager');
       setShowRoleModal(false);
       setPassphrase('');
