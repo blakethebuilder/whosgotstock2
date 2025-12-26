@@ -46,7 +46,6 @@ export default function Home() {
   // Cart State
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-
   useEffect(() => {
     // Load suppliers
     fetch('/api/suppliers').then(r => r.json()).then(data => {
@@ -264,7 +263,6 @@ export default function Home() {
     setInStockOnly(false);
     setShowFilters(false);
   };
-
   return (
     <main className="min-h-screen bg-gray-50 text-gray-900 font-sans selection:bg-blue-100 selection:text-blue-900">
       {/* Navbarish Header */}
@@ -455,9 +453,7 @@ export default function Home() {
       </div>
 
       {/* Content Area */}
-      <div className="max-w-7xl mx-auto px-6 pb-12">
-
-        {/* Category Tiles - Show when not searching */}
+      <div className="max-w-7xl mx-auto px-6 pb-12">{/* Category Tiles - Show when not searching */}
         {!hasSearched && (
           <div className="py-16 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
             {/* Hero Value Proposition */}
@@ -539,11 +535,59 @@ export default function Home() {
                 ))}
               </div>
             </div>
+
+            {/* Built by Blake & AI - Footer */}
+            <div className="text-center space-y-8 py-16 border-t border-gray-100">
+              <div className="space-y-4">
+                <div className="inline-block px-4 py-2 bg-gray-50 text-gray-600 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em]">
+                  Crafted with Care
+                </div>
+                <h3 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">
+                  Built by <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Blake</span> & AI
+                </h3>
+                <p className="text-gray-500 font-medium max-w-2xl mx-auto leading-relaxed">
+                  Combining human creativity with artificial intelligence to deliver South Africa's most advanced IT sourcing platform. 
+                  Every feature designed to save you time and money.
+                </p>
+              </div>
+              
+              {/* Feature highlights */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+                <div className="space-y-3">
+                  <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto">
+                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <h4 className="font-bold text-gray-900">Lightning Fast</h4>
+                  <p className="text-sm text-gray-500">Search thousands of products in milliseconds with intelligent matching</p>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center mx-auto">
+                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h4 className="font-bold text-gray-900">Always Accurate</h4>
+                  <p className="text-sm text-gray-500">Real-time inventory updates from verified suppliers across SA</p>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto">
+                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                  </div>
+                  <h4 className="font-bold text-gray-900">Built for You</h4>
+                  <p className="text-sm text-gray-500">Designed by IT professionals who understand your sourcing challenges</p>
+                </div>
+              </div>
+            </div>
           </div>
         )}
-
         {/* Search Results View */}
-        {hasSearched ? (
+        {hasSearched && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex justify-between items-center mb-6 border-b pb-4">
               <h3 className="text-xl font-semibold text-gray-800">
@@ -651,139 +695,6 @@ export default function Home() {
               </div>
             )}
           </div>
-        ) : (
-          /* Modern Discovery / Landing View */
-          <div className="max-w-7xl mx-auto px-6 py-16 space-y-32 animate-in fade-in duration-700 delay-100">
-
-            {/* Value Proposition & About Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-              <div className="space-y-8">
-                <div className="inline-block px-4 py-2 bg-blue-50 text-blue-600 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em]">
-                  The Ultimate IT Sourcing Engine
-                </div>
-                <h3 className="text-4xl md:text-5xl font-black text-gray-900 leading-[1.1] tracking-tight">
-                  One Search. <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
-                    10,000+ Products.
-                  </span>
-                </h3>
-                <div className="space-y-4 text-gray-500 text-lg font-medium leading-relaxed max-w-xl">
-                  <p>
-                    WhosGotStock is built to streamline the way you source IT hardware in South Africa. We aggregate live inventory from the nation's biggest distributors into a single, lightning-fast interface.
-                  </p>
-                  <p className="text-sm">
-                    Stop opening 10 browser tabs. Compare pricing across suppliers, verify real-time stock levels, and generate professional quote templates in seconds.
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-4 pt-4">
-                  <div className="bg-gray-50 px-6 py-4 rounded-3xl border border-gray-100 shadow-sm">
-                    <p className="text-2xl font-black text-gray-900">10,000+</p>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Active Items</p>
-                  </div>
-                  <div className="bg-gray-50 px-6 py-4 rounded-3xl border border-gray-100 shadow-sm">
-                    <p className="text-2xl font-black text-gray-900">Live</p>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Stock Feeds</p>
-                  </div>
-                  <div className="bg-gray-50 px-6 py-4 rounded-3xl border border-gray-100 shadow-sm">
-                    <p className="text-2xl font-black text-gray-900">4+</p>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Master Suppliers</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Discovery Tiles Grid (Icons) */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {[
-                  { label: 'Notebooks', icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg> },
-                  { label: 'Networking', icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.345 8.99c5.287-5.288 13.854-5.288 19.141 0" /></svg> },
-                  { label: 'Servers', icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" /></svg> },
-                  { label: 'Storage', icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" /></svg> },
-                  { label: 'Security', icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg> },
-                  { label: 'Components', icon: <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" /></svg> },
-                ].map((tile, i) => (
-                  <div
-                    key={i}
-                    onClick={() => { setQuery(tile.label); handleSearch(undefined, tile.label); }}
-                    className="aspect-square bg-white rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center justify-center p-4 hover:shadow-xl hover:border-blue-100 hover:-translate-y-1 transition-all cursor-pointer group"
-                  >
-                    <div className="text-gray-300 group-hover:text-blue-600 transition-colors mb-4 scale-125">
-                      {tile.icon}
-                    </div>
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-gray-900 transition-colors">{tile.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Built By Section */}
-            <div className="text-center space-y-8 py-16">
-              <div className="space-y-4">
-                <div className="inline-block px-4 py-2 bg-gray-50 text-gray-600 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em]">
-                  Crafted with Care
-                </div>
-                <h3 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">
-                  Built by <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">BlaketheBuilder</span> & AI
-                </h3>
-                <p className="text-gray-500 font-medium max-w-2xl mx-auto leading-relaxed">
-                  Combining human creativity with artificial intelligence to deliver South Africa's most advanced IT sourcing platform. 
-                  Every feature designed to save you time and money.
-                </p>
-              </div>
-              
-              {/* Feature highlights */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-                <div className="space-y-3">
-                  <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto">
-                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  </div>
-                  <h4 className="font-bold text-gray-900">Lightning Fast</h4>
-                  <p className="text-sm text-gray-500">Search thousands of products in milliseconds with intelligent matching</p>
-                </div>
-                
-                <div className="space-y-3">
-                  <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center mx-auto">
-                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <h4 className="font-bold text-gray-900">Always Accurate</h4>
-                  <p className="text-sm text-gray-500">Real-time inventory updates from verified suppliers across SA</p>
-                </div>
-                
-                <div className="space-y-3">
-                  <div className="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto">
-                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                  </div>
-                  <h4 className="font-bold text-gray-900">Built for You</h4>
-                  <p className="text-sm text-gray-500">Designed by IT professionals who understand your sourcing challenges</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Brands Carousel Section */}
-            <div className="space-y-8">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-black text-gray-400 uppercase tracking-widest">Explore Top Brands</h4>
-                <div className="h-px flex-1 bg-gray-100 mx-8"></div>
-              </div>
-              <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-8 opacity-40 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-700">
-                {['HP', 'Dell', 'Lenovo', 'Cisco', 'MikroTik', 'Ubiquiti', 'TP-Link', 'Seagate', 'Western Digital'].map(brand => (
-                  <span
-                    key={brand}
-                    onClick={() => { setQuery(brand); handleSearch(undefined, brand); }}
-                    className="text-xl md:text-2xl font-black text-gray-400 cursor-pointer hover:text-blue-600 transition-colors"
-                  >
-                    {brand.toUpperCase()}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-          </div>
         )}
       </div>
 
@@ -808,85 +719,81 @@ export default function Home() {
       />
 
       {/* Role Passphrase Modal */}
-      {
-        showRoleModal && (
-          <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowRoleModal(false)} />
-            <div className="relative bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full animate-in zoom-in-95 duration-200">
-              <h3 className="text-xl font-black text-gray-900 mb-2">Elevated Access</h3>
-              <p className="text-sm text-gray-500 mb-6">Enter passphrase to unlock staff or manager pricing tiers.</p>
+      {showRoleModal && (
+        <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowRoleModal(false)} />
+          <div className="relative bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full animate-in zoom-in-95 duration-200">
+            <h3 className="text-xl font-black text-gray-900 mb-2">Elevated Access</h3>
+            <p className="text-sm text-gray-500 mb-6">Enter passphrase to unlock staff or manager pricing tiers.</p>
 
-              <div className="space-y-4">
-                <input
-                  type="password"
-                  value={passphrase}
-                  onChange={e => setPassphrase(e.target.value)}
-                  placeholder="Passphrase"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-mono"
-                  onKeyDown={e => e.key === 'Enter' && verifyPassphrase()}
-                  autoFocus
-                />
-                {passphraseError && <p className="text-xs font-bold text-red-500">{passphraseError}</p>}
-
-                <button
-                  onClick={verifyPassphrase}
-                  className="w-full bg-blue-600 text-white font-black py-3 rounded-xl shadow-lg shadow-blue-100 hover:bg-blue-700 active:scale-95 transition-all text-sm uppercase tracking-widest"
-                >
-                  Unlock Access
-                </button>
-              </div>
-            </div>
-          </div>
-        )
-      }
-
-      {/* Floating Compare Bar */}
-      {
-        compareList.length > 0 && (
-          <div className="fixed bottom-6 sm:bottom-8 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 z-[150] animate-in slide-in-from-bottom-10 duration-500 max-w-lg sm:mx-auto">
-            <div className="bg-white/80 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] sm:rounded-[2.5rem] p-2 sm:p-3 flex items-center justify-between gap-2 sm:gap-6 sm:pr-6">
-              <div className="flex -space-x-4 pl-1 sm:pl-3 overflow-hidden">
-                {compareList.map(p => (
-                  <div key={p.id} className="w-12 h-12 sm:w-14 sm:h-14 bg-white rounded-xl sm:rounded-2xl border-2 border-gray-50 shadow-sm flex items-center justify-center p-2 relative group flex-shrink-0">
-                    {p.image_url ? (
-                      <img src={p.image_url} alt={p.name} className="max-h-full max-w-full object-contain mix-blend-multiply" />
-                    ) : (
-                      <div className="w-4 h-4 bg-gray-100 rounded-full" />
-                    )}
-                    <button
-                      onClick={() => removeFromCompare(p.id)}
-                      className="absolute inset-0 bg-red-600/90 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl sm:rounded-2xl"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                  </div>
-                ))}
-                {compareList.length < 4 && Array.from({ length: 4 - compareList.length }).map((_, i) => (
-                  <div key={i} className="w-12 h-12 sm:w-14 sm:h-14 border-2 border-dashed border-gray-100 rounded-xl sm:rounded-2xl flex items-center justify-center text-gray-100 flex-shrink-0">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                  </div>
-                ))}
-              </div>
-
-              <div className="hidden sm:block h-10 w-px bg-gray-100" />
-
-              <div className="flex flex-col flex-1 sm:flex-none">
-                <p className="text-[10px] sm:text-xs font-black text-gray-900 uppercase tracking-widest">{compareList.length} Selected</p>
-                <p className="text-[9px] sm:text-[10px] font-bold text-gray-400">Comparison</p>
-              </div>
+            <div className="space-y-4">
+              <input
+                type="password"
+                value={passphrase}
+                onChange={e => setPassphrase(e.target.value)}
+                placeholder="Passphrase"
+                className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-mono"
+                onKeyDown={e => e.key === 'Enter' && verifyPassphrase()}
+                autoFocus
+              />
+              {passphraseError && <p className="text-xs font-bold text-red-500">{passphraseError}</p>}
 
               <button
-                onClick={() => setIsCompareModalOpen(true)}
-                disabled={compareList.length < 2}
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 text-white px-4 sm:px-8 py-3 rounded-xl sm:rounded-[1.5rem] font-black text-[10px] sm:text-xs uppercase tracking-widest transition-all shadow-xl shadow-blue-100 active:scale-95 flex items-center gap-2"
+                onClick={verifyPassphrase}
+                className="w-full bg-blue-600 text-white font-black py-3 rounded-xl shadow-lg shadow-blue-100 hover:bg-blue-700 active:scale-95 transition-all text-sm uppercase tracking-widest"
               >
-                <span className="hidden sm:inline">Compare</span>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                Unlock Access
               </button>
             </div>
           </div>
-        )
-      }
+        </div>
+      )}
+
+      {/* Floating Compare Bar */}
+      {compareList.length > 0 && (
+        <div className="fixed bottom-6 sm:bottom-8 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 z-[150] animate-in slide-in-from-bottom-10 duration-500 max-w-lg sm:mx-auto">
+          <div className="bg-white/80 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] sm:rounded-[2.5rem] p-2 sm:p-3 flex items-center justify-between gap-2 sm:gap-6 sm:pr-6">
+            <div className="flex -space-x-4 pl-1 sm:pl-3 overflow-hidden">
+              {compareList.map(p => (
+                <div key={p.id} className="w-12 h-12 sm:w-14 sm:h-14 bg-white rounded-xl sm:rounded-2xl border-2 border-gray-50 shadow-sm flex items-center justify-center p-2 relative group flex-shrink-0">
+                  {p.image_url ? (
+                    <img src={p.image_url} alt={p.name} className="max-h-full max-w-full object-contain mix-blend-multiply" />
+                  ) : (
+                    <div className="w-4 h-4 bg-gray-100 rounded-full" />
+                  )}
+                  <button
+                    onClick={() => removeFromCompare(p.id)}
+                    className="absolute inset-0 bg-red-600/90 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl sm:rounded-2xl"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                </div>
+              ))}
+              {compareList.length < 4 && Array.from({ length: 4 - compareList.length }).map((_, i) => (
+                <div key={i} className="w-12 h-12 sm:w-14 sm:h-14 border-2 border-dashed border-gray-100 rounded-xl sm:rounded-2xl flex items-center justify-center text-gray-100 flex-shrink-0">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                </div>
+              ))}
+            </div>
+
+            <div className="hidden sm:block h-10 w-px bg-gray-100" />
+
+            <div className="flex flex-col flex-1 sm:flex-none">
+              <p className="text-[10px] sm:text-xs font-black text-gray-900 uppercase tracking-widest">{compareList.length} Selected</p>
+              <p className="text-[9px] sm:text-[10px] font-bold text-gray-400">Comparison</p>
+            </div>
+
+            <button
+              onClick={() => setIsCompareModalOpen(true)}
+              disabled={compareList.length < 2}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 text-white px-4 sm:px-8 py-3 rounded-xl sm:rounded-[1.5rem] font-black text-[10px] sm:text-xs uppercase tracking-widest transition-all shadow-xl shadow-blue-100 active:scale-95 flex items-center gap-2"
+            >
+              <span className="hidden sm:inline">Compare</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+            </button>
+          </div>
+        </div>
+      )}
 
       <ComparisonModal
         products={compareList}
