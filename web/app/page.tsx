@@ -236,12 +236,12 @@ export default function Home() {
   };
 
   const verifyPassphrase = () => {
-    if (passphrase === 'Smart@staff') {
+    if (passphrase === 'Smart@staff2024!') {
       setUserRole('staff');
       setShowRoleModal(false);
       setPassphrase('');
       setPassphraseError('');
-    } else if (passphrase === 'Smart@managers') {
+    } else if (passphrase === 'Smart@managers2024!') {
       setUserRole('manager');
       setShowRoleModal(false);
       setPassphrase('');
