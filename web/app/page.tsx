@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import SmartFilter from './components/SmartFilter';
+import CategoryTiles from './components/CategoryTiles';
 import CartDrawer from './components/CartDrawer';
 import ProductDetailModal from './components/ProductDetailModal';
 import ComparisonModal from './components/ComparisonModal';
@@ -33,13 +33,9 @@ export default function Home() {
 
   // Filters
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [brands, setBrands] = useState<string[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
 
   // Filter States
   const [selectedSupplier, setSelectedSupplier] = useState('');
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [inStockOnly, setInStockOnly] = useState(false);
@@ -51,37 +47,12 @@ export default function Home() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  // Featured Data
-  const [featured, setFeatured] = useState<Record<string, Product[]>>({});
-
   useEffect(() => {
     // Load suppliers
     fetch('/api/suppliers').then(r => r.json()).then(data => {
       if (Array.isArray(data)) setSuppliers(data);
     }).catch(console.error);
-
-    // Initial load of featured rows
-    fetch('/api/featured').then(r => r.json()).then(data => {
-      setFeatured(data);
-    }).catch(console.error);
   }, []);
-
-  // Update Brands & Categories when supplier changes
-  useEffect(() => {
-    const urlParams = selectedSupplier ? `?supplier=${selectedSupplier}` : '';
-
-    // Reset selections when supplier changes to avoid invalid combinations
-    setSelectedBrands([]);
-    setSelectedCategories([]);
-
-    fetch(`/api/brands${urlParams}`).then(r => r.json()).then(data => {
-      if (Array.isArray(data)) setBrands(data);
-    }).catch(console.error);
-
-    fetch(`/api/categories${urlParams}`).then(r => r.json()).then(data => {
-      if (Array.isArray(data)) setCategories(data);
-    }).catch(console.error);
-  }, [selectedSupplier]);
 
   useEffect(() => {
     // Load cart from localStorage
@@ -141,12 +112,12 @@ export default function Home() {
   // Debounced search function
   const debouncedSearch = useCallback(
     debounce((searchQuery: string, searchSupplier?: string) => {
-      if (!searchQuery && !searchSupplier && selectedBrands.length === 0 && selectedCategories.length === 0) {
+      if (!searchQuery && !searchSupplier) {
         return;
       }
       performSearch(searchQuery, searchSupplier);
     }, 300),
-    [selectedBrands, selectedCategories, selectedSupplier, minPrice, maxPrice, inStockOnly, sortBy]
+    [selectedSupplier, minPrice, maxPrice, inStockOnly, sortBy]
   );
 
   const performSearch = async (searchQuery?: string, searchSupplier?: string) => {
@@ -159,8 +130,6 @@ export default function Home() {
       const params = new URLSearchParams();
       if (currentQuery) params.append('q', currentQuery);
       if (currentSupplier) params.append('supplier', currentSupplier);
-      if (selectedBrands.length > 0) params.append('brand', selectedBrands.join(','));
-      if (selectedCategories.length > 0) params.append('category', selectedCategories.join(','));
       if (minPrice) params.append('min_price', minPrice);
       if (maxPrice) params.append('max_price', maxPrice);
       if (inStockOnly) params.append('in_stock', 'true');
@@ -203,8 +172,6 @@ export default function Home() {
       });
 
       if (selectedSupplier) params.append('supplier', selectedSupplier);
-      if (selectedBrands.length > 0) params.append('brand', selectedBrands.join(','));
-      if (selectedCategories.length > 0) params.append('category', selectedCategories.join(','));
       if (minPrice) params.append('min_price', minPrice);
       if (maxPrice) params.append('max_price', maxPrice);
       if (inStockOnly) params.append('in_stock', 'true');
@@ -291,9 +258,7 @@ export default function Home() {
     setQuery('');
     setHasSearched(false);
     setResults([]);
-    setSelectedBrands([]);
     setSelectedSupplier('');
-    setSelectedCategories([]);
     setMinPrice('');
     setMaxPrice('');
     setInStockOnly(false);
@@ -387,7 +352,7 @@ export default function Home() {
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
                   <span>Filters</span>
-                  {(selectedBrands.length > 0 || selectedSupplier || selectedCategories.length > 0 || inStockOnly || minPrice || maxPrice) &&
+                  {(selectedSupplier || inStockOnly || minPrice || maxPrice) &&
                     <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
                   }
                 </button>
@@ -397,16 +362,17 @@ export default function Home() {
               </div>
             </form>
 
-            {/* Expanded Filters Panel */}
+            {/* Simplified Filters Panel */}
             {showFilters && (
-              <div className="p-8 bg-gray-50/50 border-t border-gray-100 grid grid-cols-1 md:grid-cols-5 gap-8 animate-in slide-in-from-top-4 duration-300">
-                {/* Supplier (Single Select still okay?) Yes, kept simple for now */}
+              <div className="p-6 bg-gray-50/50 border-t border-gray-100 grid grid-cols-1 md:grid-cols-4 gap-6 animate-in slide-in-from-top-4 duration-300">
+                
+                {/* Supplier Filter */}
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">Supplier</label>
                   <select
                     value={selectedSupplier}
                     onChange={e => setSelectedSupplier(e.target.value)}
-                    className="w-full p-2 rounded border border-gray-200 text-sm"
+                    className="w-full p-2 rounded border border-gray-200 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   >
                     <option value="">All Suppliers</option>
                     {suppliers.map(s => (
@@ -415,65 +381,46 @@ export default function Home() {
                   </select>
                 </div>
 
-                {/* Brand (Smart Filter) */}
-                <div>
-                  <SmartFilter
-                    label="Brand"
-                    options={brands}
-                    selected={selectedBrands}
-                    onChange={setSelectedBrands}
-                    placeholder="All Brands"
-                    maxVisible={6}
-                  />
-                </div>
-
-                {/* Category (Smart Filter) */}
-                <div>
-                  <SmartFilter
-                    label="Category"
-                    options={categories}
-                    selected={selectedCategories}
-                    onChange={setSelectedCategories}
-                    placeholder="All Categories"
-                    maxVisible={6}
-                  />
-                </div>
-
                 {/* Price Range */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">Price (R)</label>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">Price Range (R)</label>
                   <div className="flex gap-2">
                     <input
                       type="number"
                       placeholder="Min"
-                      className="w-full p-2 rounded border border-gray-200 text-sm"
+                      className="w-full p-2 rounded border border-gray-200 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       value={minPrice}
                       onChange={e => setMinPrice(e.target.value)}
                     />
                     <input
                       type="number"
                       placeholder="Max"
-                      className="w-full p-2 rounded border border-gray-200 text-sm"
+                      className="w-full p-2 rounded border border-gray-200 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       value={maxPrice}
                       onChange={e => setMaxPrice(e.target.value)}
                     />
                   </div>
                 </div>
 
-                {/* Options */}
+                {/* Sort Options */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">Sort & Availability</label>
-                  <div className="space-y-2">
-                    <select
-                      className="w-full p-2 rounded border border-gray-200 text-sm"
-                      value={sortBy}
-                      onChange={e => setSortBy(e.target.value)}
-                    >
-                      <option value="relevance">Relevance</option>
-                      <option value="price_asc">Price: Low to High</option>
-                      <option value="price_desc">Price: High to Low</option>
-                      <option value="newest">Newest Arrivals</option>
-                    </select>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">Sort By</label>
+                  <select
+                    className="w-full p-2 rounded border border-gray-200 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    value={sortBy}
+                    onChange={e => setSortBy(e.target.value)}
+                  >
+                    <option value="relevance">Relevance</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                    <option value="newest">Newest First</option>
+                  </select>
+                </div>
+
+                {/* Stock & Quick Actions */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">Options</label>
+                  <div className="space-y-3">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
@@ -483,6 +430,22 @@ export default function Home() {
                       />
                       <span className="text-sm text-gray-700">In Stock Only</span>
                     </label>
+                    
+                    {/* Clear Filters Button */}
+                    {(selectedSupplier || minPrice || maxPrice || inStockOnly || sortBy !== 'relevance') && (
+                      <button
+                        onClick={() => {
+                          setSelectedSupplier('');
+                          setMinPrice('');
+                          setMaxPrice('');
+                          setInStockOnly(false);
+                          setSortBy('relevance');
+                        }}
+                        className="text-xs text-red-600 hover:text-red-700 font-medium"
+                      >
+                        Clear All Filters
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -493,6 +456,18 @@ export default function Home() {
 
       {/* Content Area */}
       <div className="max-w-7xl mx-auto px-6 pb-12">
+
+        {/* Category Tiles - Show when not searching */}
+        {!hasSearched && (
+          <div className="py-16 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+            <CategoryTiles 
+              onCategoryClick={(searchTerm) => {
+                setQuery(searchTerm);
+                performSearch(searchTerm);
+              }}
+            />
+          </div>
+        )}
 
         {/* Search Results View */}
         {hasSearched ? (
