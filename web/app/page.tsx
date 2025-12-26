@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import MegaFilterDropdown from './components/MegaFilterDropdown';
+import SmartFilter from './components/SmartFilter';
 import CartDrawer from './components/CartDrawer';
 import ProductDetailModal from './components/ProductDetailModal';
 import ComparisonModal from './components/ComparisonModal';
 import { Product, Supplier, CartItem, UserRole } from './types';
+import { debounce } from '@/lib/debounce';
 
 // Pricing logic: Guest = +15%, Account = Raw Price
 export default function Home() {
@@ -137,16 +138,20 @@ export default function Home() {
     setCart(prev => prev.filter(item => item.id !== id));
   };
 
-  const handleSearch = async (e?: React.FormEvent, overrideQuery?: string, overrideSupplier?: string) => {
-    if (e) e.preventDefault();
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    debounce((searchQuery: string, searchSupplier?: string) => {
+      if (!searchQuery && !searchSupplier && selectedBrands.length === 0 && selectedCategories.length === 0) {
+        return;
+      }
+      performSearch(searchQuery, searchSupplier);
+    }, 300),
+    [selectedBrands, selectedCategories, selectedSupplier, minPrice, maxPrice, inStockOnly, sortBy]
+  );
 
-    const currentQuery = overrideQuery !== undefined ? overrideQuery : query;
-    const currentSupplier = overrideSupplier !== undefined ? overrideSupplier : selectedSupplier;
-
-    // Allow search if params exist even if query is empty
-    if (!currentQuery && !currentSupplier && selectedBrands.length === 0 && selectedCategories.length === 0) {
-      if (!hasSearched) return;
-    }
+  const performSearch = async (searchQuery?: string, searchSupplier?: string) => {
+    const currentQuery = searchQuery !== undefined ? searchQuery : query;
+    const currentSupplier = searchSupplier !== undefined ? searchSupplier : selectedSupplier;
 
     setLoading(true);
     setHasSearched(true);
@@ -172,6 +177,20 @@ export default function Home() {
       setLoading(false);
     }
   };
+
+  const handleSearch = async (e?: React.FormEvent, overrideQuery?: string, overrideSupplier?: string) => {
+    if (e) e.preventDefault();
+    const searchQuery = overrideQuery !== undefined ? overrideQuery : query;
+    const searchSupplier = overrideSupplier !== undefined ? overrideSupplier : selectedSupplier;
+    performSearch(searchQuery, searchSupplier);
+  };
+
+  // Auto-search when query changes (debounced)
+  useEffect(() => {
+    if (query.length > 2 || query.length === 0) {
+      debouncedSearch(query);
+    }
+  }, [query, debouncedSearch]);
 
   const loadMore = async () => {
     if (loadingMore) return;
@@ -396,25 +415,27 @@ export default function Home() {
                   </select>
                 </div>
 
-                {/* Brand (Mega Filter) */}
+                {/* Brand (Smart Filter) */}
                 <div>
-                  <MegaFilterDropdown
+                  <SmartFilter
                     label="Brand"
                     options={brands}
                     selected={selectedBrands}
                     onChange={setSelectedBrands}
                     placeholder="All Brands"
+                    maxVisible={6}
                   />
                 </div>
 
-                {/* Category (Mega Filter) */}
+                {/* Category (Smart Filter) */}
                 <div>
-                  <MegaFilterDropdown
+                  <SmartFilter
                     label="Category"
                     options={categories}
                     selected={selectedCategories}
                     onChange={setSelectedCategories}
                     placeholder="All Categories"
+                    maxVisible={6}
                   />
                 </div>
 
