@@ -899,60 +899,6 @@ export default function Home() {
         userRole={userRole}
       />
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-16 mt-20">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <div className="space-y-6">
-            <h3 className="text-2xl md:text-3xl font-black text-white tracking-tight">
-              Built by <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">BlaketheBuilder</span> & AI
-            </h3>
-            <p className="text-gray-400 font-medium max-w-2xl mx-auto leading-relaxed">
-              Combining human creativity with artificial intelligence to deliver South Africa's most advanced IT sourcing platform. 
-              Every feature designed to save you time and money.
-            </p>
-            
-            {/* Feature highlights */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto pt-8">
-              <div className="space-y-3">
-                <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <h4 className="font-bold text-white">Lightning Fast</h4>
-                <p className="text-sm text-gray-400">Search thousands of products in milliseconds with intelligent matching</p>
-              </div>
-              
-              <div className="space-y-3">
-                <div className="w-12 h-12 bg-green-600 rounded-2xl flex items-center justify-center mx-auto">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <h4 className="font-bold text-white">Always Accurate</h4>
-                <p className="text-sm text-gray-400">Real-time inventory updates from verified suppliers across SA</p>
-              </div>
-              
-              <div className="space-y-3">
-                <div className="w-12 h-12 bg-purple-600 rounded-2xl flex items-center justify-center mx-auto">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                </div>
-                <h4 className="font-bold text-white">Built for You</h4>
-                <p className="text-sm text-gray-400">Designed by IT professionals who understand your sourcing challenges</p>
-              </div>
-            </div>
-
-            <div className="pt-8 border-t border-gray-800">
-              <p className="text-gray-500 text-sm">
-                © 2024 WhosGotStock. All rights reserved. | South Africa's Ultimate IT Sourcing Engine
-              </p>
-            </div>
-          </div>
-        </div>
-      </footer>
-
       <style jsx global>{`
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
