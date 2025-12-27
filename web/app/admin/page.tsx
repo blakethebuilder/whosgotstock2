@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import DistributorImport from '../components/DistributorImport';
-import LinkqageScraper from '../components/LinkqageScraper';
+// import LinkqageScraper from '../components/LinkqageScraper';
 import GenericScraper from '../components/GenericScraper';
 
 export default function AdminPage() {
@@ -215,8 +215,8 @@ export default function AdminPage() {
                 {/* Generic Supplier Scraper */}
                 <GenericScraper />
 
-                {/* Legacy Linkqage Scraper (for comparison) */}
-                <LinkqageScraper />
+                {/* Legacy Linkqage Scraper (temporarily disabled) */}
+                {/* <LinkqageScraper /> */}
 
                 {/* Suppliers Section */}
                 <div className="bg-white p-6 rounded shadow">
