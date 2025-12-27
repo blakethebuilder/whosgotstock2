@@ -15,6 +15,22 @@ export default function Home() {
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [passphrase, setPassphrase] = useState('');
   const [passphraseError, setPassphraseError] = useState('');
+
+  // Mobile input focus fix
+  useEffect(() => {
+    if (showRoleModal) {
+      // Small delay to ensure modal is rendered before focusing
+      const timer = setTimeout(() => {
+        const input = document.querySelector('input[type="password"]') as HTMLInputElement;
+        if (input) {
+          input.focus();
+          // Scroll to input on mobile
+          input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [showRoleModal]);
   const [usageStats, setUsageStats] = useState<UsageStats>({
     searchesThisMonth: 0,
     searchLimit: 25, // Updated to 25 for free tier
@@ -923,24 +939,24 @@ export default function Home() {
 
       {/* Role Passphrase Modal */}
       {showRoleModal && (
-        <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[600] flex items-center justify-center p-4 overflow-y-auto">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowRoleModal(false)} />
-          <div className="relative bg-white rounded-3xl shadow-2xl p-8 max-w-2xl w-full animate-in zoom-in-95 duration-200">
-            <div className="text-center mb-8">
-              <h3 className="text-2xl font-black text-gray-900 mb-2">Upgrade Your Access</h3>
+          <div className="relative bg-white rounded-3xl shadow-2xl p-4 sm:p-8 max-w-2xl w-full animate-in zoom-in-95 duration-200 my-8 max-h-[90vh] overflow-y-auto">
+            <div className="text-center mb-6 sm:mb-8">
+              <h3 className="text-xl sm:text-2xl font-black text-gray-900 mb-2">Upgrade Your Access</h3>
               <p className="text-sm text-gray-500">Choose a plan that fits your business needs</p>
             </div>
 
             {/* Pricing Tiers */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 sm:mb-8">
               {/* Professional */}
-              <div className="border-2 border-blue-200 rounded-2xl p-6 bg-blue-50/50">
-                <div className="text-center mb-4">
-                  <h4 className="text-lg font-bold text-blue-900">Professional</h4>
-                  <p className="text-2xl font-black text-blue-600">R399<span className="text-sm font-normal">/month</span></p>
+              <div className="border-2 border-blue-200 rounded-2xl p-4 sm:p-6 bg-blue-50/50">
+                <div className="text-center mb-3 sm:mb-4">
+                  <h4 className="text-base sm:text-lg font-bold text-blue-900">Professional</h4>
+                  <p className="text-xl sm:text-2xl font-black text-blue-600">R399<span className="text-sm font-normal">/month</span></p>
                   <p className="text-xs text-blue-700">5% handling fee • Unlimited searches</p>
                 </div>
-                <ul className="text-xs text-blue-800 space-y-2 mb-4">
+                <ul className="text-xs text-blue-800 space-y-1 sm:space-y-2 mb-4">
                   <li>✓ Unlimited searches</li>
                   <li>✓ Professional quotes</li>
                   <li>✓ Supplier contact info</li>
@@ -949,16 +965,16 @@ export default function Home() {
               </div>
 
               {/* Enterprise */}
-              <div className="border-2 border-purple-200 rounded-2xl p-6 bg-purple-50/50 relative">
+              <div className="border-2 border-purple-200 rounded-2xl p-4 sm:p-6 bg-purple-50/50 relative">
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold">
                   Most Popular
                 </div>
-                <div className="text-center mb-4">
-                  <h4 className="text-lg font-bold text-purple-900">Enterprise</h4>
-                  <p className="text-2xl font-black text-purple-600">R1599<span className="text-sm font-normal">/month</span></p>
+                <div className="text-center mb-3 sm:mb-4">
+                  <h4 className="text-base sm:text-lg font-bold text-purple-900">Enterprise</h4>
+                  <p className="text-xl sm:text-2xl font-black text-purple-600">R1599<span className="text-sm font-normal">/month</span></p>
                   <p className="text-xs text-purple-700">No markup • White labeled</p>
                 </div>
-                <ul className="text-xs text-purple-800 space-y-2 mb-4">
+                <ul className="text-xs text-purple-800 space-y-1 sm:space-y-2 mb-4">
                   <li>✓ Everything in Professional</li>
                   <li>✓ Multi-user accounts (10 users)</li>
                   <li>✓ White label solution</li>
@@ -968,13 +984,13 @@ export default function Home() {
               </div>
 
               {/* Free Tier Info */}
-              <div className="border-2 border-gray-200 rounded-2xl p-6 bg-gray-50/50">
-                <div className="text-center mb-4">
-                  <h4 className="text-lg font-bold text-gray-900">Free</h4>
-                  <p className="text-2xl font-black text-gray-600">R0<span className="text-sm font-normal">/month</span></p>
+              <div className="border-2 border-gray-200 rounded-2xl p-4 sm:p-6 bg-gray-50/50">
+                <div className="text-center mb-3 sm:mb-4">
+                  <h4 className="text-base sm:text-lg font-bold text-gray-900">Free</h4>
+                  <p className="text-xl sm:text-2xl font-black text-gray-600">R0<span className="text-sm font-normal">/month</span></p>
                   <p className="text-xs text-gray-700">25 searches • 15% markup</p>
                 </div>
-                <ul className="text-xs text-gray-800 space-y-2 mb-4">
+                <ul className="text-xs text-gray-800 space-y-1 sm:space-y-2 mb-4">
                   <li>✓ 25 searches per month</li>
                   <li>✓ Basic product information</li>
                   <li>✓ Watermarked quotes</li>
@@ -983,9 +999,9 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Temporary Access */}
-            <div className="border-t pt-6">
-              <p className="text-sm text-gray-600 mb-4 text-center">
+            {/* Temporary Access - Always Visible */}
+            <div className="border-t pt-4 sm:pt-6 bg-white sticky bottom-0">
+              <p className="text-sm text-gray-600 mb-4 text-center font-medium">
                 Have a passphrase for temporary access?
               </p>
               <div className="space-y-4">
@@ -994,27 +1010,26 @@ export default function Home() {
                   value={passphrase}
                   onChange={e => setPassphrase(e.target.value)}
                   placeholder="Enter passphrase"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-mono text-center text-base"
+                  className="w-full px-4 py-4 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all font-mono text-center text-base bg-white shadow-sm"
                   onKeyDown={e => e.key === 'Enter' && verifyPassphrase()}
-                  autoFocus
                   autoComplete="off"
                   autoCapitalize="off"
                   autoCorrect="off"
                   spellCheck="false"
                   inputMode="text"
                 />
-                {passphraseError && <p className="text-xs font-bold text-red-500 text-center">{passphraseError}</p>}
+                {passphraseError && <p className="text-xs font-bold text-red-500 text-center bg-red-50 py-2 px-3 rounded-lg">{passphraseError}</p>}
 
                 <div className="flex gap-3">
                   <button
                     onClick={() => setShowRoleModal(false)}
-                    className="flex-1 bg-gray-100 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-200 transition-colors text-sm"
+                    className="flex-1 bg-gray-100 text-gray-700 font-bold py-4 rounded-xl hover:bg-gray-200 transition-colors text-sm"
                   >
                     Continue Free
                   </button>
                   <button
                     onClick={verifyPassphrase}
-                    className="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors text-sm"
+                    className="flex-1 bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 transition-colors text-sm shadow-lg"
                   >
                     Verify Access
                   </button>
