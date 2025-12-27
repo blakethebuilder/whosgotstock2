@@ -140,29 +140,39 @@ export async function POST(request: NextRequest) {
         const row = sheetData[i] as any[];
         if (!row || row.length === 0) continue;
 
-        const sku = String(row[columnMapping.sku] || '').trim();
-        const name = String(row[columnMapping.name] || '').trim();
-        const rawPrice = row[columnMapping.price];
+        try {
+          const rawSku = String(row[columnMapping.sku] || '').trim();
+          const rawName = String(row[columnMapping.name] || '').trim();
+          const rawPrice = row[columnMapping.price];
 
-        if (!sku || !rawPrice) continue;
+          if (!rawSku || !rawPrice) continue;
 
-        const price = sanitizePrice(rawPrice);
-        if (price <= 0) continue;
+          // Truncate fields to fit database constraints (VARCHAR 255)
+          const sku = rawSku.substring(0, 255);
+          const name = (rawName || rawSku).substring(0, 255);
+          const category = sheetName.substring(0, 255);
 
-        const product = {
-          sku,
-          name: name || sku,
-          price,
-          category: sheetName,
-          source_type: 'manual_upload'
-        };
+          const price = sanitizePrice(rawPrice);
+          if (price <= 0) continue;
 
-        // Deduplication: keep lowest price
-        if (!allProducts[sku] || allProducts[sku].price > price) {
-          allProducts[sku] = product;
+          const product = {
+            sku,
+            name,
+            price,
+            category,
+            source_type: 'manual_upload'
+          };
+
+          // Deduplication: keep lowest price
+          if (!allProducts[sku] || allProducts[sku].price > price) {
+            allProducts[sku] = product;
+          }
+
+          result.totalProcessed++;
+        } catch (rowError: any) {
+          result.errors.push(`Sheet "${sheetName}", Row ${i + 1}: ${rowError.message}`);
+          continue;
         }
-
-        result.totalProcessed++;
       }
     }
 
@@ -175,15 +185,23 @@ export async function POST(request: NextRequest) {
       for (const product of Object.values(allProducts)) {
         const { sku, name, price, category, source_type } = product as any;
 
+        // Ensure all string fields are truncated to fit VARCHAR(255) constraints
+        const truncatedSku = sku.substring(0, 255);
+        const truncatedName = name.substring(0, 255);
+        const truncatedCategory = category.substring(0, 255);
+        const truncatedSupplierName = 'Manual Upload'.substring(0, 255);
+        const truncatedBrand = 'Even Flow'.substring(0, 255);
+        const truncatedMasterSku = `manual-${truncatedSku}`.substring(0, 255);
+
         const upsertQuery = `
           INSERT INTO products (
             supplier_sku, supplier_name, name, brand, 
             price_ex_vat, qty_on_hand, category, source_type, 
             master_sku, raw_data, last_updated
           ) VALUES (
-            $1, 'Manual Upload', $2, 'Even Flow', 
-            $3, 1, $4, $5, 
-            $6, $7, CURRENT_TIMESTAMP
+            $1, $2, $3, $4, 
+            $5, 1, $6, $7, 
+            $8, $9, CURRENT_TIMESTAMP
           )
           ON CONFLICT (supplier_name, supplier_sku) 
           DO UPDATE SET 
@@ -196,8 +214,9 @@ export async function POST(request: NextRequest) {
         `;
 
         const upsertResult = await client.query(upsertQuery, [
-          sku, name, price, category, source_type,
-          `manual-${sku}`, JSON.stringify(product)
+          truncatedSku, truncatedSupplierName, truncatedName, truncatedBrand, 
+          price, truncatedCategory, source_type,
+          truncatedMasterSku, JSON.stringify(product)
         ]);
 
         if (upsertResult.rows[0]?.is_new) {
