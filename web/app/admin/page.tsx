@@ -51,16 +51,47 @@ export default function AdminPage() {
     const refreshData = async () => {
         setLoading(true);
         try {
+            console.log('Fetching suppliers and settings...');
             const [supRes, setRes] = await Promise.all([
                 fetch('/api/admin/suppliers'),
                 fetch('/api/admin/settings')
             ]);
+            
+            console.log('Suppliers response status:', supRes.status);
+            console.log('Settings response status:', setRes.status);
+            
+            if (!supRes.ok) {
+                console.error('Suppliers API error:', supRes.status, supRes.statusText);
+            }
+            if (!setRes.ok) {
+                console.error('Settings API error:', setRes.status, setRes.statusText);
+            }
+            
             const supData = await supRes.json();
             const setData = await setRes.json();
-            setSuppliers(supData);
-            setSettings(setData);
+            
+            console.log('Suppliers data:', supData);
+            console.log('Settings data:', setData);
+            
+            setSuppliers(supData || []);
+            setSettings(setData || {
+                update_interval_minutes: '60',
+                guest_markup: '15',
+                staff_markup: '10',
+                manager_markup: '5',
+                admin_markup: '0'
+            });
         } catch (e) {
-            console.error(e);
+            console.error('Error fetching data:', e);
+            // Set default values on error
+            setSuppliers([]);
+            setSettings({
+                update_interval_minutes: '60',
+                guest_markup: '15',
+                staff_markup: '10',
+                manager_markup: '5',
+                admin_markup: '0'
+            });
         } finally {
             setLoading(false);
         }
@@ -229,14 +260,14 @@ export default function AdminPage() {
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">System Settings</h2>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label className="block text-sm font-medium text-gray-900 mb-2">
                                         Update Interval (minutes)
                                     </label>
                                     <input
                                         type="number"
                                         value={settings.update_interval_minutes}
                                         onChange={(e) => setSettings({...settings, update_interval_minutes: e.target.value})}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white"
                                     />
                                 </div>
                                 <button
@@ -253,51 +284,51 @@ export default function AdminPage() {
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Pricing Tiers</h2>
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-red-600">Guest:</span>
+                                    <span className="text-sm font-semibold text-red-600">Guest:</span>
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="number"
                                             value={settings.guest_markup}
                                             onChange={(e) => setSettings({...settings, guest_markup: e.target.value})}
-                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm"
+                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white font-medium"
                                         />
-                                        <span className="text-sm text-gray-500">%</span>
+                                        <span className="text-sm text-gray-900 font-medium">%</span>
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-orange-600">Staff:</span>
+                                    <span className="text-sm font-semibold text-orange-600">Staff:</span>
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="number"
                                             value={settings.staff_markup}
                                             onChange={(e) => setSettings({...settings, staff_markup: e.target.value})}
-                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm"
+                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white font-medium"
                                         />
-                                        <span className="text-sm text-gray-500">%</span>
+                                        <span className="text-sm text-gray-900 font-medium">%</span>
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-blue-600">Manager:</span>
+                                    <span className="text-sm font-semibold text-blue-600">Manager:</span>
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="number"
                                             value={settings.manager_markup}
                                             onChange={(e) => setSettings({...settings, manager_markup: e.target.value})}
-                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm"
+                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white font-medium"
                                         />
-                                        <span className="text-sm text-gray-500">%</span>
+                                        <span className="text-sm text-gray-900 font-medium">%</span>
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-green-600">Admin:</span>
+                                    <span className="text-sm font-semibold text-green-600">Admin:</span>
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="number"
                                             value={settings.admin_markup}
                                             onChange={(e) => setSettings({...settings, admin_markup: e.target.value})}
-                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm"
+                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white font-medium"
                                         />
-                                        <span className="text-sm text-gray-500">%</span>
+                                        <span className="text-sm text-gray-900 font-medium">%</span>
                                     </div>
                                 </div>
                                 <button
@@ -312,23 +343,23 @@ export default function AdminPage() {
                         {/* Pricing Preview */}
                         <div className="bg-white rounded-lg shadow-sm p-6">
                             <h3 className="text-sm font-semibold text-gray-900 mb-3">Pricing Preview</h3>
-                            <p className="text-xs text-gray-500 mb-3">Example: R1,000 base price</p>
+                            <p className="text-xs text-gray-700 mb-3">Example: R1,000 base price</p>
                             <div className="space-y-2 text-xs">
                                 <div className="flex justify-between">
-                                    <span className="text-red-600">Guest:</span>
-                                    <span className="font-semibold">R{(1000 * (1 + parseInt(settings.guest_markup || '15') / 100)).toFixed(0)}</span>
+                                    <span className="text-red-600 font-medium">Guest:</span>
+                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.guest_markup || '15') / 100)).toFixed(0)}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-orange-600">Staff:</span>
-                                    <span className="font-semibold">R{(1000 * (1 + parseInt(settings.staff_markup || '10') / 100)).toFixed(0)}</span>
+                                    <span className="text-orange-600 font-medium">Staff:</span>
+                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.staff_markup || '10') / 100)).toFixed(0)}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-blue-600">Manager:</span>
-                                    <span className="font-semibold">R{(1000 * (1 + parseInt(settings.manager_markup || '5') / 100)).toFixed(0)}</span>
+                                    <span className="text-blue-600 font-medium">Manager:</span>
+                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.manager_markup || '5') / 100)).toFixed(0)}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-green-600">Admin:</span>
-                                    <span className="font-semibold">R{(1000 * (1 + parseInt(settings.admin_markup || '0') / 100)).toFixed(0)}</span>
+                                    <span className="text-green-600 font-medium">Admin:</span>
+                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.admin_markup || '0') / 100)).toFixed(0)}</span>
                                 </div>
                             </div>
                         </div>
@@ -399,26 +430,26 @@ export default function AdminPage() {
                                             placeholder="Name (e.g. MySupplier)"
                                             value={newName}
                                             onChange={(e) => setNewName(e.target.value)}
-                                            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                            className="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-500"
                                         />
                                         <input
                                             type="text"
                                             placeholder="Slug (e.g. mysupplier)"
                                             value={newSlug}
                                             onChange={(e) => setNewSlug(e.target.value)}
-                                            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                            className="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-500"
                                         />
                                         <input
                                             type="url"
                                             placeholder="XML Feed URL"
                                             value={newUrl}
                                             onChange={(e) => setNewUrl(e.target.value)}
-                                            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                            className="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-500"
                                         />
                                         <select
                                             value={newType}
                                             onChange={(e) => setNewType(e.target.value)}
-                                            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                            className="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white"
                                         >
                                             <option value="scoop">Scoop Parser</option>
                                             <option value="syntech">Syntech Parser</option>
