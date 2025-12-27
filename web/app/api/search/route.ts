@@ -24,113 +24,175 @@ export async function GET(request: Request) {
     return NextResponse.json(cached);
   }
 
-  let sql = `
-    SELECT p.*, s.name as supplier_name 
-    FROM products p
-    JOIN suppliers s ON p.supplier_name = s.name
-    WHERE 1=1
+  // Build unified query that combines both tables
+  let unionSql = `
+    (
+      SELECT 
+        p.id, p.supplier_sku, p.name, p.brand, p.price_ex_vat, 
+        p.qty_on_hand, p.category, p.description, p.image_url,
+        s.name as supplier_name, s.slug as supplier_slug,
+        'main' as source_table, p.last_updated
+      FROM products p
+      JOIN suppliers s ON p.supplier_name = s.name
+      WHERE 1=1 {MAIN_CONDITIONS}
+    )
+    UNION ALL
+    (
+      SELECT 
+        mp.id + 100000 as id, mp.ef_code as supplier_sku, mp.product_name as name, 
+        'Even Flow' as brand, mp.standard_price as price_ex_vat,
+        1 as qty_on_hand, mp.category, mp.description, 
+        null as image_url, mp.supplier_name, 'evenflow' as supplier_slug,
+        'manual' as source_table, mp.last_updated
+      FROM manual_products mp
+      WHERE 1=1 {MANUAL_CONDITIONS}
+    )
   `;
+
   const params: any[] = [];
+  let mainConditions = '';
+  let manualConditions = '';
 
   // Enhanced Search Logic with synonyms and fuzzy matching
   if (rawQuery) {
     const normalizedQuery = normalizeSearchQuery(rawQuery);
     const searchTerms = expandSearchTerms(normalizedQuery);
     
-    // Create OR conditions for all search terms
-    const searchConditions = searchTerms.map((term, index) => {
+    // Create OR conditions for main products
+    const mainSearchConditions = searchTerms.map((term) => {
       params.push(`%${term}%`);
+      const paramIndex = params.length;
       return `(
-        p.name ILIKE $${params.length} OR 
-        p.brand ILIKE $${params.length} OR 
-        p.supplier_sku ILIKE $${params.length} OR 
-        p.category ILIKE $${params.length} OR
-        p.description ILIKE $${params.length}
+        p.name ILIKE $${paramIndex} OR 
+        p.brand ILIKE $${paramIndex} OR 
+        p.supplier_sku ILIKE $${paramIndex} OR 
+        p.category ILIKE $${paramIndex} OR
+        p.description ILIKE $${paramIndex}
       )`;
     });
     
-    sql += ` AND (${searchConditions.join(' OR ')})`;
+    // Create OR conditions for manual products
+    const manualSearchConditions = searchTerms.map((term) => {
+      params.push(`%${term}%`);
+      const paramIndex = params.length;
+      return `(
+        mp.product_name ILIKE $${paramIndex} OR 
+        mp.ef_code ILIKE $${paramIndex} OR 
+        mp.category ILIKE $${paramIndex} OR
+        mp.description ILIKE $${paramIndex}
+      )`;
+    });
+    
+    mainConditions += ` AND (${mainSearchConditions.join(' OR ')})`;
+    manualConditions += ` AND (${manualSearchConditions.join(' OR ')})`;
   }
 
   // Supplier Filter
   if (supplier) {
-    params.push(supplier);
-    sql += ` AND s.slug = $${params.length}`;
-  }
-
-  // Brand Filter - Support multiple brands
-  if (brand) {
-    const brands = brand.split(',').filter(b => b.trim() !== '');
-    if (brands.length > 0) {
-      const brandConditions = brands.map(b => {
-        params.push(`%${b.trim()}%`);
-        return `p.brand ILIKE $${params.length}`;
-      });
-      sql += ` AND (${brandConditions.join(' OR ')})`;
+    if (supplier === 'evenflow') {
+      // Only show manual products
+      mainConditions += ` AND 1=0`; // Exclude main products
+    } else {
+      params.push(supplier);
+      mainConditions += ` AND s.slug = $${params.length}`;
+      manualConditions += ` AND 1=0`; // Exclude manual products
     }
   }
 
-  // Category Filter - Support multiple categories
+  // Brand Filter
+  if (brand) {
+    const brands = brand.split(',').filter(b => b.trim() !== '');
+    if (brands.length > 0) {
+      const mainBrandConditions = brands.map(b => {
+        params.push(`%${b.trim()}%`);
+        return `p.brand ILIKE $${params.length}`;
+      });
+      mainConditions += ` AND (${mainBrandConditions.join(' OR ')})`;
+      
+      // For manual products, only Even Flow brand
+      if (!brands.some(b => b.toLowerCase().includes('even') || b.toLowerCase().includes('flow'))) {
+        manualConditions += ` AND 1=0`; // Exclude manual products if brand doesn't match
+      }
+    }
+  }
+
+  // Category Filter
   if (category) {
     const categories = category.split(',').filter(c => c.trim() !== '');
     if (categories.length > 0) {
-      const categoryConditions = categories.map(c => {
+      const mainCategoryConditions = categories.map(c => {
         params.push(`%${c.trim()}%`);
         return `p.category ILIKE $${params.length}`;
       });
-      sql += ` AND (${categoryConditions.join(' OR ')})`;
+      const manualCategoryConditions = categories.map(c => {
+        params.push(`%${c.trim()}%`);
+        return `mp.category ILIKE $${params.length}`;
+      });
+      mainConditions += ` AND (${mainCategoryConditions.join(' OR ')})`;
+      manualConditions += ` AND (${manualCategoryConditions.join(' OR ')})`;
     }
   }
 
   // Price Filter
   if (minPrice) {
     params.push(parseFloat(minPrice));
-    sql += ` AND p.price_ex_vat >= $${params.length}`;
+    const paramIndex = params.length;
+    mainConditions += ` AND p.price_ex_vat >= $${paramIndex}`;
+    manualConditions += ` AND mp.standard_price >= $${paramIndex}`;
   }
   if (maxPrice) {
     params.push(parseFloat(maxPrice));
-    sql += ` AND p.price_ex_vat <= $${params.length}`;
+    const paramIndex = params.length;
+    mainConditions += ` AND p.price_ex_vat <= $${paramIndex}`;
+    manualConditions += ` AND mp.standard_price <= $${paramIndex}`;
   }
 
-  // Stock Filter
+  // Stock Filter (manual products always considered in stock)
   if (inStock === 'true') {
-    sql += ` AND p.qty_on_hand > 0`;
+    mainConditions += ` AND p.qty_on_hand > 0`;
+    // Manual products are always "in stock" so no additional condition needed
   }
 
-  // Count Query (before sorting and pagination)
-  const countSql = `SELECT COUNT(*) FROM (${sql}) as total`;
+  // Replace placeholders
+  const finalSql = unionSql
+    .replace('{MAIN_CONDITIONS}', mainConditions)
+    .replace('{MANUAL_CONDITIONS}', manualConditions);
 
-  // Enhanced Sorting with relevance scoring
+  // Count Query
+  const countSql = `SELECT COUNT(*) FROM (${finalSql}) as total`;
+
+  // Add sorting and pagination
+  let sortedSql = `SELECT * FROM (${finalSql}) as combined`;
+  
   if (sort === 'price_asc') {
-    sql += ` ORDER BY p.price_ex_vat ASC`;
+    sortedSql += ` ORDER BY price_ex_vat ASC`;
   } else if (sort === 'price_desc') {
-    sql += ` ORDER BY p.price_ex_vat DESC`;
+    sortedSql += ` ORDER BY price_ex_vat DESC`;
   } else if (sort === 'newest') {
-    sql += ` ORDER BY p.last_updated DESC`;
+    sortedSql += ` ORDER BY last_updated DESC`;
   } else if (sort === 'relevance' && rawQuery) {
-    // Relevance scoring: exact matches first, then partial matches
     const normalizedQuery = normalizeSearchQuery(rawQuery);
-    sql += ` ORDER BY 
+    sortedSql += ` ORDER BY 
       CASE 
-        WHEN p.name ILIKE '%${normalizedQuery}%' THEN 1
-        WHEN p.brand ILIKE '%${normalizedQuery}%' THEN 2
-        WHEN p.category ILIKE '%${normalizedQuery}%' THEN 3
+        WHEN name ILIKE '%${normalizedQuery}%' THEN 1
+        WHEN brand ILIKE '%${normalizedQuery}%' THEN 2
+        WHEN category ILIKE '%${normalizedQuery}%' THEN 3
         ELSE 4
       END,
-      p.qty_on_hand DESC, 
-      p.price_ex_vat ASC`;
+      qty_on_hand DESC, 
+      price_ex_vat ASC`;
   } else {
     // Default sort: in stock first, then by price
-    sql += ` ORDER BY p.qty_on_hand DESC, p.price_ex_vat ASC`;
+    sortedSql += ` ORDER BY qty_on_hand DESC, price_ex_vat ASC`;
   }
 
-  sql += ` LIMIT ${limit} OFFSET ${offset}`;
+  sortedSql += ` LIMIT ${limit} OFFSET ${offset}`;
 
   try {
     const client = await pool.connect();
     const [countRes, dataRes] = await Promise.all([
       client.query(countSql, params),
-      client.query(sql, params)
+      client.query(sortedSql, params)
     ]);
     client.release();
 
