@@ -31,7 +31,7 @@ export default function DistributorImport() {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('/api/admin/ingest-evenflow', {
+      const response = await fetch('/api/admin/ingest-manual', {
         method: 'POST',
         body: formData,
       });
@@ -94,8 +94,8 @@ export default function DistributorImport() {
           </svg>
         </div>
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Distributor Import</h2>
-          <p className="text-sm text-gray-600">Upload Excel price lists from distributors like Even Flow</p>
+          <h2 className="text-xl font-bold text-gray-900">Manual Product Import</h2>
+          <p className="text-sm text-gray-600">Upload Excel files to separate manual products table (Even Flow, etc.)</p>
         </div>
       </div>
 
@@ -128,7 +128,7 @@ export default function DistributorImport() {
               <div>
                 <p className="font-semibold text-gray-900 mb-2">Drop your Excel file here</p>
                 <p className="text-sm text-gray-500 mb-4">
-                  Supports multi-sheet .xlsx files with automatic column detection
+                  Stores in separate table - won't mix with your main stock data
                 </p>
                 <button
                   onClick={() => fileInputRef.current?.click()}
