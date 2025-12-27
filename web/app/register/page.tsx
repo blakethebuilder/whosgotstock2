@@ -48,7 +48,14 @@ export default function RegisterPage() {
         router.push('/');
         router.refresh();
       } else {
-        setError(data.message || 'Registration failed');
+        console.error('Registration failed:', data);
+        if (data.errors && Array.isArray(data.errors)) {
+          // Show validation errors
+          const errorMessages = data.errors.map((err: any) => err.message).join(', ');
+          setError(errorMessages);
+        } else {
+          setError(data.message || 'Registration failed');
+        }
       }
     } catch (error) {
       setError('Network error. Please try again.');
@@ -103,7 +110,7 @@ export default function RegisterPage() {
                   value={formData.firstName}
                   onChange={handleChange}
                   className="input-field mt-1"
-                  placeholder="John"
+                  placeholder="First name"
                 />
               </div>
 
@@ -119,7 +126,7 @@ export default function RegisterPage() {
                   value={formData.lastName}
                   onChange={handleChange}
                   className="input-field mt-1"
-                  placeholder="Doe"
+                  placeholder="Last name"
                 />
               </div>
             </div>
@@ -137,7 +144,7 @@ export default function RegisterPage() {
                 value={formData.email}
                 onChange={handleChange}
                 className="input-field mt-1"
-                placeholder="john@company.com"
+                placeholder="your.email@company.com"
               />
             </div>
 
@@ -153,7 +160,7 @@ export default function RegisterPage() {
                 value={formData.companyName}
                 onChange={handleChange}
                 className="input-field mt-1"
-                placeholder="Your IT Company"
+                placeholder="Company name"
               />
             </div>
 
@@ -187,7 +194,7 @@ export default function RegisterPage() {
                 value={formData.password}
                 onChange={handleChange}
                 className="input-field mt-1"
-                placeholder="Minimum 8 characters"
+                placeholder="Create a strong password"
               />
             </div>
 
@@ -204,7 +211,7 @@ export default function RegisterPage() {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 className="input-field mt-1"
-                placeholder="Confirm your password"
+                placeholder="Confirm password"
               />
             </div>
 

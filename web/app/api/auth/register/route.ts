@@ -8,9 +8,12 @@ export async function POST(request: NextRequest) {
     // Phase 1 Basic Auth - Registration endpoint
     const body = await request.json();
     
+    console.log('Registration attempt:', { email: body.email, role: body.role });
+    
     // Validate input
     const validationResult = registerSchema.safeParse(body);
     if (!validationResult.success) {
+      console.log('Validation failed:', validationResult.error.errors);
       return errorResponse(
         'Validation failed',
         400,
@@ -24,10 +27,12 @@ export async function POST(request: NextRequest) {
     // Check if user already exists
     const existingUser = await getUserByEmail(email);
     if (existingUser) {
+      console.log('User already exists:', email);
       return errorResponse('User with this email already exists', 409, 'USER_EXISTS');
     }
     
     // Create user
+    console.log('Creating user:', { email, role, firstName, lastName, companyName });
     const user = await createUser({
       email,
       password,
@@ -36,6 +41,8 @@ export async function POST(request: NextRequest) {
       company_name: companyName,
       role
     });
+    
+    console.log('User created successfully:', user.id);
     
     // Generate JWT token
     const token = generateToken({
@@ -51,6 +58,8 @@ export async function POST(request: NextRequest) {
                      undefined;
     
     await createSession(user.id, token, userAgent, ipAddress);
+    
+    console.log('Session created successfully');
     
     // Set HTTP-only cookie
     const response = successResponse({
@@ -73,10 +82,11 @@ export async function POST(request: NextRequest) {
       maxAge: 7 * 24 * 60 * 60 // 7 days
     });
     
+    console.log('Registration completed successfully');
     return response;
     
   } catch (error: any) {
     console.error('Registration error:', error);
-    return errorResponse('Registration failed', 500, 'REGISTRATION_ERROR');
+    return errorResponse('Registration failed: ' + error.message, 500, 'REGISTRATION_ERROR');
   }
 }

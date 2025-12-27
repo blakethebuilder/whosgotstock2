@@ -90,7 +90,7 @@ export default function LoginPage() {
                   value={formData.email}
                   onChange={handleChange}
                   className="input-field"
-                  placeholder="Enter your email"
+                  placeholder="your.email@company.com"
                 />
               </div>
             </div>
@@ -109,7 +109,7 @@ export default function LoginPage() {
                   value={formData.password}
                   onChange={handleChange}
                   className="input-field"
-                  placeholder="Enter your password"
+                  placeholder="Password"
                 />
               </div>
             </div>
