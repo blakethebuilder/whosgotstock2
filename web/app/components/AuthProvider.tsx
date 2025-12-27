@@ -33,9 +33,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const data = await response.json();
         setUser(data.data.user);
       } else {
+        // Handle 401 or other auth errors gracefully
         setUser(null);
       }
     } catch (error) {
+      console.log('Auth check failed, user not logged in');
       setUser(null);
     } finally {
       setLoading(false);

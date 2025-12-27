@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { CartItem, UserRole } from '../types';
+import { calculatePrice, formatPrice, PricingSettings } from '@/lib/pricing';
 
 interface OrderModalProps {
     isOpen: boolean;
@@ -14,6 +15,15 @@ interface OrderModalProps {
 
 export default function OrderModal({ isOpen, onClose, items, totalExVat, totalIncVat, userRole }: OrderModalProps) {
     if (!isOpen) return null;
+
+    // Default pricing settings
+    const pricingSettings: PricingSettings = {
+        free_markup: 15,
+        professional_markup: 5,
+        enterprise_markup: 0,
+        staff_markup: 10,
+        partner_markup: 0
+    };
 
     // Group items by supplier
     const itemsBySupplier: Record<string, CartItem[]> = {};
@@ -28,6 +38,8 @@ export default function OrderModal({ isOpen, onClose, items, totalExVat, totalIn
     const copyToClipboard = (text: string, label: string) => {
         navigator.clipboard.writeText(text).then(() => {
             alert(`Order template for ${label} copied to clipboard!`);
+        }).catch(() => {
+            alert('Failed to copy to clipboard. Please copy manually.');
         });
     };
 
@@ -37,20 +49,30 @@ export default function OrderModal({ isOpen, onClose, items, totalExVat, totalIn
         template += "Please process the following " + (userRole === 'free' ? "quote request" : "order") + ":\n\n";
 
         supplierItems.forEach(item => {
-            let data = typeof item.raw_data === 'string' ? {} : item.raw_data;
-            if (typeof item.raw_data === 'string') {
-                try { data = JSON.parse(item.raw_data); } catch (e) { data = {}; }
+            let data: any = {};
+            try {
+                if (typeof item.raw_data === 'string') {
+                    data = JSON.parse(item.raw_data);
+                } else if (item.raw_data && typeof item.raw_data === 'object') {
+                    data = item.raw_data;
+                }
+            } catch (e) {
+                data = {};
             }
 
             // For free role, we hide the supplier name and use a slug or generic ref if possible
-            const supplierRef = userRole === 'free' ? `[Ref: ${data.supplier_slug || item.supplier_name.toLowerCase().replace(/\s+/g, '-')}]` : '';
+            const supplierSlug = (data as any)?.supplier_slug || item.supplier_name?.toLowerCase().replace(/\s+/g, '-') || 'unknown';
+            const supplierRef = userRole === 'free' ? `[Ref: ${supplierSlug}]` : '';
             template += `- SKU: ${item.supplier_sku} ${supplierRef} | Qty: ${item.quantity} | Item: ${item.name}\n`;
         });
 
-        const supplierTotalEx = supplierItems.reduce((sum, i) => sum + (parseFloat(i.price_ex_vat) * (1.15) * i.quantity), 0); // Assuming 15% markup logic consistent with calculatePrice
-        // Note: For simplicity, we use a quick calculation here. In a real app, we'd pass the calculated prices.
+        // Calculate supplier total using centralized pricing logic
+        const supplierTotalEx = supplierItems.reduce((sum, item) => {
+            const price = calculatePrice(item.price_ex_vat, userRole, pricingSettings);
+            return sum + (parseFloat(price.exVat) * item.quantity);
+        }, 0);
 
-        template += `\nEstimated Subtotal (Ex VAT): R ${supplierTotalEx.toFixed(2)}\n`;
+        template += `\nEstimated Subtotal (Ex VAT): R ${formatPrice(supplierTotalEx)}\n`;
         template += "\nRegards,\n[Your Name]";
         return template;
     };
@@ -100,10 +122,10 @@ export default function OrderModal({ isOpen, onClose, items, totalExVat, totalIn
                     })}
                 </div>
 
-                <div className="p-8 border-t border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
+                                <div className="p-8 border-t border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
                     <div className="text-center sm:text-left">
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Grand Total (Inc VAT)</p>
-                        <p className="text-3xl font-black text-blue-700 tracking-tighter">R {totalIncVat.toFixed(2)}</p>
+                        <p className="text-3xl font-black text-blue-700 tracking-tighter">R {formatPrice(totalIncVat)}</p>
                     </div>
                     <button
                         onClick={onClose}
