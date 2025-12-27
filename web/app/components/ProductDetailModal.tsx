@@ -1,4 +1,3 @@
-import React from 'react';
 import { Product, UserRole } from '../types';
 
 interface ProductDetailModalProps {

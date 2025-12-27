@@ -22,7 +22,6 @@ export default function AdminPage() {
 
     // Component visibility state
     const [showScraper, setShowScraper] = useState(false);
-    const [isSettingUpDb, setIsSettingUpDb] = useState(false);
 
     // New Supplier Form
     const [newName, setNewName] = useState('');
@@ -183,27 +182,6 @@ export default function AdminPage() {
         }
     };
 
-    const handleSetupDatabase = async () => {
-        setIsSettingUpDb(true);
-        try {
-            const response = await fetch('/api/admin/setup-db', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
-            });
-            const data = await response.json();
-            if (data.success) {
-                alert('Database setup completed successfully!');
-                refreshData();
-            } else {
-                alert('Database setup failed: ' + data.error);
-            }
-        } catch (error) {
-            alert('Database setup failed: ' + error);
-        } finally {
-            setIsSettingUpDb(false);
-        }
-    };
-
     useEffect(() => {
         if (isAuthenticated) {
             refreshData();
@@ -315,28 +293,6 @@ export default function AdminPage() {
                                 >
                                     Save Settings
                                 </button>
-                                
-                                {/* Database Setup */}
-                                <div className="border-t pt-4">
-                                    <h3 className="text-sm font-semibold text-gray-900 mb-2">Database Setup</h3>
-                                    <p className="text-xs text-gray-600 mb-3">
-                                        If you're seeing API errors, click below to initialize the database tables.
-                                    </p>
-                                    <button
-                                        onClick={handleSetupDatabase}
-                                        disabled={isSettingUpDb}
-                                        className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white py-2 px-4 rounded-md text-sm font-medium flex items-center justify-center gap-2"
-                                    >
-                                        {isSettingUpDb ? (
-                                            <>
-                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                                Setting up...
-                                            </>
-                                        ) : (
-                                            'Setup Database'
-                                        )}
-                                    </button>
-                                </div>
                             </div>
                         </div>
 

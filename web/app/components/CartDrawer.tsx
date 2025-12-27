@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import OrderModal from './OrderModal';
 import { CartItem, UserRole } from '../types';
+import { calculatePrice, formatPrice, PricingSettings } from '@/lib/pricing';
 
 interface CartDrawerProps {
     isOpen: boolean;
@@ -11,9 +12,10 @@ interface CartDrawerProps {
     updateQuantity: (id: number, delta: number) => void;
     removeItem: (id: number) => void;
     userRole: UserRole;
+    pricingSettings: PricingSettings;
 }
 
-export default function CartDrawer({ isOpen, onClose, items, updateQuantity, removeItem, userRole }: CartDrawerProps) {
+export default function CartDrawer({ isOpen, onClose, items, updateQuantity, removeItem, userRole, pricingSettings }: CartDrawerProps) {
     const [mounted, setMounted] = useState(false);
     const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
@@ -23,24 +25,16 @@ export default function CartDrawer({ isOpen, onClose, items, updateQuantity, rem
 
     if (!mounted) return null;
 
-    const calculatePrice = (base: string) => {
-        const raw = parseFloat(base);
-        let markup = 15; // Default for free
-        if (userRole === 'professional') markup = 5;
-        if (userRole === 'enterprise') markup = 0;
-        if (userRole === 'staff') markup = 10;
-        if (userRole === 'partner') markup = 0;
-
-        const markedUp = raw * (1 + (markup / 100));
-        const withVat = markedUp * 1.15;
-        return {
-            exVat: markedUp.toFixed(2),
-            incVat: withVat.toFixed(2)
-        };
-    };
-
-    const totalExVat = items.reduce((sum, item) => sum + parseFloat(calculatePrice(item.price_ex_vat).exVat) * item.quantity, 0);
-    const totalIncVat = items.reduce((sum, item) => sum + parseFloat(calculatePrice(item.price_ex_vat).incVat) * item.quantity, 0);
+    // Calculate totals using centralized pricing utility
+    const totalExVat = items.reduce((sum, item) => {
+        const price = calculatePrice(item.price_ex_vat, userRole, pricingSettings);
+        return sum + parseFloat(price.exVat) * item.quantity;
+    }, 0);
+    
+    const totalIncVat = items.reduce((sum, item) => {
+        const price = calculatePrice(item.price_ex_vat, userRole, pricingSettings);
+        return sum + parseFloat(price.incVat) * item.quantity;
+    }, 0);
 
     const generateEmailTemplate = () => {
         setIsOrderModalOpen(true);
@@ -108,7 +102,7 @@ export default function CartDrawer({ isOpen, onClose, items, updateQuantity, rem
                                                 </button>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-sm font-bold text-blue-700">R {calculatePrice(item.price_ex_vat).exVat}</p>
+                                                <p className="text-sm font-bold text-blue-700">R {formatPrice(calculatePrice(item.price_ex_vat, userRole, pricingSettings).exVat)}</p>
                                                 <p className="text-[10px] text-gray-400">EX VAT</p>
                                             </div>
                                         </div>
@@ -124,11 +118,11 @@ export default function CartDrawer({ isOpen, onClose, items, updateQuantity, rem
                             <div className="space-y-1">
                                 <div className="flex justify-between text-sm text-gray-600">
                                     <span>Subtotal (Ex VAT)</span>
-                                    <span>R {totalExVat.toFixed(2)}</span>
+                                    <span>R {formatPrice(totalExVat)}</span>
                                 </div>
                                 <div className="flex justify-between text-lg font-bold text-gray-900">
                                     <span>Total (Inc VAT)</span>
-                                    <span>R {totalIncVat.toFixed(2)}</span>
+                                    <span>R {formatPrice(totalIncVat)}</span>
                                 </div>
                             </div>
                             <button

@@ -8,6 +8,7 @@ import ProductDetailModal from './components/ProductDetailModal';
 import ComparisonModal from './components/ComparisonModal';
 import { Product, Supplier, CartItem, UserRole, UsageStats } from './types';
 import { debounce } from '@/lib/debounce';
+import { calculatePrice, formatPrice, PricingSettings } from '@/lib/pricing';
 
 // Pricing logic: Free = +15%, Professional = +8%, Enterprise = +5%, Partner = Cost
 export default function Home() {
@@ -258,36 +259,25 @@ export default function Home() {
     }
   };
 
-  const formatPrice = (amount: string) => {
+  const formatPriceDisplay = (amount: string) => {
     return parseFloat(amount).toLocaleString('en-ZA', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
   };
 
-  const calculatePrice = (basePrice: string) => {
-    const raw = parseFloat(basePrice);
-
-    // Get markup based on user role from database settings
-    let markup = pricingSettings.free_markup; // Default
-    if (userRole === 'professional') markup = pricingSettings.professional_markup;
-    if (userRole === 'enterprise') markup = pricingSettings.enterprise_markup;
-    if (userRole === 'staff') markup = pricingSettings.staff_markup;
-    if (userRole === 'partner') markup = pricingSettings.partner_markup;
-
-    const markedUp = raw * (1 + (markup / 100));
-    const withVat = markedUp * 1.15; // 15% VAT
-
+  const calculatePriceWithDiscount = (basePrice: string) => {
+    const price = calculatePrice(basePrice, userRole, pricingSettings);
+    
     // Calculate discount information for paid tiers
-    const freePrice = raw * (1 + (pricingSettings.free_markup / 100));
-    const discount = userRole !== 'free' ? freePrice - markedUp : 0;
+    const freePrice = calculatePrice(basePrice, 'free', pricingSettings);
+    const discount = userRole !== 'free' ? parseFloat(freePrice.exVat) - parseFloat(price.exVat) : 0;
     const discountPercentage = userRole !== 'free' ? 
-      ((freePrice - markedUp) / freePrice * 100) : 0;
+      (discount / parseFloat(freePrice.exVat) * 100) : 0;
 
     return {
-      exVat: markedUp.toFixed(2),
-      incVat: withVat.toFixed(2),
-      originalPrice: freePrice.toFixed(2),
+      ...price,
+      originalPrice: freePrice.exVat,
       discount: discount.toFixed(2),
       discountPercentage: discountPercentage.toFixed(1),
       hasDiscount: userRole !== 'free' && discount > 0
@@ -425,7 +415,7 @@ export default function Home() {
                 Find Stock, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Instantly.</span>
               </h2>
               <p className="text-gray-500 text-xl sm:text-2xl font-medium max-w-3xl mx-auto leading-relaxed">
-                Compare pricing and stock levels across all major South African IT suppliers in one powerful search.
+                Built specifically for IT companies and MSPs. Compare pricing and stock levels across Scoop, Esquire, Pinnacle, Mustek, and Miro. One search, all suppliers, instant results.
               </p>
             </div>
           )}
@@ -841,18 +831,18 @@ export default function Home() {
 
                       <div className="mt-auto pt-4 border-t border-gray-50 flex items-end justify-between">
                         <div>
-                          {calculatePrice(product.price_ex_vat).hasDiscount && (
+                          {calculatePriceWithDiscount(product.price_ex_vat).hasDiscount && (
                             <div className="mb-2">
-                              <p className="text-xs line-through text-gray-400">R {formatPrice(calculatePrice(product.price_ex_vat).originalPrice)}</p>
-                              <p className="text-xs font-bold text-green-600">Save R {formatPrice(calculatePrice(product.price_ex_vat).discount)} ({calculatePrice(product.price_ex_vat).discountPercentage}% off)</p>
+                              <p className="text-xs line-through text-gray-400">R {formatPriceDisplay(calculatePriceWithDiscount(product.price_ex_vat).originalPrice)}</p>
+                              <p className="text-xs font-bold text-green-600">Save R {formatPriceDisplay(calculatePriceWithDiscount(product.price_ex_vat).discount)} ({calculatePriceWithDiscount(product.price_ex_vat).discountPercentage}% off)</p>
                             </div>
                           )}
                           <div className="mb-1">
-                            <p className="text-xl font-black text-gray-900 leading-tight">R {formatPrice(calculatePrice(product.price_ex_vat).exVat)}</p>
+                            <p className="text-xl font-black text-gray-900 leading-tight">R {formatPriceDisplay(calculatePriceWithDiscount(product.price_ex_vat).exVat)}</p>
                             <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Excluding VAT</p>
                           </div>
                           <div>
-                            <p className="text-sm font-bold text-gray-500 leading-tight">R {formatPrice(calculatePrice(product.price_ex_vat).incVat)}</p>
+                            <p className="text-sm font-bold text-gray-500 leading-tight">R {formatPriceDisplay(calculatePriceWithDiscount(product.price_ex_vat).incVat)}</p>
                             <p className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">Including VAT</p>
                           </div>
                         </div>
@@ -927,6 +917,7 @@ export default function Home() {
         updateQuantity={updateCartQuantity}
         removeItem={removeCartItem}
         userRole={userRole}
+        pricingSettings={pricingSettings}
       />
 
       <ProductDetailModal
@@ -936,7 +927,7 @@ export default function Home() {
         onAddToCart={addToCart}
         onToggleCompare={toggleCompare}
         isInCompare={!!selectedProduct && !!compareList.find(p => p.id === selectedProduct.id)}
-        calculatePrice={calculatePrice}
+        calculatePrice={(basePrice: string) => calculatePrice(basePrice, userRole, pricingSettings)}
         userRole={userRole}
       />
 
