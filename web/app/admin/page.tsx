@@ -85,7 +85,7 @@ export default function AdminPage() {
                 body: JSON.stringify({ 
                     action: 'toggle', 
                     id, 
-                    enabled: !supplier.active 
+                    enabled: !supplier?.active 
                 })
             });
             refreshData();
