@@ -62,8 +62,8 @@ export default function AdminPage() {
             console.log('Suppliers response status:', supRes.status);
             console.log('Settings response status:', setRes.status);
             
-            let supData = [];
-            let setData = {};
+            let supData: any[] = [];
+            let setData: any = {};
             
             if (supRes.ok) {
                 supData = await supRes.json();
@@ -85,12 +85,12 @@ export default function AdminPage() {
             // Ensure supData is an array
             setSuppliers(Array.isArray(supData) ? supData : []);
             setSettings({
-                update_interval_minutes: setData?.update_interval_minutes || '60',
-                free_markup: setData?.free_markup || '15',
-                professional_markup: setData?.professional_markup || '5',
-                enterprise_markup: setData?.enterprise_markup || '0',
-                staff_markup: setData?.staff_markup || '10',
-                partner_markup: setData?.partner_markup || '0'
+                update_interval_minutes: (setData as any)?.update_interval_minutes || '60',
+                free_markup: (setData as any)?.free_markup || '15',
+                professional_markup: (setData as any)?.professional_markup || '5',
+                enterprise_markup: (setData as any)?.enterprise_markup || '0',
+                staff_markup: (setData as any)?.staff_markup || '10',
+                partner_markup: (setData as any)?.partner_markup || '0'
             });
         } catch (e) {
             console.error('Error fetching data:', e);
