@@ -18,7 +18,7 @@ export default function OrderModal({ isOpen, onClose, items, totalExVat, totalIn
     // Group items by supplier
     const itemsBySupplier: Record<string, CartItem[]> = {};
     items.forEach(item => {
-        const key = userRole === 'public' ? 'Smart Integrate' : item.supplier_name;
+        const key = userRole === 'free' ? 'Smart Integrate' : item.supplier_name;
         if (!itemsBySupplier[key]) {
             itemsBySupplier[key] = [];
         }
@@ -32,9 +32,9 @@ export default function OrderModal({ isOpen, onClose, items, totalExVat, totalIn
     };
 
     const getTemplateForSupplier = (supplier: string, supplierItems: CartItem[]) => {
-        let template = `--- ${userRole === 'public' ? 'QUOTE' : 'ORDER'} REQUEST: ${supplier.toUpperCase()} ---\n\n`;
-        template += "Dear " + (userRole === 'public' ? "Support Team" : "Account Manager") + ",\n\n";
-        template += "Please process the following " + (userRole === 'public' ? "quote request" : "order") + ":\n\n";
+        let template = `--- ${userRole === 'free' ? 'QUOTE' : 'ORDER'} REQUEST: ${supplier.toUpperCase()} ---\n\n`;
+        template += "Dear " + (userRole === 'free' ? "Support Team" : "Account Manager") + ",\n\n";
+        template += "Please process the following " + (userRole === 'free' ? "quote request" : "order") + ":\n\n";
 
         supplierItems.forEach(item => {
             let data = typeof item.raw_data === 'string' ? {} : item.raw_data;
@@ -42,8 +42,8 @@ export default function OrderModal({ isOpen, onClose, items, totalExVat, totalIn
                 try { data = JSON.parse(item.raw_data); } catch (e) { data = {}; }
             }
 
-            // For public role, we hide the supplier name and use a slug or generic ref if possible
-            const supplierRef = userRole === 'public' ? `[Ref: ${data.supplier_slug || item.supplier_name.toLowerCase().replace(/\s+/g, '-')}]` : '';
+            // For free role, we hide the supplier name and use a slug or generic ref if possible
+            const supplierRef = userRole === 'free' ? `[Ref: ${data.supplier_slug || item.supplier_name.toLowerCase().replace(/\s+/g, '-')}]` : '';
             template += `- SKU: ${item.supplier_sku} ${supplierRef} | Qty: ${item.quantity} | Item: ${item.name}\n`;
         });
 

@@ -91,7 +91,7 @@ export default function ProductDetailModal({
                         <h3 className="text-2xl font-black text-gray-900 leading-tight mb-2">{product.name}</h3>
                         <div className="flex items-center gap-3">
                             <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-bold uppercase tracking-wider">
-                                {userRole === 'public' ? 'Verified Stock' : product.supplier_name}
+                                {userRole === 'free' ? 'Verified Stock' : product.supplier_name}
                             </span>
                             <span className="text-gray-300">|</span>
                             <span className="text-gray-500 text-sm font-medium">{product.brand}</span>
@@ -107,7 +107,7 @@ export default function ProductDetailModal({
                                 <p className="text-lg font-bold text-gray-600">R {formatPrice(prices.incVat)}</p>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Including VAT</p>
                             </div>
-                            {userRole === 'public' && (
+                            {userRole === 'free' && (
                                 <div className="ml-auto bg-blue-50 text-blue-700 px-3 py-1 rounded-lg text-[10px] font-bold border border-blue-100">
                                     Guest Price
                                 </div>

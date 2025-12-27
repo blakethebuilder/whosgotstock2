@@ -25,9 +25,11 @@ export default function CartDrawer({ isOpen, onClose, items, updateQuantity, rem
 
     const calculatePrice = (base: string) => {
         const raw = parseFloat(base);
-        let markup = 15; // Default for public
+        let markup = 15; // Default for free
+        if (userRole === 'professional') markup = 5;
+        if (userRole === 'enterprise') markup = 0;
         if (userRole === 'staff') markup = 10;
-        if (userRole === 'manager') markup = 5;
+        if (userRole === 'partner') markup = 0;
 
         const markedUp = raw * (1 + (markup / 100));
         const withVat = markedUp * 1.15;
