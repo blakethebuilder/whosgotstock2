@@ -1,10 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { registerSchema } from '@/lib/validation';
 import { createUser, generateToken, createSession, getUserByEmail } from '@/lib/auth';
 import { successResponse, errorResponse } from '@/lib/api-response';
 
 export async function POST(request: NextRequest) {
   try {
+    // Phase 1 Basic Auth - Registration endpoint
     const body = await request.json();
     
     // Validate input
