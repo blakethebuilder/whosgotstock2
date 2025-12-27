@@ -5,6 +5,7 @@ export async function GET() {
         return NextResponse.json({
             status: 'ok',
             timestamp: new Date().toISOString(),
+            message: 'Database connection updated - testing new DATABASE_URL',
             environment: {
                 NODE_ENV: process.env.NODE_ENV,
                 DATABASE_URL_SET: !!process.env.DATABASE_URL,
