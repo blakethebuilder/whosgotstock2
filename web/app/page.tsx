@@ -672,69 +672,90 @@ export default function Home() {
             </div>
 
             {/* Professional Footer with Disclaimer */}
-            <div className="text-center space-y-6 py-16 border-t border-gray-100">
+            <div className="text-center space-y-8 py-20 border-t border-gray-200">
               {/* Main Value Proposition */}
-              <div className="space-y-4 mb-8">
-                <h3 className="text-xl font-bold text-gray-800 tracking-tight">
-                  Built for <span className="text-blue-600">IT Companies</span> & <span className="text-indigo-600">MSPs</span>
+              <div className="space-y-6 mb-12">
+                <div className="inline-block px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-4 border border-blue-200">
+                  Built for Professionals
+                </div>
+                <h3 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight leading-tight">
+                  Designed for <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">IT Companies</span> & <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">MSPs</span>
                 </h3>
-                <div className="max-w-4xl mx-auto text-gray-600 leading-relaxed space-y-4">
-                  <p className="text-base font-medium">
-                    Are you an IT company or Managed Service Provider constantly comparing prices across multiple suppliers? 
-                    Tired of checking stock levels on Scoop, Esquire, Pinnacle, Mustek, and Miro separately?
+                <div className="max-w-4xl mx-auto text-gray-700 leading-relaxed space-y-6">
+                  <p className="text-lg font-medium text-gray-900">
+                    Stop juggling multiple supplier websites. Compare prices and stock levels across 
+                    <strong className="text-blue-600"> Scoop, Esquire, Pinnacle, Mustek, and Miro</strong> in one powerful search.
                   </p>
-                  <p className="text-sm">
-                    <strong className="text-gray-800">WhosGotStock was born to solve this exact problem.</strong> This sourcing tool aggregates live inventory and pricing 
-                    from South Africa's major IT distributors into one powerful search interface, saving you hours of manual comparison work.
+                  <p className="text-base text-gray-600">
+                    <strong className="text-gray-900">WhosGotStock eliminates the tedious manual work.</strong> Our intelligent sourcing platform aggregates live inventory and pricing 
+                    from South Africa's leading IT distributors, transforming hours of comparison work into seconds of smart searching.
                   </p>
                 </div>
               </div>
 
               {/* How It Works */}
-              <div className="max-w-3xl mx-auto mb-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                  <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                    <h4 className="font-bold text-blue-800 mb-2">🏢 For IT Companies & MSPs</h4>
-                    <p className="text-blue-700">
-                      Generate professional quotes instantly. Our quote tool connects with Smart Integrate for procurement assistance, 
-                      or staff/manager portals can generate direct supplier orders.
+              <div className="max-w-4xl mx-auto mb-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-8 rounded-2xl border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mb-4">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </div>
+                    <h4 className="text-xl font-bold text-blue-900 mb-3">For IT Companies & MSPs</h4>
+                    <p className="text-blue-800 leading-relaxed">
+                      Generate professional quotes instantly. Connect with Smart Integrate for procurement assistance, 
+                      or use staff/manager portals for direct supplier orders. Streamline your sourcing workflow.
                     </p>
                   </div>
-                  <div className="bg-amber-50 p-4 rounded-xl border border-amber-100">
-                    <h4 className="font-bold text-amber-800 mb-2">⚠️ Not an E-commerce Store</h4>
-                    <p className="text-amber-700">
-                      We're a sourcing tool, not a retailer. We help you find and compare products, 
-                      then facilitate orders through established supplier relationships.
+                  
+                  <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-8 rounded-2xl border border-amber-200 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="w-12 h-12 bg-amber-600 rounded-xl flex items-center justify-center mb-4">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                    </div>
+                    <h4 className="text-xl font-bold text-amber-900 mb-3">Sourcing Tool, Not a Store</h4>
+                    <p className="text-amber-800 leading-relaxed">
+                      We're not an e-commerce platform. We help you find and compare products, 
+                      then facilitate orders through your established supplier relationships.
                     </p>
                   </div>
                 </div>
               </div>
 
               {/* Supplier Network */}
-              <div className="mb-8">
-                <h4 className="text-sm font-bold text-gray-600 uppercase tracking-widest mb-4">Integrated Suppliers</h4>
-                <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-gray-500">
+              <div className="mb-12">
+                <h4 className="text-sm font-bold text-gray-500 uppercase tracking-[0.15em] mb-6">Integrated Suppliers</h4>
+                <div className="flex flex-wrap items-center justify-center gap-6 mb-4">
                   {[
                     'Scoop', 'Esquire', 'Pinnacle', 'Mustek', 'Miro'
                   ].map(supplier => (
-                    <span
+                    <div
                       key={supplier}
-                      className="text-base font-bold text-gray-500 px-3 py-1 rounded-lg bg-gray-50 border border-gray-100"
+                      className="bg-white text-gray-900 font-bold text-lg px-6 py-3 rounded-xl border-2 border-gray-200 shadow-sm hover:shadow-md hover:border-blue-300 transition-all"
                     >
                       {supplier}
-                    </span>
+                    </div>
                   ))}
-                  <span className="text-sm text-blue-600 font-medium italic">+ more suppliers coming soon</span>
                 </div>
+                <p className="text-sm text-blue-600 font-semibold">+ More suppliers being added regularly</p>
               </div>
 
               {/* Legal Disclaimer */}
-              <div className="max-w-4xl mx-auto pt-6 border-t border-gray-100">
-                <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-                  <h4 className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">Important Disclaimer</h4>
-                  <div className="text-xs text-gray-600 leading-relaxed space-y-2">
+              <div className="max-w-5xl mx-auto pt-8 border-t border-gray-200">
+                <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-8 rounded-2xl border border-gray-200 shadow-sm">
+                  <div className="flex items-center justify-center mb-4">
+                    <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center mr-3">
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <h4 className="text-lg font-bold text-gray-900 uppercase tracking-wide">Important Disclaimer</h4>
+                  </div>
+                  <div className="text-sm text-gray-700 leading-relaxed space-y-3 max-w-4xl mx-auto">
                     <p>
-                      <strong>WhosGotStock is a sourcing tool, not a retailer.</strong> We aggregate product information from supplier feeds 
+                      <strong className="text-gray-900">WhosGotStock is a sourcing tool, not a retailer.</strong> We aggregate product information from supplier feeds 
                       and cannot be held liable for pricing errors, stock discrepancies, or outdated information provided by suppliers.
                     </p>
                     <p>
