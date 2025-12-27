@@ -15,6 +15,7 @@ export default function Home() {
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [passphrase, setPassphrase] = useState('');
   const [passphraseError, setPassphraseError] = useState('');
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   // Mobile input focus fix
   useEffect(() => {
@@ -301,36 +302,38 @@ export default function Home() {
     setShowRoleModal(true);
   };
 
-  const verifyPassphrase = () => {
-    // Get passphrases from environment variables
-    const professionalPassphrase = process.env.NEXT_PUBLIC_PROFESSIONAL_PASSPHRASE || 'Smart@pro2024!';
-    const enterprisePassphrase = process.env.NEXT_PUBLIC_ENTERPRISE_PASSPHRASE || 'Smart@enterprise2024!';
-    const staffPassphrase = process.env.NEXT_PUBLIC_STAFF_PASSPHRASE || 'Smart@staff2024!';
-    const partnerPassphrase = process.env.NEXT_PUBLIC_PARTNER_PASSPHRASE || 'Smart@partner2024!';
+  const verifyPassphrase = async () => {
+    setPassphraseError('');
+    setIsAuthenticating(true);
     
-    if (passphrase === professionalPassphrase) {
-      setUserRole('professional');
-      setShowRoleModal(false);
-      setPassphrase('');
-      setPassphraseError('');
-    } else if (passphrase === enterprisePassphrase) {
-      setUserRole('enterprise');
-      setShowRoleModal(false);
-      setPassphrase('');
-      setPassphraseError('');
-    } else if (passphrase === staffPassphrase) {
-      setUserRole('staff');
-      setShowRoleModal(false);
-      setPassphrase('');
-      setPassphraseError('');
-    } else if (passphrase === partnerPassphrase) {
-      setUserRole('partner');
-      setShowRoleModal(false);
-      setPassphrase('');
-      setPassphraseError('');
-    } else {
-      setPassphraseError('Invalid passphrase');
+    // Try each role until we find a match
+    const roles = ['professional', 'enterprise', 'staff', 'partner'];
+    
+    for (const role of roles) {
+      try {
+        const response = await fetch('/api/auth/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ passphrase, role })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          setUserRole(data.role as UserRole);
+          setShowRoleModal(false);
+          setPassphrase('');
+          setPassphraseError('');
+          setIsAuthenticating(false);
+          return;
+        }
+      } catch (error) {
+        console.error('Auth error for role', role, error);
+      }
     }
+    
+    // If we get here, no role matched
+    setPassphraseError('Invalid passphrase');
+    setIsAuthenticating(false);
   };
 
   const toggleCompare = (product: Product) => {
@@ -1029,9 +1032,17 @@ export default function Home() {
                   </button>
                   <button
                     onClick={verifyPassphrase}
-                    className="flex-1 bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 transition-colors text-sm shadow-lg"
+                    disabled={isAuthenticating}
+                    className="flex-1 bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 disabled:bg-blue-400 transition-colors text-sm shadow-lg flex items-center justify-center gap-2"
                   >
-                    Verify Access
+                    {isAuthenticating ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Verifying...
+                      </>
+                    ) : (
+                      'Verify Access'
+                    )}
                   </button>
                 </div>
               </div>
