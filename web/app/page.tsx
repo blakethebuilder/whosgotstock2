@@ -994,8 +994,14 @@ export default function Home() {
                   value={passphrase}
                   onChange={e => setPassphrase(e.target.value)}
                   placeholder="Enter passphrase"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-mono text-center"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-mono text-center text-base"
                   onKeyDown={e => e.key === 'Enter' && verifyPassphrase()}
+                  autoFocus
+                  autoComplete="off"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  inputMode="text"
                 />
                 {passphraseError && <p className="text-xs font-bold text-red-500 text-center">{passphraseError}</p>}
 

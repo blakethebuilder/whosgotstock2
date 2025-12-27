@@ -34,7 +34,7 @@ export default function AdminPage() {
             const response = await fetch('/api/auth/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ passphrase, role: 'admin' })
+                body: JSON.stringify({ passphrase, role: 'partner' })
             });
             
             const data = await response.json();
@@ -196,9 +196,15 @@ export default function AdminPage() {
                                 type="password"
                                 value={passphrase}
                                 onChange={(e) => setPassphrase(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && handleAuth()}
+                                onKeyDown={(e) => e.key === 'Enter' && handleAuth()}
                                 placeholder="Admin passphrase"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                                autoFocus
+                                autoComplete="off"
+                                autoCapitalize="off"
+                                autoCorrect="off"
+                                spellCheck="false"
+                                inputMode="text"
                             />
                         </div>
                         
