@@ -302,51 +302,51 @@ export default function Home() {
       </div>
 
       {/* Hero Section */}
-      <div className={`transition-all duration-700 ease-in-out relative overflow-hidden ${hasSearched ? 'pt-28 pb-10 min-h-[auto]' : 'h-[75vh] min-h-[600px] flex flex-col justify-center items-center'}`}>
+      <div className={`transition-all duration-700 ease-in-out relative overflow-hidden ${hasSearched ? 'pt-24 pb-8 min-h-[auto]' : 'min-h-[85vh] flex flex-col justify-center items-center'}`}>
         {/* Animated Background Blobs (Premium Touch) */}
         {!hasSearched && (
           <>
-            <div className="absolute top-[10%] left-[5%] w-96 h-96 bg-blue-400/20 rounded-full blur-[120px] animate-pulse" />
-            <div className="absolute bottom-[10%] right-[5%] w-[500px] h-[500px] bg-purple-400/10 rounded-full blur-[120px] animate-pulse delay-700" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.8)_0%,transparent_100%)] z-0" />
+            <div className="absolute top-[15%] left-[8%] w-80 h-80 bg-blue-400/15 rounded-full blur-[100px] animate-pulse" />
+            <div className="absolute bottom-[15%] right-[8%] w-96 h-96 bg-purple-400/10 rounded-full blur-[100px] animate-pulse delay-700" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.9)_0%,transparent_100%)] z-0" />
           </>
         )}
 
-        <div className={`w-full max-w-5xl px-4 mx-auto relative z-10 ${hasSearched ? '' : 'text-center'}`}>
+        <div className={`w-full max-w-4xl px-6 mx-auto relative z-10 ${hasSearched ? '' : 'text-center'}`}>
           {!hasSearched && (
-            <div className="space-y-4 mb-10 animate-in fade-in slide-in-from-bottom-5 duration-700">
-              <div className="inline-block px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-xs font-bold tracking-widest uppercase border border-blue-100 shadow-sm">
+            <div className="space-y-6 mb-12 animate-in fade-in slide-in-from-bottom-5 duration-700">
+              <div className="inline-block px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-xs font-bold tracking-widest uppercase border border-blue-100 shadow-sm">
                 The Ultimate IT Sourcing Engine
               </div>
-              <h2 className="text-4xl sm:text-5xl md:text-7xl font-black text-gray-900 leading-[1.1] tracking-tight">
+              <h2 className="text-5xl sm:text-6xl md:text-7xl font-black text-gray-900 leading-[0.95] tracking-tight">
                 Find Stock, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Instantly.</span>
               </h2>
-              <p className="text-gray-500 text-lg sm:text-xl font-medium max-w-2xl mx-auto">
+              <p className="text-gray-500 text-xl sm:text-2xl font-medium max-w-3xl mx-auto leading-relaxed">
                 Aggregating stock from South Africa's leading IT suppliers into one seamless interface.
               </p>
             </div>
           )}
 
-          <div className={`bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-2xl transition-all duration-500 relative overflow-hidden border border-white/50 ${hasSearched ? 'ring-1 ring-gray-200' : 'scale-105 hover:scale-[1.06]'}`}>
+          <div className={`bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl transition-all duration-500 relative overflow-hidden border border-white/60 ${hasSearched ? 'ring-1 ring-gray-200' : 'hover:shadow-3xl'}`}>
             <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-stretch sm:items-center w-full">
               <div className="flex items-center flex-1">
-                <div className="pl-6 text-blue-500 hidden sm:block">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                <div className="pl-8 text-blue-500 hidden sm:block">
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                 </div>
                 <input
                   type="text"
-                  className="flex-1 p-5 text-lg sm:text-xl bg-transparent focus:outline-none min-w-0 font-medium placeholder-gray-400"
+                  className="flex-1 p-6 text-xl sm:text-2xl bg-transparent focus:outline-none min-w-0 font-medium placeholder-gray-400"
                   placeholder="Search 10,000+ products..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                 />
               </div>
 
-              <div className="flex border-t sm:border-t-0 sm:border-l border-gray-100 bg-white/50">
+              <div className="flex border-t sm:border-t-0 sm:border-l border-gray-100 bg-white/60">
                 <button
                   type="button"
                   onClick={() => setShowFilters(!showFilters)}
-                  className={`flex-1 sm:flex-none py-5 px-6 text-sm font-bold hover:bg-white transition-all flex items-center justify-center gap-2 ${showFilters ? 'text-blue-600 bg-white' : 'text-gray-500'}`}
+                  className={`flex-1 sm:flex-none py-6 px-8 text-sm font-bold hover:bg-white transition-all flex items-center justify-center gap-2 ${showFilters ? 'text-blue-600 bg-white' : 'text-gray-500'}`}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
                   <span>Filters</span>
@@ -354,7 +354,7 @@ export default function Home() {
                     <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
                   }
                 </button>
-                <button type="submit" className="flex-1 sm:flex-none bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white px-10 py-5 font-black text-lg transition-all active:scale-[0.98] shadow-lg shadow-blue-200">
+                <button type="submit" className="flex-1 sm:flex-none bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white px-12 py-6 font-black text-xl transition-all active:scale-[0.98] shadow-lg shadow-blue-200">
                   Search
                 </button>
               </div>
@@ -453,54 +453,55 @@ export default function Home() {
       </div>
 
       {/* Content Area */}
-      <div className="max-w-7xl mx-auto px-6 pb-12">{/* Category Tiles - Show when not searching */}
+      <div className="max-w-6xl mx-auto px-6 pb-16">
+        {/* Category Tiles - Show when not searching */}
         {!hasSearched && (
-          <div className="py-12 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+          <div className="py-20 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
             {/* Hero Value Proposition */}
-            <div className="text-center mb-12">
-              <div className="inline-block px-3 py-1.5 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-4">
+            <div className="text-center mb-20">
+              <div className="inline-block px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-6">
                 The Ultimate IT Sourcing Engine
               </div>
-              <h3 className="text-3xl md:text-4xl font-black text-gray-900 leading-[1.1] tracking-tight mb-4">
+              <h3 className="text-4xl md:text-5xl font-black text-gray-900 leading-[1.1] tracking-tight mb-6">
                 One Search. <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
                   10,000+ Products.
                 </span>
               </h3>
-              <div className="text-gray-500 text-base font-medium leading-relaxed max-w-xl mx-auto mb-6">
-                <p className="mb-3">
+              <div className="text-gray-500 text-lg font-medium leading-relaxed max-w-2xl mx-auto mb-10">
+                <p className="mb-4">
                   WhosGotStock streamlines IT hardware sourcing in South Africa. We aggregate live inventory from the nation's biggest distributors into one lightning-fast interface.
                 </p>
-                <p className="text-sm">
+                <p className="text-base">
                   Stop opening 10 browser tabs. Compare pricing, verify stock levels, and generate quotes in seconds.
                 </p>
               </div>
-              <div className="flex flex-wrap justify-center gap-3 mb-8">
-                <div className="bg-gray-50 px-4 py-3 rounded-2xl border border-gray-100 shadow-sm">
-                  <p className="text-xl font-black text-gray-900">10,000+</p>
-                  <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Active Items</p>
+              <div className="flex flex-wrap justify-center gap-4 mb-12">
+                <div className="bg-gray-50 px-6 py-4 rounded-2xl border border-gray-100 shadow-sm">
+                  <p className="text-2xl font-black text-gray-900">10,000+</p>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Active Items</p>
                 </div>
-                <div className="bg-gray-50 px-4 py-3 rounded-2xl border border-gray-100 shadow-sm">
-                  <p className="text-xl font-black text-gray-900">Live</p>
-                  <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Stock Feeds</p>
+                <div className="bg-gray-50 px-6 py-4 rounded-2xl border border-gray-100 shadow-sm">
+                  <p className="text-2xl font-black text-gray-900">Live</p>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Stock Feeds</p>
                 </div>
-                <div className="bg-gray-50 px-4 py-3 rounded-2xl border border-gray-100 shadow-sm">
-                  <p className="text-xl font-black text-gray-900">4+</p>
-                  <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Suppliers</p>
+                <div className="bg-gray-50 px-6 py-4 rounded-2xl border border-gray-100 shadow-sm">
+                  <p className="text-2xl font-black text-gray-900">4+</p>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Suppliers</p>
                 </div>
               </div>
             </div>
 
             {/* Popular Categories */}
-            <div className="mb-12">
-              <div className="text-center mb-6">
-                <div className="inline-block px-3 py-1.5 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-3">
+            <div className="mb-20">
+              <div className="text-center mb-10">
+                <div className="inline-block px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-4">
                   Popular Categories
                 </div>
-                <h3 className="text-xl md:text-2xl font-black text-gray-900 mb-2">
+                <h3 className="text-2xl md:text-3xl font-black text-gray-900 mb-3">
                   What are you looking for?
                 </h3>
-                <p className="text-gray-500 text-sm">
+                <p className="text-gray-500 text-base">
                   Click a category to search thousands of products instantly
                 </p>
               </div>
@@ -514,11 +515,11 @@ export default function Home() {
             </div>
 
             {/* Popular Brands */}
-            <div className="mb-12">
-              <div className="text-center mb-6">
+            <div className="mb-16">
+              <div className="text-center mb-8">
                 <h4 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-4">Explore Top Brands</h4>
               </div>
-              <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-4 opacity-60 hover:opacity-100 transition-all duration-700">
+              <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-6 opacity-60 hover:opacity-100 transition-all duration-700">
                 {[
                   'HP', 'Dell', 'Lenovo', 'Cisco', 'MikroTik', 'Ubiquiti', 'TP-Link', 
                   'Seagate', 'Western Digital', 'Intel', 'AMD', 'NVIDIA', 'ASUS', 
@@ -528,7 +529,7 @@ export default function Home() {
                   <span
                     key={brand}
                     onClick={() => { setQuery(brand); performSearch(brand); }}
-                    className="text-base md:text-lg font-black text-gray-400 cursor-pointer hover:text-blue-600 transition-colors px-2 py-1 rounded hover:bg-blue-50"
+                    className="text-lg md:text-xl font-black text-gray-400 cursor-pointer hover:text-blue-600 transition-colors px-3 py-2 rounded hover:bg-blue-50"
                   >
                     {brand.toUpperCase()}
                   </span>

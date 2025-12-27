@@ -124,19 +124,43 @@ async function ingestData(client) {
 
                 if (!Array.isArray(raw)) raw = raw ? [raw] : [];
 
-                products = raw.map(p => ({
-                    supplier_sku: p.ProductCode ? String(p.ProductCode) : 'UNKNOWN',
-                    supplier_name: supplier.name,
-                    name: p.ProductName,
-                    description: p.ProductDescription || '',
-                    brand: 'Esquire',
-                    price_ex_vat: parseFloat(p.Price || 0),
-                    qty_on_hand: parseInt(p.AvailableQty) || (p.AvailableQty === 'Yes' ? 100 : 0),
-                    image_url: p.image,
-                    category: p.Category,
-                    master_sku: `${supplier.id}-${p.ProductCode}`,
-                    raw_data: JSON.stringify(p)
-                }));
+                products = raw.map(p => {
+                    // Better stock quantity handling for Esquire
+                    let stockQty = 0;
+                    if (p.AvailableQty) {
+                        // Try to parse as number first
+                        const numQty = parseInt(p.AvailableQty);
+                        if (!isNaN(numQty)) {
+                            stockQty = numQty;
+                        } else if (typeof p.AvailableQty === 'string') {
+                            // Handle string values like "Yes", "No", "In Stock", etc.
+                            const qtyStr = p.AvailableQty.toLowerCase().trim();
+                            if (qtyStr === 'yes' || qtyStr === 'in stock' || qtyStr === 'available') {
+                                stockQty = 1; // Show as 1 in stock instead of 100
+                            } else if (qtyStr === 'no' || qtyStr === 'out of stock' || qtyStr === 'unavailable') {
+                                stockQty = 0;
+                            } else {
+                                // Try to extract number from string like "5 units", "10+", etc.
+                                const match = qtyStr.match(/(\d+)/);
+                                stockQty = match ? parseInt(match[1]) : 0;
+                            }
+                        }
+                    }
+
+                    return {
+                        supplier_sku: p.ProductCode ? String(p.ProductCode) : 'UNKNOWN',
+                        supplier_name: supplier.name,
+                        name: p.ProductName,
+                        description: p.ProductDescription || '',
+                        brand: p.Brand || 'Esquire',
+                        price_ex_vat: parseFloat(p.Price || 0),
+                        qty_on_hand: stockQty,
+                        image_url: p.image,
+                        category: p.Category,
+                        master_sku: `${supplier.id}-${p.ProductCode}`,
+                        raw_data: JSON.stringify(p)
+                    };
+                });
             } else if (activeType === 'syntech') {
                 // Syntech mapping
                 let raw = [];
