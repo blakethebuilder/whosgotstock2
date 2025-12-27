@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import DistributorImport from '../components/DistributorImport';
 
 export default function AdminPage() {
     const [suppliers, setSuppliers] = useState<any[]>([]);
@@ -205,6 +206,9 @@ export default function AdminPage() {
                         </div>
                     </div>
                 </div>
+
+                {/* Distributor Import Section */}
+                <DistributorImport />
 
                 {/* Suppliers Section */}
                 <div className="bg-white p-6 rounded shadow">
