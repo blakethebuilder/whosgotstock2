@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
-import { successResponse, handleDatabaseError } from '@/lib/api-response';
 
 export async function GET() {
     try {
@@ -9,9 +8,15 @@ export async function GET() {
         // Get regular suppliers
         const suppliersResult = await client.query('SELECT name, slug FROM suppliers WHERE enabled = true ORDER BY name ASC');
         
-        // Check if we have manual products
-        const manualCountResult = await client.query('SELECT COUNT(*) FROM manual_products');
-        const hasManualProducts = parseInt(manualCountResult.rows[0].count) > 0;
+        // Check if we have manual products (handle table not existing)
+        let hasManualProducts = false;
+        try {
+            const manualCountResult = await client.query('SELECT COUNT(*) FROM manual_products');
+            hasManualProducts = parseInt(manualCountResult.rows[0].count) > 0;
+        } catch (err: any) {
+            // Table doesn't exist, that's fine
+            console.log('manual_products table does not exist yet');
+        }
         
         client.release();
         
@@ -25,8 +30,8 @@ export async function GET() {
             });
         }
         
-        return successResponse(suppliers);
+        return NextResponse.json(suppliers);
     } catch (err: any) {
-        return handleDatabaseError(err);
+        return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }
