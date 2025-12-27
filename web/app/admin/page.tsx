@@ -22,6 +22,7 @@ export default function AdminPage() {
 
     // Component visibility state
     const [showScraper, setShowScraper] = useState(false);
+    const [isSettingUpDb, setIsSettingUpDb] = useState(false);
 
     // New Supplier Form
     const [newName, setNewName] = useState('');
@@ -54,38 +55,46 @@ export default function AdminPage() {
         try {
             console.log('Fetching suppliers and settings...');
             const [supRes, setRes] = await Promise.all([
-                fetch('/api/admin/suppliers'),
-                fetch('/api/admin/settings')
+                fetch('/api/admin/suppliers').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve([]) })),
+                fetch('/api/admin/settings').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve({}) }))
             ]);
             
             console.log('Suppliers response status:', supRes.status);
             console.log('Settings response status:', setRes.status);
             
-            if (!supRes.ok) {
-                console.error('Suppliers API error:', supRes.status, supRes.statusText);
-            }
-            if (!setRes.ok) {
-                console.error('Settings API error:', setRes.status, setRes.statusText);
+            let supData = [];
+            let setData = {};
+            
+            if (supRes.ok) {
+                supData = await supRes.json();
+            } else {
+                console.error('Suppliers API error:', supRes.status);
+                supData = []; // Ensure it's an array
             }
             
-            const supData = await supRes.json();
-            const setData = await setRes.json();
+            if (setRes.ok) {
+                setData = await setRes.json();
+            } else {
+                console.error('Settings API error:', setRes.status);
+                setData = {}; // Ensure it's an object
+            }
             
             console.log('Suppliers data:', supData);
             console.log('Settings data:', setData);
             
-            setSuppliers(supData || []);
-            setSettings(setData || {
-                update_interval_minutes: '60',
-                free_markup: '15',
-                professional_markup: '5',
-                enterprise_markup: '0',
-                staff_markup: '10',
-                partner_markup: '0'
+            // Ensure supData is an array
+            setSuppliers(Array.isArray(supData) ? supData : []);
+            setSettings({
+                update_interval_minutes: setData?.update_interval_minutes || '60',
+                free_markup: setData?.free_markup || '15',
+                professional_markup: setData?.professional_markup || '5',
+                enterprise_markup: setData?.enterprise_markup || '0',
+                staff_markup: setData?.staff_markup || '10',
+                partner_markup: setData?.partner_markup || '0'
             });
         } catch (e) {
             console.error('Error fetching data:', e);
-            // Set default values on error
+            // Set safe default values
             setSuppliers([]);
             setSettings({
                 update_interval_minutes: '60',
@@ -171,6 +180,27 @@ export default function AdminPage() {
             refreshData();
         } catch (error) {
             alert('Failed to add supplier');
+        }
+    };
+
+    const handleSetupDatabase = async () => {
+        setIsSettingUpDb(true);
+        try {
+            const response = await fetch('/api/admin/setup-db', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await response.json();
+            if (data.success) {
+                alert('Database setup completed successfully!');
+                refreshData();
+            } else {
+                alert('Database setup failed: ' + data.error);
+            }
+        } catch (error) {
+            alert('Database setup failed: ' + error);
+        } finally {
+            setIsSettingUpDb(false);
         }
     };
 
@@ -285,6 +315,28 @@ export default function AdminPage() {
                                 >
                                     Save Settings
                                 </button>
+                                
+                                {/* Database Setup */}
+                                <div className="border-t pt-4">
+                                    <h3 className="text-sm font-semibold text-gray-900 mb-2">Database Setup</h3>
+                                    <p className="text-xs text-gray-600 mb-3">
+                                        If you're seeing API errors, click below to initialize the database tables.
+                                    </p>
+                                    <button
+                                        onClick={handleSetupDatabase}
+                                        disabled={isSettingUpDb}
+                                        className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white py-2 px-4 rounded-md text-sm font-medium flex items-center justify-center gap-2"
+                                    >
+                                        {isSettingUpDb ? (
+                                            <>
+                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                Setting up...
+                                            </>
+                                        ) : (
+                                            'Setup Database'
+                                        )}
+                                    </button>
+                                </div>
                             </div>
                         </div>
 

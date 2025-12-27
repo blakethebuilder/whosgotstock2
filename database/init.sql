@@ -28,8 +28,30 @@ CREATE TABLE IF NOT EXISTS settings (
     value TEXT
 );
 
--- Seed Initial Data
-INSERT INTO settings (key, value) VALUES ('update_interval_minutes', '60') ON CONFLICT DO NOTHING;
+CREATE TABLE IF NOT EXISTS manual_products (
+    id SERIAL PRIMARY KEY,
+    supplier_sku VARCHAR(255) NOT NULL,
+    supplier_name VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    brand VARCHAR(255),
+    price_ex_vat DECIMAL(10, 2) NOT NULL,
+    qty_on_hand INTEGER DEFAULT 0,
+    category VARCHAR(255),
+    description TEXT,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    raw_data JSONB,
+    UNIQUE(supplier_name, supplier_sku)
+);
+
+-- Seed Initial Data with new tier structure
+INSERT INTO settings (key, value) VALUES 
+('update_interval_minutes', '60'),
+('free_markup', '15'),
+('professional_markup', '5'),
+('enterprise_markup', '0'),
+('staff_markup', '10'),
+('partner_markup', '0')
+ON CONFLICT (key) DO NOTHING;
 
 INSERT INTO suppliers (name, slug, url, type, enabled) VALUES 
 ('Scoop', 'scoop', 'https://scoop.co.za/scoop_pricelist.xml', 'xml', true),
