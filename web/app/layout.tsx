@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -12,6 +12,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export const metadata: Metadata = {
   title: "WhosGotStock | South Africa's Premier IT Sourcing Platform",
   description: "Compare live inventory and pricing from South Africa's leading IT distributors. Find laptops, servers, networking equipment, and more from trusted suppliers in one search.",
@@ -20,7 +27,6 @@ export const metadata: Metadata = {
   creator: "Blake & AI",
   publisher: "WhosGotStock",
   robots: "index, follow",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
   openGraph: {
     title: "WhosGotStock | South Africa's Premier IT Sourcing Platform",
     description: "Compare live inventory and pricing from South Africa's leading IT distributors in one powerful search.",

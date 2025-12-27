@@ -19,10 +19,11 @@ export async function GET(request: Request) {
 
   // Create cache key
   const cacheKey = `search:${JSON.stringify(Object.fromEntries(searchParams))}`;
-  const cached = getCached(cacheKey);
-  if (cached) {
-    return NextResponse.json(cached);
-  }
+  // Temporarily disable cache to debug
+  // const cached = getCached(cacheKey);
+  // if (cached) {
+  //   return NextResponse.json(cached);
+  // }
 
   // Simple query for main products only (for now)
   let sql = `
@@ -135,10 +136,17 @@ export async function GET(request: Request) {
 
   try {
     const client = await pool.connect();
+    console.log('Database connected successfully');
+    
     const [countRes, dataRes] = await Promise.all([
       client.query(countSql, params),
       client.query(sql, params)
     ]);
+    
+    console.log('Query executed successfully');
+    console.log('Count result:', countRes.rows[0]);
+    console.log('Data results count:', dataRes.rows.length);
+    
     client.release();
 
     const result = {
@@ -149,17 +157,21 @@ export async function GET(request: Request) {
       searchTerms: rawQuery ? expandSearchTerms(normalizeSearchQuery(rawQuery)) : []
     };
 
-    // Cache for 2 minutes
-    setCache(cacheKey, result, 120000);
+    // Cache for 2 minutes - temporarily disabled for debugging
+    // setCache(cacheKey, result, 120000);
 
     return NextResponse.json(result);
   } catch (err: any) {
     console.error('Search API error:', err);
+    console.error('SQL:', sql);
+    console.error('Params:', params);
     return NextResponse.json({ 
       error: 'Search failed', 
       results: [], 
       total: 0,
-      debug: err.message 
+      debug: err.message,
+      sql: sql,
+      params: params
     }, { status: 500 });
   }
 }
