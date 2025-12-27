@@ -5,28 +5,32 @@ export async function POST(request: NextRequest) {
     const { passphrase, role } = await request.json();
     
     // Get passphrases from environment variables
+    const professionalPassphrase = process.env.NEXT_PUBLIC_PROFESSIONAL_PASSPHRASE;
+    const enterprisePassphrase = process.env.NEXT_PUBLIC_ENTERPRISE_PASSPHRASE;
     const staffPassphrase = process.env.NEXT_PUBLIC_STAFF_PASSPHRASE;
-    const managerPassphrase = process.env.NEXT_PUBLIC_MANAGER_PASSPHRASE;
-    const adminPassphrase = process.env.ADMIN_PASSPHRASE; // Admin passphrase should be server-side only
+    const partnerPassphrase = process.env.PARTNER_PASSPHRASE; // Partner passphrase should be server-side only
     
     let isValid = false;
-    let userRole = 'guest';
+    let userRole = 'free';
     
     // Check passphrase against requested role
-    if (role === 'admin' && passphrase === adminPassphrase) {
+    if (role === 'partner' && passphrase === partnerPassphrase) {
       isValid = true;
-      userRole = 'admin';
-    } else if (role === 'manager' && passphrase === managerPassphrase) {
+      userRole = 'partner';
+    } else if (role === 'enterprise' && passphrase === enterprisePassphrase) {
       isValid = true;
-      userRole = 'manager';
+      userRole = 'enterprise';
     } else if (role === 'staff' && passphrase === staffPassphrase) {
       isValid = true;
       userRole = 'staff';
+    } else if (role === 'professional' && passphrase === professionalPassphrase) {
+      isValid = true;
+      userRole = 'professional';
     }
     
     return NextResponse.json({
       success: isValid,
-      role: isValid ? userRole : 'guest',
+      role: isValid ? userRole : 'free',
       message: isValid ? 'Authentication successful' : 'Invalid passphrase'
     });
     

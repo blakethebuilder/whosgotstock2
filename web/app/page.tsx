@@ -6,15 +6,21 @@ import CategoryTiles from './components/CategoryTiles';
 import CartDrawer from './components/CartDrawer';
 import ProductDetailModal from './components/ProductDetailModal';
 import ComparisonModal from './components/ComparisonModal';
-import { Product, Supplier, CartItem, UserRole } from './types';
+import { Product, Supplier, CartItem, UserRole, UsageStats } from './types';
 import { debounce } from '@/lib/debounce';
 
-// Pricing logic: Guest = +15%, Account = Raw Price
+// Pricing logic: Free = +15%, Professional = +8%, Enterprise = +5%, Partner = Cost
 export default function Home() {
-  const [userRole, setUserRole] = useState<UserRole>('public');
+  const [userRole, setUserRole] = useState<UserRole>('free');
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [passphrase, setPassphrase] = useState('');
   const [passphraseError, setPassphraseError] = useState('');
+  const [usageStats, setUsageStats] = useState<UsageStats>({
+    searchesThisMonth: 0,
+    searchLimit: 25, // Updated to 25 for free tier
+    quotesGenerated: 0,
+    isLimitReached: false
+  });
 
   // Search
   const [query, setQuery] = useState('');
@@ -28,10 +34,11 @@ export default function Home() {
 
   // Pricing settings from database
   const [pricingSettings, setPricingSettings] = useState({
-    guest_markup: 15,
-    staff_markup: 10,
-    manager_markup: 5,
-    admin_markup: 0
+    free_markup: 15,
+    professional_markup: 5, // Changed to 5% handling fee
+    enterprise_markup: 0,   // No markup for Enterprise
+    staff_markup: 10,       // Smart Integrate staff tier
+    partner_markup: 0       // Cost pricing for admin
   });
 
   // Comparison State
@@ -57,16 +64,21 @@ export default function Home() {
     // Load suppliers and pricing settings
     Promise.all([
       fetch('/api/suppliers').then(r => r.json()),
-      fetch('/api/admin/settings').then(r => r.json())
-    ]).then(([suppliersData, settingsData]) => {
+      fetch('/api/admin/settings').then(r => r.json()),
+      fetch('/api/user/usage').then(r => r.json()).catch(() => ({ searchesThisMonth: 0, searchLimit: 25, quotesGenerated: 0, isLimitReached: false }))
+    ]).then(([suppliersData, settingsData, usageData]) => {
       if (Array.isArray(suppliersData)) setSuppliers(suppliersData);
       if (settingsData) {
         setPricingSettings({
-          guest_markup: parseInt(settingsData.guest_markup || '15'),
+          free_markup: parseInt(settingsData.free_markup || '15'),
+          professional_markup: parseInt(settingsData.professional_markup || '5'),
+          enterprise_markup: parseInt(settingsData.enterprise_markup || '0'),
           staff_markup: parseInt(settingsData.staff_markup || '10'),
-          manager_markup: parseInt(settingsData.manager_markup || '5'),
-          admin_markup: parseInt(settingsData.admin_markup || '0')
+          partner_markup: parseInt(settingsData.partner_markup || '0')
         });
+      }
+      if (usageData) {
+        setUsageStats(usageData);
       }
     }).catch(console.error);
   }, []);
@@ -83,7 +95,7 @@ export default function Home() {
     }
     // Load user role from localStorage
     const savedRole = localStorage.getItem('whosgotstock_user_role');
-    if (savedRole && ['public', 'staff', 'manager', 'admin'].includes(savedRole)) {
+    if (savedRole && ['free', 'professional', 'enterprise', 'staff', 'partner'].includes(savedRole)) {
       setUserRole(savedRole as UserRole);
     }
   }, []);
@@ -141,6 +153,12 @@ export default function Home() {
     const currentQuery = searchQuery !== undefined ? searchQuery : query;
     const currentSupplier = searchSupplier !== undefined ? searchSupplier : selectedSupplier;
 
+    // Check usage limits for free tier
+    if (userRole === 'free' && usageStats.isLimitReached) {
+      alert('You\'ve reached your monthly search limit. Upgrade to Professional for unlimited searches!');
+      return;
+    }
+
     setLoading(true);
     setHasSearched(true);
     try {
@@ -157,6 +175,23 @@ export default function Home() {
       setResults(data.results || []);
       setTotalResults(data.total || 0);
       setPage(1);
+
+      // Track usage for free tier
+      if (userRole === 'free') {
+        const newSearchCount = usageStats.searchesThisMonth + 1;
+        setUsageStats(prev => ({
+          ...prev,
+          searchesThisMonth: newSearchCount,
+          isLimitReached: newSearchCount >= prev.searchLimit
+        }));
+        
+        // Track usage on server
+        fetch('/api/user/track-usage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'search' })
+        }).catch(console.error);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -217,33 +252,34 @@ export default function Home() {
     const raw = parseFloat(basePrice);
 
     // Get markup based on user role from database settings
-    let markup = pricingSettings.guest_markup; // Default
+    let markup = pricingSettings.free_markup; // Default
+    if (userRole === 'professional') markup = pricingSettings.professional_markup;
+    if (userRole === 'enterprise') markup = pricingSettings.enterprise_markup;
     if (userRole === 'staff') markup = pricingSettings.staff_markup;
-    if (userRole === 'manager') markup = pricingSettings.manager_markup;
-    if (userRole === 'admin') markup = pricingSettings.admin_markup;
+    if (userRole === 'partner') markup = pricingSettings.partner_markup;
 
     const markedUp = raw * (1 + (markup / 100));
     const withVat = markedUp * 1.15; // 15% VAT
 
-    // Calculate discount information for staff/manager/admin
-    const guestPrice = raw * (1 + (pricingSettings.guest_markup / 100));
-    const discount = userRole !== 'public' ? guestPrice - markedUp : 0;
-    const discountPercentage = userRole !== 'public' ? 
-      ((guestPrice - markedUp) / guestPrice * 100) : 0;
+    // Calculate discount information for paid tiers
+    const freePrice = raw * (1 + (pricingSettings.free_markup / 100));
+    const discount = userRole !== 'free' ? freePrice - markedUp : 0;
+    const discountPercentage = userRole !== 'free' ? 
+      ((freePrice - markedUp) / freePrice * 100) : 0;
 
     return {
       exVat: markedUp.toFixed(2),
       incVat: withVat.toFixed(2),
-      originalPrice: guestPrice.toFixed(2),
+      originalPrice: freePrice.toFixed(2),
       discount: discount.toFixed(2),
       discountPercentage: discountPercentage.toFixed(1),
-      hasDiscount: userRole !== 'public' && discount > 0
+      hasDiscount: userRole !== 'free' && discount > 0
     };
   };
 
   const handleRoleSwitch = () => {
-    if (userRole !== 'public') {
-      setUserRole('public');
+    if (userRole !== 'free') {
+      setUserRole('free');
       return;
     }
     setShowRoleModal(true);
@@ -251,22 +287,28 @@ export default function Home() {
 
   const verifyPassphrase = () => {
     // Get passphrases from environment variables
+    const professionalPassphrase = process.env.NEXT_PUBLIC_PROFESSIONAL_PASSPHRASE || 'Smart@pro2024!';
+    const enterprisePassphrase = process.env.NEXT_PUBLIC_ENTERPRISE_PASSPHRASE || 'Smart@enterprise2024!';
     const staffPassphrase = process.env.NEXT_PUBLIC_STAFF_PASSPHRASE || 'Smart@staff2024!';
-    const managerPassphrase = process.env.NEXT_PUBLIC_MANAGER_PASSPHRASE || 'Smart@managers2024!';
-    const adminPassphrase = process.env.NEXT_PUBLIC_ADMIN_PASSPHRASE || 'Smart@admin2024!';
+    const partnerPassphrase = process.env.NEXT_PUBLIC_PARTNER_PASSPHRASE || 'Smart@partner2024!';
     
-    if (passphrase === staffPassphrase) {
+    if (passphrase === professionalPassphrase) {
+      setUserRole('professional');
+      setShowRoleModal(false);
+      setPassphrase('');
+      setPassphraseError('');
+    } else if (passphrase === enterprisePassphrase) {
+      setUserRole('enterprise');
+      setShowRoleModal(false);
+      setPassphrase('');
+      setPassphraseError('');
+    } else if (passphrase === staffPassphrase) {
       setUserRole('staff');
       setShowRoleModal(false);
       setPassphrase('');
       setPassphraseError('');
-    } else if (passphrase === managerPassphrase) {
-      setUserRole('manager');
-      setShowRoleModal(false);
-      setPassphrase('');
-      setPassphraseError('');
-    } else if (passphrase === adminPassphrase) {
-      setUserRole('admin');
+    } else if (passphrase === partnerPassphrase) {
+      setUserRole('partner');
       setShowRoleModal(false);
       setPassphrase('');
       setPassphraseError('');
@@ -324,13 +366,20 @@ export default function Home() {
 
           <div
             onClick={handleRoleSwitch}
-            className={`flex-shrink-0 flex items-center space-x-2 bg-white/70 backdrop-blur-md px-3 sm:px-4 py-1.5 rounded-xl sm:rounded-2xl text-[11px] sm:text-[13px] shadow-sm border border-white/50 cursor-pointer hover:shadow-md transition-all ${userRole !== 'public' ? 'ring-2 ring-blue-100' : ''}`}
+            className={`flex-shrink-0 flex items-center space-x-2 bg-white/70 backdrop-blur-md px-3 sm:px-4 py-1.5 rounded-xl sm:rounded-2xl text-[11px] sm:text-[13px] shadow-sm border border-white/50 cursor-pointer hover:shadow-md transition-all ${userRole !== 'free' ? 'ring-2 ring-blue-100' : ''}`}
           >
-            <span className="font-bold text-gray-800 capitalize truncate max-w-[50px] sm:max-w-none">{userRole}</span>
-            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${userRole === 'public' ? 'bg-gray-300' : userRole === 'staff' ? 'bg-blue-500' : userRole === 'manager' ? 'bg-green-500' : 'bg-purple-500'}`}></div>
+            <span className="font-bold text-gray-800 capitalize truncate max-w-[50px] sm:max-w-none">
+              {userRole === 'free' ? 'Free' : userRole === 'professional' ? 'Pro' : userRole === 'enterprise' ? 'Enterprise' : userRole === 'staff' ? 'Staff' : 'Partner'}
+            </span>
+            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${userRole === 'free' ? 'bg-gray-300' : userRole === 'professional' ? 'bg-blue-500' : userRole === 'enterprise' ? 'bg-purple-500' : userRole === 'staff' ? 'bg-orange-500' : 'bg-green-500'}`}></div>
+            {userRole === 'free' && (
+              <span className="text-[9px] text-gray-500 hidden sm:inline">
+                {usageStats.searchesThisMonth}/{usageStats.searchLimit}
+              </span>
+            )}
           </div>
 
-          {(userRole === 'manager' || userRole === 'admin') && (
+          {(userRole === 'enterprise' || userRole === 'staff' || userRole === 'partner') && (
             <Link href="/admin" className="flex-shrink-0 text-[11px] sm:text-sm font-bold text-gray-500 hover:text-blue-600 px-3 sm:px-4 py-1.5 bg-white/70 backdrop-blur-md rounded-xl sm:rounded-2xl border border-white/50 shadow-sm transition-all hover:shadow-md">Admin</Link>
           )}
         </div>
@@ -489,6 +538,34 @@ export default function Home() {
 
       {/* Content Area */}
       <div className="max-w-6xl mx-auto px-6 pb-16">
+        {/* Usage Warning for Free Tier */}
+        {userRole === 'free' && usageStats.searchesThisMonth >= usageStats.searchLimit * 0.8 && (
+          <div className="mb-6 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 animate-in slide-in-from-top-4 duration-300">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-bold text-amber-800">
+                    {usageStats.isLimitReached ? 'Search limit reached!' : `${usageStats.searchLimit - usageStats.searchesThisMonth} searches remaining`}
+                  </p>
+                  <p className="text-sm text-amber-700">
+                    {usageStats.isLimitReached ? 'Upgrade to continue searching' : 'Upgrade for unlimited searches and better pricing'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowRoleModal(true)}
+                className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors"
+              >
+                Upgrade Now
+              </button>
+            </div>
+          </div>
+        )}
         {/* Category Tiles - Show when not searching */}
         {!hasSearched && (
           <div className="py-20 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
@@ -680,79 +757,120 @@ export default function Home() {
             {loading && <div className="text-center py-12 text-gray-500">Searching...</div>}
 
             {!loading && results.length === 0 && (
-              <div className="text-center py-20 bg-white rounded-lg shadow-sm border border-dashed text-gray-500">No products found for your filters.</div>
+              <div className="text-center py-20 bg-white rounded-lg shadow-sm border border-dashed text-gray-500">
+                No products found for your filters.
+                {userRole === 'free' && (
+                  <div className="mt-4">
+                    <p className="text-sm text-gray-400 mb-3">
+                      Upgrade to Professional for access to more suppliers and better search results
+                    </p>
+                    <button
+                      onClick={() => setShowRoleModal(true)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm"
+                    >
+                      Upgrade Now
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {results.map((product) => (
-                <div
-                  key={product.id}
-                  onClick={() => setSelectedProduct(product)}
-                  className="group bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col overflow-hidden cursor-pointer active:scale-[0.98]"
-                >
-                  <div className="p-6 bg-gray-50/50 flex items-center justify-center h-52 relative overflow-hidden">
-                    {product.image_url ? (
-                      <img src={product.image_url} alt={product.name} className="h-full w-full object-contain mix-blend-multiply transition-transform group-hover:scale-110 duration-500" />
-                    ) : (
-                      <div className="text-gray-300 flex flex-col items-center gap-2">
-                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              {results.map((product, index) => (
+                <div key={product.id}>
+                  <div
+                    onClick={() => setSelectedProduct(product)}
+                    className="group bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col overflow-hidden cursor-pointer active:scale-[0.98]"
+                  >
+                    <div className="p-6 bg-gray-50/50 flex items-center justify-center h-52 relative overflow-hidden">
+                      {product.image_url ? (
+                        <img src={product.image_url} alt={product.name} className="h-full w-full object-contain mix-blend-multiply transition-transform group-hover:scale-110 duration-500" />
+                      ) : (
+                        <div className="text-gray-300 flex flex-col items-center gap-2">
+                          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        </div>
+                      )}
+                      <div className="absolute top-3 left-3">
+                        <span className="bg-white/80 backdrop-blur px-2 py-0.5 rounded-full text-[9px] font-bold text-blue-600 border border-blue-50 tracking-wider uppercase">{product.brand}</span>
                       </div>
-                    )}
-                    <div className="absolute top-3 left-3">
-                      <span className="bg-white/80 backdrop-blur px-2 py-0.5 rounded-full text-[9px] font-bold text-blue-600 border border-blue-50 tracking-wider uppercase">{product.brand}</span>
-                    </div>
-                    <div className="absolute top-3 right-3 flex flex-col gap-2">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); toggleCompare(product); }}
-                        className={`p-2 rounded-full backdrop-blur shadow-sm transition-all border ${compareList.find(p => p.id === product.id)
-                          ? 'bg-blue-600 text-white border-blue-600'
-                          : 'bg-white/80 text-gray-400 border-gray-100 hover:text-blue-600'
-                          }`}
-                        title="Add to Compare"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" /></svg>
-                      </button>
-                    </div>
-                  </div>
-                  <div className="p-5 flex-1 flex flex-col">
-                    <h4 className="font-bold text-gray-900 text-sm line-clamp-2 mb-3 group-hover:text-blue-600 transition-colors">{product.name}</h4>
-
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded uppercase">
-                        {userRole === 'public' ? 'Verified Stock' : product.supplier_name}
-                      </span>
-                    </div>
-
-                    <div className="mt-auto pt-4 border-t border-gray-50 flex items-end justify-between">
-                      <div>
-                        {calculatePrice(product.price_ex_vat).hasDiscount && (
-                          <div className="mb-2">
-                            <p className="text-xs line-through text-gray-400">R {formatPrice(calculatePrice(product.price_ex_vat).originalPrice)}</p>
-                            <p className="text-xs font-bold text-green-600">Save R {formatPrice(calculatePrice(product.price_ex_vat).discount)} ({calculatePrice(product.price_ex_vat).discountPercentage}% off)</p>
-                          </div>
-                        )}
-                        <div className="mb-1">
-                          <p className="text-xl font-black text-gray-900 leading-tight">R {formatPrice(calculatePrice(product.price_ex_vat).exVat)}</p>
-                          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Excluding VAT</p>
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-gray-500 leading-tight">R {formatPrice(calculatePrice(product.price_ex_vat).incVat)}</p>
-                          <p className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">Including VAT</p>
-                        </div>
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <div className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${product.qty_on_hand > 0 ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-600'}`}>
-                          {product.qty_on_hand > 0 ? `${product.qty_on_hand} Stock` : 'No Stock'}
-                        </div>
+                      <div className="absolute top-3 right-3 flex flex-col gap-2">
                         <button
-                          onClick={(e) => { e.stopPropagation(); addToCart(product); }}
-                          className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black px-3 py-1.5 rounded-xl transition-all shadow-sm active:scale-90"
+                          onClick={(e) => { e.stopPropagation(); toggleCompare(product); }}
+                          className={`p-2 rounded-full backdrop-blur shadow-sm transition-all border ${compareList.find(p => p.id === product.id)
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'bg-white/80 text-gray-400 border-gray-100 hover:text-blue-600'
+                            }`}
+                          title="Add to Compare"
                         >
-                          + Quote
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" /></svg>
                         </button>
                       </div>
                     </div>
+                    <div className="p-5 flex-1 flex flex-col">
+                      <h4 className="font-bold text-gray-900 text-sm line-clamp-2 mb-3 group-hover:text-blue-600 transition-colors">{product.name}</h4>
+
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded uppercase">
+                          {userRole === 'free' ? 'Verified Stock' : product.supplier_name}
+                        </span>
+                        {userRole === 'free' && (
+                          <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded uppercase">
+                            Upgrade for supplier details
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="mt-auto pt-4 border-t border-gray-50 flex items-end justify-between">
+                        <div>
+                          {calculatePrice(product.price_ex_vat).hasDiscount && (
+                            <div className="mb-2">
+                              <p className="text-xs line-through text-gray-400">R {formatPrice(calculatePrice(product.price_ex_vat).originalPrice)}</p>
+                              <p className="text-xs font-bold text-green-600">Save R {formatPrice(calculatePrice(product.price_ex_vat).discount)} ({calculatePrice(product.price_ex_vat).discountPercentage}% off)</p>
+                            </div>
+                          )}
+                          <div className="mb-1">
+                            <p className="text-xl font-black text-gray-900 leading-tight">R {formatPrice(calculatePrice(product.price_ex_vat).exVat)}</p>
+                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Excluding VAT</p>
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-gray-500 leading-tight">R {formatPrice(calculatePrice(product.price_ex_vat).incVat)}</p>
+                            <p className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">Including VAT</p>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                          <div className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${product.qty_on_hand > 0 ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                            {product.qty_on_hand > 0 ? `${product.qty_on_hand} Stock` : 'No Stock'}
+                          </div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black px-3 py-1.5 rounded-xl transition-all shadow-sm active:scale-90"
+                          >
+                            + Quote
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Upgrade Prompt every 10 results for free users */}
+                  {userRole === 'free' && (index + 1) % 10 === 0 && index < results.length - 1 && (
+                    <div className="col-span-full my-8 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 text-center">
+                      <div className="max-w-md mx-auto">
+                        <h3 className="text-lg font-bold text-blue-900 mb-2">
+                          Unlock Better Pricing
+                        </h3>
+                        <p className="text-sm text-blue-700 mb-4">
+                          Professional users save an average of R500 per quote with better pricing and supplier access
+                        </p>
+                        <button
+                          onClick={() => setShowRoleModal(true)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-lg"
+                        >
+                          Upgrade to Professional - R399/month
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -807,28 +925,95 @@ export default function Home() {
       {showRoleModal && (
         <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowRoleModal(false)} />
-          <div className="relative bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full animate-in zoom-in-95 duration-200">
-            <h3 className="text-xl font-black text-gray-900 mb-2">Elevated Access</h3>
-            <p className="text-sm text-gray-500 mb-6">Enter passphrase to unlock staff, manager, or admin pricing tiers.</p>
+          <div className="relative bg-white rounded-3xl shadow-2xl p-8 max-w-2xl w-full animate-in zoom-in-95 duration-200">
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-black text-gray-900 mb-2">Upgrade Your Access</h3>
+              <p className="text-sm text-gray-500">Choose a plan that fits your business needs</p>
+            </div>
 
-            <div className="space-y-4">
-              <input
-                type="password"
-                value={passphrase}
-                onChange={e => setPassphrase(e.target.value)}
-                placeholder="Passphrase"
-                className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-mono"
-                onKeyDown={e => e.key === 'Enter' && verifyPassphrase()}
-                autoFocus
-              />
-              {passphraseError && <p className="text-xs font-bold text-red-500">{passphraseError}</p>}
+            {/* Pricing Tiers */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              {/* Professional */}
+              <div className="border-2 border-blue-200 rounded-2xl p-6 bg-blue-50/50">
+                <div className="text-center mb-4">
+                  <h4 className="text-lg font-bold text-blue-900">Professional</h4>
+                  <p className="text-2xl font-black text-blue-600">R399<span className="text-sm font-normal">/month</span></p>
+                  <p className="text-xs text-blue-700">5% handling fee • Unlimited searches</p>
+                </div>
+                <ul className="text-xs text-blue-800 space-y-2 mb-4">
+                  <li>✓ Unlimited searches</li>
+                  <li>✓ Professional quotes</li>
+                  <li>✓ Supplier contact info</li>
+                  <li>✓ Email support</li>
+                </ul>
+              </div>
 
-              <button
-                onClick={verifyPassphrase}
-                className="w-full bg-blue-600 text-white font-black py-3 rounded-xl shadow-lg shadow-blue-100 hover:bg-blue-700 active:scale-95 transition-all text-sm uppercase tracking-widest"
-              >
-                Unlock Access
-              </button>
+              {/* Enterprise */}
+              <div className="border-2 border-purple-200 rounded-2xl p-6 bg-purple-50/50 relative">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+                  Most Popular
+                </div>
+                <div className="text-center mb-4">
+                  <h4 className="text-lg font-bold text-purple-900">Enterprise</h4>
+                  <p className="text-2xl font-black text-purple-600">R1599<span className="text-sm font-normal">/month</span></p>
+                  <p className="text-xs text-purple-700">No markup • White labeled</p>
+                </div>
+                <ul className="text-xs text-purple-800 space-y-2 mb-4">
+                  <li>✓ Everything in Professional</li>
+                  <li>✓ Multi-user accounts (10 users)</li>
+                  <li>✓ White label solution</li>
+                  <li>✓ Custom branding</li>
+                  <li>✓ Priority support</li>
+                </ul>
+              </div>
+
+              {/* Free Tier Info */}
+              <div className="border-2 border-gray-200 rounded-2xl p-6 bg-gray-50/50">
+                <div className="text-center mb-4">
+                  <h4 className="text-lg font-bold text-gray-900">Free</h4>
+                  <p className="text-2xl font-black text-gray-600">R0<span className="text-sm font-normal">/month</span></p>
+                  <p className="text-xs text-gray-700">25 searches • 15% markup</p>
+                </div>
+                <ul className="text-xs text-gray-800 space-y-2 mb-4">
+                  <li>✓ 25 searches per month</li>
+                  <li>✓ Basic product information</li>
+                  <li>✓ Watermarked quotes</li>
+                  <li>✓ Community support</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Temporary Access */}
+            <div className="border-t pt-6">
+              <p className="text-sm text-gray-600 mb-4 text-center">
+                Have a passphrase for temporary access?
+              </p>
+              <div className="space-y-4">
+                <input
+                  type="password"
+                  value={passphrase}
+                  onChange={e => setPassphrase(e.target.value)}
+                  placeholder="Enter passphrase"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-100 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-mono text-center"
+                  onKeyDown={e => e.key === 'Enter' && verifyPassphrase()}
+                />
+                {passphraseError && <p className="text-xs font-bold text-red-500 text-center">{passphraseError}</p>}
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowRoleModal(false)}
+                    className="flex-1 bg-gray-100 text-gray-700 font-bold py-3 rounded-xl hover:bg-gray-200 transition-colors text-sm"
+                  >
+                    Continue Free
+                  </button>
+                  <button
+                    onClick={verifyPassphrase}
+                    className="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors text-sm"
+                  >
+                    Verify Access
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

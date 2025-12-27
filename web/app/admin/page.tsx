@@ -12,10 +12,11 @@ export default function AdminPage() {
     const [suppliers, setSuppliers] = useState<any[]>([]);
     const [settings, setSettings] = useState({
         update_interval_minutes: '60',
-        guest_markup: '15',
+        free_markup: '15',
+        professional_markup: '5',
+        enterprise_markup: '0',
         staff_markup: '10',
-        manager_markup: '5',
-        admin_markup: '0'
+        partner_markup: '0'
     });
     const [loading, setLoading] = useState(true);
 
@@ -76,10 +77,11 @@ export default function AdminPage() {
             setSuppliers(supData || []);
             setSettings(setData || {
                 update_interval_minutes: '60',
-                guest_markup: '15',
+                free_markup: '15',
+                professional_markup: '5',
+                enterprise_markup: '0',
                 staff_markup: '10',
-                manager_markup: '5',
-                admin_markup: '0'
+                partner_markup: '0'
             });
         } catch (e) {
             console.error('Error fetching data:', e);
@@ -87,10 +89,11 @@ export default function AdminPage() {
             setSuppliers([]);
             setSettings({
                 update_interval_minutes: '60',
-                guest_markup: '15',
+                free_markup: '15',
+                professional_markup: '5',
+                enterprise_markup: '0',
                 staff_markup: '10',
-                manager_markup: '5',
-                admin_markup: '0'
+                partner_markup: '0'
             });
         } finally {
             setLoading(false);
@@ -284,12 +287,36 @@ export default function AdminPage() {
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Pricing Tiers</h2>
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-semibold text-red-600">Guest:</span>
+                                    <span className="text-sm font-semibold text-red-600">Free:</span>
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="number"
-                                            value={settings.guest_markup}
-                                            onChange={(e) => setSettings({...settings, guest_markup: e.target.value})}
+                                            value={settings.free_markup}
+                                            onChange={(e) => setSettings({...settings, free_markup: e.target.value})}
+                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white font-medium"
+                                        />
+                                        <span className="text-sm text-gray-900 font-medium">%</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-semibold text-blue-600">Professional:</span>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="number"
+                                            value={settings.professional_markup}
+                                            onChange={(e) => setSettings({...settings, professional_markup: e.target.value})}
+                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white font-medium"
+                                        />
+                                        <span className="text-sm text-gray-900 font-medium">%</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-semibold text-purple-600">Enterprise:</span>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="number"
+                                            value={settings.enterprise_markup}
+                                            onChange={(e) => setSettings({...settings, enterprise_markup: e.target.value})}
                                             className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white font-medium"
                                         />
                                         <span className="text-sm text-gray-900 font-medium">%</span>
@@ -308,24 +335,12 @@ export default function AdminPage() {
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-semibold text-blue-600">Manager:</span>
+                                    <span className="text-sm font-semibold text-green-600">Partner:</span>
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="number"
-                                            value={settings.manager_markup}
-                                            onChange={(e) => setSettings({...settings, manager_markup: e.target.value})}
-                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white font-medium"
-                                        />
-                                        <span className="text-sm text-gray-900 font-medium">%</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-semibold text-green-600">Admin:</span>
-                                    <div className="flex items-center gap-2">
-                                        <input
-                                            type="number"
-                                            value={settings.admin_markup}
-                                            onChange={(e) => setSettings({...settings, admin_markup: e.target.value})}
+                                            value={settings.partner_markup}
+                                            onChange={(e) => setSettings({...settings, partner_markup: e.target.value})}
                                             className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white font-medium"
                                         />
                                         <span className="text-sm text-gray-900 font-medium">%</span>
@@ -346,20 +361,24 @@ export default function AdminPage() {
                             <p className="text-xs text-gray-700 mb-3">Example: R1,000 base price</p>
                             <div className="space-y-2 text-xs">
                                 <div className="flex justify-between">
-                                    <span className="text-red-600 font-medium">Guest:</span>
-                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.guest_markup || '15') / 100)).toFixed(0)}</span>
+                                    <span className="text-red-600 font-medium">Free:</span>
+                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.free_markup || '15') / 100)).toFixed(0)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-blue-600 font-medium">Professional:</span>
+                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.professional_markup || '5') / 100)).toFixed(0)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-purple-600 font-medium">Enterprise:</span>
+                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.enterprise_markup || '0') / 100)).toFixed(0)}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-orange-600 font-medium">Staff:</span>
                                     <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.staff_markup || '10') / 100)).toFixed(0)}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-blue-600 font-medium">Manager:</span>
-                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.manager_markup || '5') / 100)).toFixed(0)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-green-600 font-medium">Admin:</span>
-                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.admin_markup || '0') / 100)).toFixed(0)}</span>
+                                    <span className="text-green-600 font-medium">Partner:</span>
+                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.partner_markup || '0') / 100)).toFixed(0)}</span>
                                 </div>
                             </div>
                         </div>

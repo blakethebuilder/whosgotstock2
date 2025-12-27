@@ -1,4 +1,4 @@
-export type UserRole = 'public' | 'staff' | 'manager' | 'admin';
+export type UserRole = 'free' | 'professional' | 'enterprise' | 'staff' | 'partner';
 
 export interface Product {
     id: number;
@@ -24,4 +24,21 @@ export interface Supplier {
 
 export interface CartItem extends Product {
     quantity: number;
+}
+
+export interface UsageStats {
+    searchesThisMonth: number;
+    searchLimit: number;
+    quotesGenerated: number;
+    isLimitReached: boolean;
+}
+
+export interface TierFeatures {
+    name: string;
+    price: string;
+    searches: string;
+    markup: string;
+    features: string[];
+    cta: string;
+    popular?: boolean;
 }
