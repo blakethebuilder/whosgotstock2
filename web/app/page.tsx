@@ -1095,7 +1095,7 @@ export default function Home() {
         onRemove={removeFromCompare}
         onAddToCart={addToCart}
         formatPrice={formatPrice}
-        calculatePrice={calculatePrice}
+        calculatePrice={(basePrice: string) => calculatePrice(basePrice, userRole, pricingSettings)}
         userRole={userRole}
       />
 
