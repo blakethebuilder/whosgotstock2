@@ -15,6 +15,7 @@ export default function DistributorImport() {
   const [isDragOver, setIsDragOver] = useState(false);
   const [result, setResult] = useState<ImportResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [uploadController, setUploadController] = useState<AbortController | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (file: File) => {
@@ -27,6 +28,10 @@ export default function DistributorImport() {
     setError(null);
     setResult(null);
 
+    // Create abort controller for cancellation
+    const controller = new AbortController();
+    setUploadController(controller);
+
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -34,6 +39,7 @@ export default function DistributorImport() {
       const response = await fetch('/api/admin/ingest-manual', {
         method: 'POST',
         body: formData,
+        signal: controller.signal,
       });
 
       const data = await response.json();
@@ -44,8 +50,21 @@ export default function DistributorImport() {
 
       setResult(data.result);
     } catch (err: any) {
-      setError(err.message);
+      if (err.name === 'AbortError') {
+        setError('Upload cancelled by user');
+      } else {
+        setError(err.message);
+      }
     } finally {
+      setIsUploading(false);
+      setUploadController(null);
+    }
+  };
+
+  const cancelUpload = () => {
+    if (uploadController) {
+      uploadController.abort();
+      setUploadController(null);
       setIsUploading(false);
     }
   };
@@ -80,6 +99,7 @@ export default function DistributorImport() {
   const resetUpload = () => {
     setResult(null);
     setError(null);
+    setUploadController(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -113,10 +133,16 @@ export default function DistributorImport() {
           {isUploading ? (
             <div className="flex flex-col items-center gap-4">
               <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-              <div>
+              <div className="text-center">
                 <p className="font-semibold text-gray-900">Processing Excel File...</p>
                 <p className="text-sm text-gray-500">Parsing sheets, mapping columns, and updating database</p>
               </div>
+              <button
+                onClick={cancelUpload}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+              >
+                Cancel Import
+              </button>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-4">

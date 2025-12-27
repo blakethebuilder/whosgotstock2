@@ -2,10 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import DistributorImport from '../components/DistributorImport';
-// import LinkqageScraper from '../components/LinkqageScraper';
 import GenericScraper from '../components/GenericScraper';
 
 export default function AdminPage() {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [passphrase, setPassphrase] = useState('');
+    const [authError, setAuthError] = useState('');
+    
     const [suppliers, setSuppliers] = useState<any[]>([]);
     const [settings, setSettings] = useState({
         update_interval_minutes: '60',
@@ -21,6 +24,26 @@ export default function AdminPage() {
     const [newSlug, setNewSlug] = useState('');
     const [newUrl, setNewUrl] = useState('');
     const [newType, setNewType] = useState('scoop');
+
+    const handleAuth = async () => {
+        try {
+            const response = await fetch('/api/auth/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ passphrase, role: 'admin' })
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                setIsAuthenticated(true);
+                setAuthError('');
+            } else {
+                setAuthError('Invalid admin passphrase');
+            }
+        } catch (error) {
+            setAuthError('Authentication failed');
+        }
+    };
 
     const refreshData = async () => {
         setLoading(true);
@@ -40,256 +63,378 @@ export default function AdminPage() {
         }
     };
 
-    useEffect(() => {
-        refreshData();
-    }, []);
-
     const handleUpdateSettings = async () => {
-        await fetch('/api/admin/settings', {
-            method: 'POST',
-            body: JSON.stringify(settings)
-        });
-        alert('Settings updated');
+        try {
+            await fetch('/api/admin/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(settings)
+            });
+            alert('Settings updated successfully');
+        } catch (error) {
+            alert('Failed to update settings');
+        }
     };
 
-    const handleToggle = async (id: number, current: boolean) => {
-        await fetch('/api/admin/suppliers', {
-            method: 'POST',
-            body: JSON.stringify({ action: 'toggle', id, enabled: !current })
-        });
-        refreshData();
+    const handleToggleSupplier = async (id: number) => {
+        try {
+            const supplier = suppliers.find(s => s.id === id);
+            await fetch('/api/admin/suppliers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    action: 'toggle', 
+                    id, 
+                    enabled: !supplier.active 
+                })
+            });
+            refreshData();
+        } catch (error) {
+            alert('Failed to toggle supplier');
+        }
     };
 
-    const handleDelete = async (id: number) => {
-        if (!confirm("Delete supplier?")) return;
-        await fetch('/api/admin/suppliers', {
-            method: 'POST',
-            body: JSON.stringify({ action: 'delete', id })
-        });
-        refreshData();
+    const handleDeleteSupplier = async (id: number) => {
+        if (!confirm("Are you sure you want to delete this supplier?")) return;
+        
+        try {
+            await fetch('/api/admin/suppliers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'delete', id })
+            });
+            refreshData();
+        } catch (error) {
+            alert('Failed to delete supplier');
+        }
     };
 
-    const handleCreate = async (e: React.FormEvent) => {
-        e.preventDefault();
-        await fetch('/api/admin/suppliers', {
-            method: 'POST',
-            body: JSON.stringify({ action: 'create', name: newName, slug: newSlug, url: newUrl, type: newType })
-        });
-        setNewName(''); setNewSlug(''); setNewUrl(''); setNewType('scoop');
-        refreshData();
+    const handleAddSupplier = async () => {
+        if (!newName || !newSlug || !newUrl) {
+            alert('Please fill in all fields');
+            return;
+        }
+        
+        try {
+            await fetch('/api/admin/suppliers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    action: 'create', 
+                    name: newName, 
+                    slug: newSlug, 
+                    url: newUrl, 
+                    type: newType 
+                })
+            });
+            setNewName(''); 
+            setNewSlug(''); 
+            setNewUrl(''); 
+            setNewType('scoop');
+            refreshData();
+        } catch (error) {
+            alert('Failed to add supplier');
+        }
     };
 
-    if (loading) return <div className="p-8">Loading...</div>;
+    useEffect(() => {
+        if (isAuthenticated) {
+            refreshData();
+        }
+    }, [isAuthenticated]);
 
-    return (
-        <main className="min-h-screen p-8 bg-gray-50 text-gray-900">
-            <div className="max-w-5xl mx-auto">
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold">Admin Portal</h1>
-                    <a href="/" className="text-blue-600 hover:underline">Back to Search</a>
-                </div>
-
-                {/* Settings Section */}
-                <div className="bg-white p-6 rounded shadow mb-8">
-                    <h2 className="text-xl font-semibold mb-4">System Settings</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+    // Authentication screen
+    if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
+                    <div className="text-center mb-8">
+                        <h1 className="text-2xl font-bold text-gray-900">Admin Portal</h1>
+                        <p className="text-gray-600 mt-2">Enter admin passphrase to continue</p>
+                    </div>
+                    
+                    <div className="space-y-4">
                         <div>
-                            <label className="block text-sm text-gray-600 mb-1">Update Interval (minutes):</label>
                             <input
-                                type="number"
-                                value={settings.update_interval_minutes}
-                                onChange={e => setSettings({ ...settings, update_interval_minutes: e.target.value })}
-                                className="border p-2 rounded w-full"
+                                type="password"
+                                value={passphrase}
+                                onChange={(e) => setPassphrase(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && handleAuth()}
+                                placeholder="Admin passphrase"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                         </div>
-                        <div className="md:col-span-2">
-                            <button onClick={handleUpdateSettings} className="bg-blue-600 text-white px-6 py-2 rounded font-semibold hover:bg-blue-700 transition-colors w-full md:w-auto">
-                                Save All Settings
+                        
+                        {authError && (
+                            <div className="text-red-600 text-sm text-center">{authError}</div>
+                        )}
+                        
+                        <button
+                            onClick={handleAuth}
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+                        >
+                            Access Admin Portal
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading admin portal...</p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            {/* Header */}
+            <div className="bg-white shadow-sm border-b">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-center py-4">
+                        <h1 className="text-2xl font-bold text-gray-900">Admin Portal</h1>
+                        <div className="flex items-center gap-4">
+                            <a 
+                                href="/" 
+                                className="text-blue-600 hover:text-blue-700 font-medium"
+                            >
+                                Back to Search
+                            </a>
+                            <button
+                                onClick={() => setIsAuthenticated(false)}
+                                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm"
+                            >
+                                Logout
                             </button>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {/* Pricing Tiers Section */}
-                <div className="bg-white p-6 rounded shadow mb-8">
-                    <h2 className="text-xl font-semibold mb-4">Pricing Tiers Management</h2>
-                    <p className="text-gray-600 mb-6">Control markup percentages for different user roles. Higher percentages mean higher prices for customers.</p>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                            <div className="flex items-center gap-2 mb-2">
-                                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                                <label className="block text-sm font-semibold text-red-700">Guest/Public Markup (%):</label>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    {/* Left Sidebar - Settings & Quick Actions */}
+                    <div className="lg:col-span-1 space-y-6">
+                        {/* System Settings */}
+                        <div className="bg-white rounded-lg shadow-sm p-6">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">System Settings</h2>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Update Interval (minutes)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={settings.update_interval_minutes}
+                                        onChange={(e) => setSettings({...settings, update_interval_minutes: e.target.value})}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                    />
+                                </div>
+                                <button
+                                    onClick={handleUpdateSettings}
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm font-medium"
+                                >
+                                    Save Settings
+                                </button>
                             </div>
-                            <input
-                                type="number"
-                                value={settings.guest_markup}
-                                onChange={e => setSettings({ ...settings, guest_markup: e.target.value })}
-                                className="border p-2 rounded w-full"
-                                min="0"
-                                max="100"
-                            />
-                            <p className="text-xs text-red-600 mt-1">Highest pricing tier</p>
                         </div>
 
-                        <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-                            <div className="flex items-center gap-2 mb-2">
-                                <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                                <label className="block text-sm font-semibold text-orange-700">Staff Markup (%):</label>
+                        {/* Pricing Tiers */}
+                        <div className="bg-white rounded-lg shadow-sm p-6">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Pricing Tiers</h2>
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium text-red-600">Guest:</span>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="number"
+                                            value={settings.guest_markup}
+                                            onChange={(e) => setSettings({...settings, guest_markup: e.target.value})}
+                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm"
+                                        />
+                                        <span className="text-sm text-gray-500">%</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium text-orange-600">Staff:</span>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="number"
+                                            value={settings.staff_markup}
+                                            onChange={(e) => setSettings({...settings, staff_markup: e.target.value})}
+                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm"
+                                        />
+                                        <span className="text-sm text-gray-500">%</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium text-blue-600">Manager:</span>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="number"
+                                            value={settings.manager_markup}
+                                            onChange={(e) => setSettings({...settings, manager_markup: e.target.value})}
+                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm"
+                                        />
+                                        <span className="text-sm text-gray-500">%</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium text-green-600">Admin:</span>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="number"
+                                            value={settings.admin_markup}
+                                            onChange={(e) => setSettings({...settings, admin_markup: e.target.value})}
+                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm"
+                                        />
+                                        <span className="text-sm text-gray-500">%</span>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={handleUpdateSettings}
+                                    className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm font-medium mt-3"
+                                >
+                                    Update Pricing
+                                </button>
                             </div>
-                            <input
-                                type="number"
-                                value={settings.staff_markup}
-                                onChange={e => setSettings({ ...settings, staff_markup: e.target.value })}
-                                className="border p-2 rounded w-full"
-                                min="0"
-                                max="100"
-                            />
-                            <p className="text-xs text-orange-600 mt-1">Shows discount vs Guest</p>
                         </div>
 
-                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                            <div className="flex items-center gap-2 mb-2">
-                                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                                <label className="block text-sm font-semibold text-blue-700">Manager Markup (%):</label>
+                        {/* Pricing Preview */}
+                        <div className="bg-white rounded-lg shadow-sm p-6">
+                            <h3 className="text-sm font-semibold text-gray-900 mb-3">Pricing Preview</h3>
+                            <p className="text-xs text-gray-500 mb-3">Example: R1,000 base price</p>
+                            <div className="space-y-2 text-xs">
+                                <div className="flex justify-between">
+                                    <span className="text-red-600">Guest:</span>
+                                    <span className="font-semibold">R{(1000 * (1 + parseInt(settings.guest_markup || '15') / 100)).toFixed(0)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-orange-600">Staff:</span>
+                                    <span className="font-semibold">R{(1000 * (1 + parseInt(settings.staff_markup || '10') / 100)).toFixed(0)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-blue-600">Manager:</span>
+                                    <span className="font-semibold">R{(1000 * (1 + parseInt(settings.manager_markup || '5') / 100)).toFixed(0)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-green-600">Admin:</span>
+                                    <span className="font-semibold">R{(1000 * (1 + parseInt(settings.admin_markup || '0') / 100)).toFixed(0)}</span>
+                                </div>
                             </div>
-                            <input
-                                type="number"
-                                value={settings.manager_markup}
-                                onChange={e => setSettings({ ...settings, manager_markup: e.target.value })}
-                                className="border p-2 rounded w-full"
-                                min="0"
-                                max="100"
-                            />
-                            <p className="text-xs text-blue-600 mt-1">Better discount vs Guest</p>
-                        </div>
-
-                        <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                            <div className="flex items-center gap-2 mb-2">
-                                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                                <label className="block text-sm font-semibold text-green-700">Admin Markup (%):</label>
-                            </div>
-                            <input
-                                type="number"
-                                value={settings.admin_markup}
-                                onChange={e => setSettings({ ...settings, admin_markup: e.target.value })}
-                                className="border p-2 rounded w-full"
-                                min="0"
-                                max="100"
-                            />
-                            <p className="text-xs text-green-600 mt-1">Cost price access</p>
                         </div>
                     </div>
 
-                    {/* Pricing Preview */}
-                    <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                        <h3 className="font-semibold mb-3">Pricing Preview (Example: R1,000 base price)</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
-                            <div className="text-center">
-                                <p className="font-semibold text-red-700">Guest</p>
-                                <p className="text-lg font-bold">R{(1000 * (1 + parseInt(settings.guest_markup || '15') / 100)).toFixed(0)}</p>
-                                <p className="text-xs text-gray-500">+{settings.guest_markup}%</p>
-                            </div>
-                            <div className="text-center">
-                                <p className="font-semibold text-orange-700">Staff</p>
-                                <p className="text-lg font-bold">R{(1000 * (1 + parseInt(settings.staff_markup || '10') / 100)).toFixed(0)}</p>
-                                <p className="text-xs text-green-600">-R{(1000 * (parseInt(settings.guest_markup || '15') - parseInt(settings.staff_markup || '10')) / 100).toFixed(0)} vs Guest</p>
-                            </div>
-                            <div className="text-center">
-                                <p className="font-semibold text-blue-700">Manager</p>
-                                <p className="text-lg font-bold">R{(1000 * (1 + parseInt(settings.manager_markup || '5') / 100)).toFixed(0)}</p>
-                                <p className="text-xs text-green-600">-R{(1000 * (parseInt(settings.guest_markup || '15') - parseInt(settings.manager_markup || '5')) / 100).toFixed(0)} vs Guest</p>
-                            </div>
-                            <div className="text-center">
-                                <p className="font-semibold text-green-700">Admin</p>
-                                <p className="text-lg font-bold">R{(1000 * (1 + parseInt(settings.admin_markup || '0') / 100)).toFixed(0)}</p>
-                                <p className="text-xs text-green-600">-R{(1000 * (parseInt(settings.guest_markup || '15') - parseInt(settings.admin_markup || '0')) / 100).toFixed(0)} vs Guest</p>
+                    {/* Main Content Area */}
+                    <div className="lg:col-span-3 space-y-6">
+                        {/* Manual Product Import */}
+                        <DistributorImport />
+
+                        {/* Generic Scraper */}
+                        <GenericScraper />
+
+                        {/* Suppliers Management */}
+                        <div className="bg-white rounded-lg shadow-sm p-6">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">XML Suppliers Management</h2>
+                            <div className="space-y-4">
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full divide-y divide-gray-200">
+                                        <thead className="bg-gray-50">
+                                            <tr>
+                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {suppliers.map((supplier) => (
+                                                <tr key={supplier.id}>
+                                                    <td className="px-4 py-2 text-sm text-gray-900">{supplier.name}</td>
+                                                    <td className="px-4 py-2 text-sm text-gray-500">{supplier.type}</td>
+                                                    <td className="px-4 py-2">
+                                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                            supplier.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                                        }`}>
+                                                            {supplier.active ? 'Active' : 'Inactive'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-2 text-sm">
+                                                        <div className="flex gap-2">
+                                                            <button
+                                                                onClick={() => handleToggleSupplier(supplier.id)}
+                                                                className="text-blue-600 hover:text-blue-700"
+                                                            >
+                                                                {supplier.active ? 'Disable' : 'Enable'}
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDeleteSupplier(supplier.id)}
+                                                                className="text-red-600 hover:text-red-700"
+                                                            >
+                                                                Delete
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {/* Add New Supplier */}
+                                <div className="border-t pt-4">
+                                    <h3 className="text-md font-medium text-gray-900 mb-3">Add New XML Supplier</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                        <input
+                                            type="text"
+                                            placeholder="Name (e.g. MySupplier)"
+                                            value={newName}
+                                            onChange={(e) => setNewName(e.target.value)}
+                                            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Slug (e.g. mysupplier)"
+                                            value={newSlug}
+                                            onChange={(e) => setNewSlug(e.target.value)}
+                                            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                        />
+                                        <input
+                                            type="url"
+                                            placeholder="XML Feed URL"
+                                            value={newUrl}
+                                            onChange={(e) => setNewUrl(e.target.value)}
+                                            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                        />
+                                        <select
+                                            value={newType}
+                                            onChange={(e) => setNewType(e.target.value)}
+                                            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                                        >
+                                            <option value="scoop">Scoop Parser</option>
+                                            <option value="syntech">Syntech Parser</option>
+                                            <option value="pinnacle">Pinnacle Parser</option>
+                                            <option value="esquire">Esquire Parser</option>
+                                        </select>
+                                    </div>
+                                    <button
+                                        onClick={handleAddSupplier}
+                                        className="mt-3 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm font-medium"
+                                    >
+                                        Add XML Supplier
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                {/* Distributor Import Section */}
-                <DistributorImport />
-
-                {/* Generic Supplier Scraper */}
-                <GenericScraper />
-
-                {/* Legacy Linkqage Scraper (temporarily disabled) */}
-                {/* <LinkqageScraper /> */}
-
-                {/* Suppliers Section */}
-                <div className="bg-white p-6 rounded shadow">
-                    <h2 className="text-xl font-semibold mb-4">Suppliers</h2>
-
-                    <table className="w-full text-left mb-6">
-                        <thead>
-                            <tr className="border-b">
-                                <th className="p-2">Name</th>
-                                <th className="p-2">Slug (ID)</th>
-                                <th className="p-2">Parser Type</th>
-                                <th className="p-2">URL</th>
-                                <th className="p-2">Status</th>
-                                <th className="p-2">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {suppliers.map(s => (
-                                <tr key={s.id} className="border-b hover:bg-gray-50">
-                                    <td className="p-2 font-medium">{s.name}</td>
-                                    <td className="p-2 text-gray-600">{s.slug}</td>
-                                    <td className="p-2 text-xs font-mono bg-gray-100 rounded">{s.type}</td>
-                                    <td className="p-2 text-xs text-gray-500 truncate max-w-xs">{s.url}</td>
-                                    <td className="p-2">
-                                        <span className={`px-2 py-1 rounded text-xs ${s.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                            {s.enabled ? 'Active' : 'Disabled'}
-                                        </span>
-                                    </td>
-                                    <td className="p-2 flex gap-2">
-                                        <button onClick={() => handleToggle(s.id, s.enabled)} className="text-sm text-blue-600 hover:underline">
-                                            {s.enabled ? 'Disable' : 'Enable'}
-                                        </button>
-                                        <button onClick={() => handleDelete(s.id)} className="text-sm text-red-600 hover:underline">Delete</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-
-                    <h3 className="font-semibold mb-2">Add New Supplier</h3>
-                    <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <input
-                            placeholder="Name (e.g. MyStore)"
-                            value={newName} onChange={e => setNewName(e.target.value)}
-                            className="border p-2 rounded"
-                            required
-                        />
-                        <input
-                            placeholder="Unique Slug (e.g. mystore)"
-                            value={newSlug} onChange={e => setNewSlug(e.target.value)}
-                            className="border p-2 rounded"
-                            required
-                        />
-                        <input
-                            placeholder="XML Feed URL"
-                            value={newUrl} onChange={e => setNewUrl(e.target.value)}
-                            className="border p-2 rounded md:col-span-1"
-                            required
-                        />
-                        <select
-                            value={newType}
-                            onChange={e => setNewType(e.target.value)}
-                            className="border p-2 rounded"
-                        >
-                            <option value="scoop">Scoop Parser</option>
-                            <option value="esquire">Esquire Parser</option>
-                            <option value="syntech">Syntech Parser</option>
-                            <option value="pinnacle">Pinnacle Parser</option>
-                        </select>
-                        <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded">Add Supplier</button>
-                    </form>
                 </div>
             </div>
-        </main>
+        </div>
     );
 }
