@@ -6,9 +6,10 @@ import CategoryTiles from './components/CategoryTiles';
 import CartDrawer from './components/CartDrawer';
 import ProductDetailModal from './components/ProductDetailModal';
 import ComparisonModal from './components/ComparisonModal';
+import UserMenu from './components/UserMenu';
 import { Product, Supplier, CartItem, UserRole, UsageStats } from './types';
 import { debounce } from '@/lib/debounce';
-import { calculatePrice, formatPrice, PricingSettings } from '@/lib/pricing';
+import { calculatePrice, formatPrice } from '@/lib/pricing';
 
 // Pricing logic: Free = +15%, Professional = +8%, Enterprise = +5%, Partner = Cost
 export default function Home() {
@@ -373,6 +374,12 @@ export default function Home() {
             )}
           </button>
 
+          {/* User Menu - New Auth System */}
+          <div className="bg-white/70 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-sm border border-white/50">
+            <UserMenu />
+          </div>
+
+          {/* Legacy Role Switch - Fallback */}
           <div
             onClick={handleRoleSwitch}
             className={`flex-shrink-0 flex items-center space-x-2 bg-white/70 backdrop-blur-md px-3 sm:px-4 py-1.5 rounded-xl sm:rounded-2xl text-[11px] sm:text-[13px] shadow-sm border border-white/50 cursor-pointer hover:shadow-md transition-all ${userRole !== 'free' ? 'ring-2 ring-blue-100' : ''}`}
