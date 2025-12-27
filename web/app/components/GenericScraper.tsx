@@ -25,14 +25,14 @@ const SUPPLIERS: SupplierConfig[] = [
     name: 'linkqage',
     displayName: 'Linkqage',
     loginRequired: true,
-    description: 'IT hardware and networking equipment supplier',
+    description: 'IT hardware and networking equipment supplier (2,497+ products)',
     icon: '🔗'
   },
   {
     name: 'generic',
-    displayName: 'Generic Supplier',
+    displayName: 'Custom Website',
     loginRequired: false,
-    description: 'Template for other suppliers',
+    description: 'Configure custom website scraping (contact admin to set up)',
     icon: '🏪'
   }
 ];
@@ -49,6 +49,11 @@ export default function GenericScraper() {
   const currentSupplier = SUPPLIERS.find(s => s.name === selectedSupplier) || SUPPLIERS[0];
 
   const handleScrape = async (testMode: boolean) => {
+    if (selectedSupplier === 'generic') {
+      alert('Custom Website scraping is not configured yet. Please select Linkqage or contact admin to set up custom scraping.');
+      return;
+    }
+
     if (currentSupplier.loginRequired && (!username || !password)) {
       alert('Please enter both username and password');
       return;
@@ -129,6 +134,11 @@ export default function GenericScraper() {
                       {supplier.loginRequired && (
                         <span className="inline-block mt-1 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">
                           Login Required
+                        </span>
+                      )}
+                      {supplier.name === 'generic' && (
+                        <span className="inline-block mt-1 px-2 py-1 text-xs bg-red-100 text-red-800 rounded">
+                          Not Configured
                         </span>
                       )}
                     </div>
@@ -243,6 +253,8 @@ export default function GenericScraper() {
               <div>
                 <p className="text-sm font-medium text-yellow-800">Important Notes:</p>
                 <ul className="text-sm text-yellow-700 mt-1 space-y-1">
+                  <li>• <strong>Linkqage</strong>: Fully configured and ready to use</li>
+                  <li>• <strong>Custom Website</strong>: Requires configuration - contact admin</li>
                   <li>• Products will be stored in supplier-specific database tables</li>
                   <li>• Test mode first to verify credentials and selectors work</li>
                   <li>• Full scrape may take 10-15 minutes depending on product count</li>
