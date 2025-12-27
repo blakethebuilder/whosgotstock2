@@ -55,7 +55,7 @@ export default function ComparisonModal({
                         </div>
                         <div>
                             <h2 className="text-xl font-black text-gray-900">Product Comparison</h2>
-                            <p className="text-sm text-gray-500">Compare {products.length} product{products.length !== 1 ? 's' : ''} side by side</p>
+                            <p className="text-sm text-gray-500">Compare {products.length} product{products.length !== 1 ? 's' : ''} side-by-side to make informed decisions</p>
                         </div>
                     </div>
                     <button

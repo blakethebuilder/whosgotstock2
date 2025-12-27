@@ -371,7 +371,7 @@ export default function Home() {
                 <input
                   type="text"
                   className="flex-1 p-6 text-xl sm:text-2xl bg-transparent focus:outline-none min-w-0 font-medium placeholder-gray-400"
-                  placeholder="Search 10,000+ products..."
+                  placeholder="Search 15,000+ IT products instantly..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                 />
@@ -494,8 +494,8 @@ export default function Home() {
           <div className="py-20 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
             {/* Hero Value Proposition */}
             <div className="text-center mb-20">
-              <div className="inline-block px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-6">
-                The Ultimate IT Sourcing Engine
+              <div className="inline-block px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-600 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-6 border border-blue-100">
+                Powered by AI Technology
               </div>
               <h3 className="text-4xl md:text-5xl font-black text-gray-900 leading-[1.1] tracking-tight mb-6">
                 One Search. <br />
@@ -505,24 +505,28 @@ export default function Home() {
               </h3>
               <div className="text-gray-500 text-lg font-medium leading-relaxed max-w-2xl mx-auto mb-10">
                 <p className="mb-4">
-                  WhosGotStock streamlines IT hardware sourcing in South Africa. We aggregate live inventory from the nation's biggest distributors into one lightning-fast interface.
+                  WhosGotStock revolutionizes IT procurement in South Africa. We aggregate real-time inventory from the nation's top distributors into one lightning-fast search engine.
                 </p>
                 <p className="text-base">
-                  Stop opening 10 browser tabs. Compare pricing, verify stock levels, and generate quotes in seconds.
+                  No more juggling multiple supplier websites. Compare pricing, check stock levels, and generate professional quotes in seconds.
                 </p>
               </div>
               <div className="flex flex-wrap justify-center gap-4 mb-12">
-                <div className="bg-gray-50 px-6 py-4 rounded-2xl border border-gray-100 shadow-sm">
-                  <p className="text-2xl font-black text-gray-900">10,000+</p>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Active Items</p>
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 px-6 py-4 rounded-2xl border border-blue-100 shadow-sm">
+                  <p className="text-2xl font-black text-blue-600">15,000+</p>
+                  <p className="text-xs font-bold text-blue-500 uppercase tracking-widest">Live Products</p>
                 </div>
-                <div className="bg-gray-50 px-6 py-4 rounded-2xl border border-gray-100 shadow-sm">
-                  <p className="text-2xl font-black text-gray-900">Live</p>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Stock Feeds</p>
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 px-6 py-4 rounded-2xl border border-green-100 shadow-sm">
+                  <p className="text-2xl font-black text-green-600">Real-Time</p>
+                  <p className="text-xs font-bold text-green-500 uppercase tracking-widest">Stock Updates</p>
                 </div>
-                <div className="bg-gray-50 px-6 py-4 rounded-2xl border border-gray-100 shadow-sm">
-                  <p className="text-2xl font-black text-gray-900">4+</p>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Suppliers</p>
+                <div className="bg-gradient-to-br from-purple-50 to-violet-50 px-6 py-4 rounded-2xl border border-purple-100 shadow-sm">
+                  <p className="text-2xl font-black text-purple-600">5+</p>
+                  <p className="text-xs font-bold text-purple-500 uppercase tracking-widest">Major Suppliers</p>
+                </div>
+                <div className="bg-gradient-to-br from-orange-50 to-amber-50 px-6 py-4 rounded-2xl border border-orange-100 shadow-sm">
+                  <p className="text-2xl font-black text-orange-600">Instant</p>
+                  <p className="text-xs font-bold text-orange-500 uppercase tracking-widest">Price Quotes</p>
                 </div>
               </div>
             </div>
@@ -573,29 +577,29 @@ export default function Home() {
             </div>
 
             {/* Built by Blake & AI - Footer */}
-            <div className="text-center space-y-4 py-8 border-t border-gray-100">
-              <div className="space-y-2">
+            <div className="text-center space-y-4 py-12 border-t border-gray-100">
+              <div className="space-y-3">
                 <h3 className="text-lg font-bold text-gray-700 tracking-tight">
-                  Built by <span className="text-blue-600">Blake</span> & AI
+                  Engineered by <span className="text-blue-600">Blake</span> & <span className="text-indigo-600">AI</span>
                 </h3>
-                <p className="text-gray-400 font-medium max-w-md mx-auto leading-relaxed text-xs">
-                  Combining human creativity with artificial intelligence to deliver South Africa's most advanced IT sourcing platform.
+                <p className="text-gray-500 font-medium max-w-lg mx-auto leading-relaxed text-sm">
+                  Combining human expertise in South African IT markets with cutting-edge artificial intelligence to deliver the most advanced sourcing platform in the region.
                 </p>
               </div>
               
-              {/* Minimal feature highlights */}
-              <div className="flex justify-center items-center gap-8 text-xs text-gray-400">
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <span>Lightning Fast</span>
+              {/* Enhanced feature highlights */}
+              <div className="flex justify-center items-center gap-8 text-xs text-gray-500 pt-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-sm"></div>
+                  <span className="font-medium">Lightning Performance</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span>Always Accurate</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-gradient-to-r from-green-500 to-green-600 rounded-full shadow-sm"></div>
+                  <span className="font-medium">Always Accurate</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                  <span>Built for You</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full shadow-sm"></div>
+                  <span className="font-medium">Built for Business</span>
                 </div>
               </div>
             </div>

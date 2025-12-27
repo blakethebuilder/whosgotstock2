@@ -85,7 +85,7 @@ export default function CategoryTiles({ onCategoryClick }: CategoryTilesProps) {
           onClick={() => handleCategoryClick(category)}
           onMouseEnter={() => setHoveredIndex(index)}
           onMouseLeave={() => setHoveredIndex(null)}
-          className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-blue-100 hover:-translate-y-1 transition-all cursor-pointer p-4 text-center min-h-[100px] flex flex-col items-center justify-center relative overflow-hidden"
+          className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-blue-100 hover:-translate-y-1 transition-all duration-300 cursor-pointer p-4 text-center min-h-[100px] flex flex-col items-center justify-center relative overflow-hidden"
         >
           {/* Background gradient on hover */}
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity" />
