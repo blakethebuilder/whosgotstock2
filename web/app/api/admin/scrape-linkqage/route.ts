@@ -10,7 +10,7 @@ interface ScrapeResult {
   errors?: string[];
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const { supplier = 'linkqage', username, password, testMode = true } = await request.json();
     
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     // Path to the worker directory
     const workerPath = path.join(process.cwd(), '..', 'worker');
     
-    return new Promise((resolve) => {
+    return new Promise<NextResponse>((resolve) => {
       // Run the generic scraper
       const scraper = spawn('node', ['-e', `
         const { GenericScraper, SUPPLIER_CONFIGS } = require('./src/generic-scraper');

@@ -14,7 +14,7 @@ interface Product {
   inStock?: boolean;
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const { supplier, products }: { supplier: string, products: Product[] } = await request.json();
     
