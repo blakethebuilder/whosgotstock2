@@ -1,3 +1,4 @@
+// Generic Scraper Framework - Updated for production deployment
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 
