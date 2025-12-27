@@ -24,8 +24,15 @@ export default function Home() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [page, setPage] = useState(1);
-  const [guestMarkup] = useState(15);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  // Pricing settings from database
+  const [pricingSettings, setPricingSettings] = useState({
+    guest_markup: 15,
+    staff_markup: 10,
+    manager_markup: 5,
+    admin_markup: 0
+  });
 
   // Comparison State
   const [compareList, setCompareList] = useState<Product[]>([]);
@@ -47,9 +54,20 @@ export default function Home() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   useEffect(() => {
-    // Load suppliers
-    fetch('/api/suppliers').then(r => r.json()).then(data => {
-      if (Array.isArray(data)) setSuppliers(data);
+    // Load suppliers and pricing settings
+    Promise.all([
+      fetch('/api/suppliers').then(r => r.json()),
+      fetch('/api/admin/settings').then(r => r.json())
+    ]).then(([suppliersData, settingsData]) => {
+      if (Array.isArray(suppliersData)) setSuppliers(suppliersData);
+      if (settingsData) {
+        setPricingSettings({
+          guest_markup: parseInt(settingsData.guest_markup || '15'),
+          staff_markup: parseInt(settingsData.staff_markup || '10'),
+          manager_markup: parseInt(settingsData.manager_markup || '5'),
+          admin_markup: parseInt(settingsData.admin_markup || '0')
+        });
+      }
     }).catch(console.error);
   }, []);
 
@@ -65,7 +83,7 @@ export default function Home() {
     }
     // Load user role from localStorage
     const savedRole = localStorage.getItem('whosgotstock_user_role');
-    if (savedRole && ['public', 'staff', 'manager'].includes(savedRole)) {
+    if (savedRole && ['public', 'staff', 'manager', 'admin'].includes(savedRole)) {
       setUserRole(savedRole as UserRole);
     }
   }, []);
@@ -198,17 +216,28 @@ export default function Home() {
   const calculatePrice = (basePrice: string) => {
     const raw = parseFloat(basePrice);
 
-    // Higher markup for public, lower for staff/managers
-    let markup = guestMarkup; // Default 15%
-    if (userRole === 'staff') markup = 10;
-    if (userRole === 'manager') markup = 5;
+    // Get markup based on user role from database settings
+    let markup = pricingSettings.guest_markup; // Default
+    if (userRole === 'staff') markup = pricingSettings.staff_markup;
+    if (userRole === 'manager') markup = pricingSettings.manager_markup;
+    if (userRole === 'admin') markup = pricingSettings.admin_markup;
 
     const markedUp = raw * (1 + (markup / 100));
     const withVat = markedUp * 1.15; // 15% VAT
 
+    // Calculate discount information for staff/manager/admin
+    const guestPrice = raw * (1 + (pricingSettings.guest_markup / 100));
+    const discount = userRole !== 'public' ? guestPrice - markedUp : 0;
+    const discountPercentage = userRole !== 'public' ? 
+      ((guestPrice - markedUp) / guestPrice * 100) : 0;
+
     return {
       exVat: markedUp.toFixed(2),
-      incVat: withVat.toFixed(2)
+      incVat: withVat.toFixed(2),
+      originalPrice: guestPrice.toFixed(2),
+      discount: discount.toFixed(2),
+      discountPercentage: discountPercentage.toFixed(1),
+      hasDiscount: userRole !== 'public' && discount > 0
     };
   };
 
@@ -224,6 +253,7 @@ export default function Home() {
     // Get passphrases from environment variables
     const staffPassphrase = process.env.NEXT_PUBLIC_STAFF_PASSPHRASE || 'Smart@staff2024!';
     const managerPassphrase = process.env.NEXT_PUBLIC_MANAGER_PASSPHRASE || 'Smart@managers2024!';
+    const adminPassphrase = process.env.NEXT_PUBLIC_ADMIN_PASSPHRASE || 'Smart@admin2024!';
     
     if (passphrase === staffPassphrase) {
       setUserRole('staff');
@@ -232,6 +262,11 @@ export default function Home() {
       setPassphraseError('');
     } else if (passphrase === managerPassphrase) {
       setUserRole('manager');
+      setShowRoleModal(false);
+      setPassphrase('');
+      setPassphraseError('');
+    } else if (passphrase === adminPassphrase) {
+      setUserRole('admin');
       setShowRoleModal(false);
       setPassphrase('');
       setPassphraseError('');
@@ -292,10 +327,10 @@ export default function Home() {
             className={`flex-shrink-0 flex items-center space-x-2 bg-white/70 backdrop-blur-md px-3 sm:px-4 py-1.5 rounded-xl sm:rounded-2xl text-[11px] sm:text-[13px] shadow-sm border border-white/50 cursor-pointer hover:shadow-md transition-all ${userRole !== 'public' ? 'ring-2 ring-blue-100' : ''}`}
           >
             <span className="font-bold text-gray-800 capitalize truncate max-w-[50px] sm:max-w-none">{userRole}</span>
-            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${userRole === 'public' ? 'bg-gray-300' : userRole === 'staff' ? 'bg-blue-500' : 'bg-green-500'}`}></div>
+            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${userRole === 'public' ? 'bg-gray-300' : userRole === 'staff' ? 'bg-blue-500' : userRole === 'manager' ? 'bg-green-500' : 'bg-purple-500'}`}></div>
           </div>
 
-          {userRole === 'manager' && (
+          {(userRole === 'manager' || userRole === 'admin') && (
             <Link href="/admin" className="flex-shrink-0 text-[11px] sm:text-sm font-bold text-gray-500 hover:text-blue-600 px-3 sm:px-4 py-1.5 bg-white/70 backdrop-blur-md rounded-xl sm:rounded-2xl border border-white/50 shadow-sm transition-all hover:shadow-md">Admin</Link>
           )}
         </div>
@@ -626,6 +661,12 @@ export default function Home() {
 
                     <div className="mt-auto pt-4 border-t border-gray-50 flex items-end justify-between">
                       <div>
+                        {calculatePrice(product.price_ex_vat).hasDiscount && (
+                          <div className="mb-2">
+                            <p className="text-xs line-through text-gray-400">R {formatPrice(calculatePrice(product.price_ex_vat).originalPrice)}</p>
+                            <p className="text-xs font-bold text-green-600">Save R {formatPrice(calculatePrice(product.price_ex_vat).discount)} ({calculatePrice(product.price_ex_vat).discountPercentage}% off)</p>
+                          </div>
+                        )}
                         <div className="mb-1">
                           <p className="text-xl font-black text-gray-900 leading-tight">R {formatPrice(calculatePrice(product.price_ex_vat).exVat)}</p>
                           <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Excluding VAT</p>
@@ -704,7 +745,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowRoleModal(false)} />
           <div className="relative bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full animate-in zoom-in-95 duration-200">
             <h3 className="text-xl font-black text-gray-900 mb-2">Elevated Access</h3>
-            <p className="text-sm text-gray-500 mb-6">Enter passphrase to unlock staff or manager pricing tiers.</p>
+            <p className="text-sm text-gray-500 mb-6">Enter passphrase to unlock staff, manager, or admin pricing tiers.</p>
 
             <div className="space-y-4">
               <input

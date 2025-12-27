@@ -15,6 +15,9 @@ export async function GET() {
         // Default values
         if (!settings.update_interval_minutes) settings.update_interval_minutes = '60';
         if (!settings.guest_markup) settings.guest_markup = '15';
+        if (!settings.staff_markup) settings.staff_markup = '10';
+        if (!settings.manager_markup) settings.manager_markup = '5';
+        if (!settings.admin_markup) settings.admin_markup = '0';
 
         return NextResponse.json(settings);
     } catch (err: any) {
