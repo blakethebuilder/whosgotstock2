@@ -19,6 +19,9 @@ export default function AdminPage() {
     });
     const [loading, setLoading] = useState(true);
 
+    // Component visibility state
+    const [showScraper, setShowScraper] = useState(false);
+
     // New Supplier Form
     const [newName, setNewName] = useState('');
     const [newSlug, setNewSlug] = useState('');
@@ -85,7 +88,7 @@ export default function AdminPage() {
                 body: JSON.stringify({ 
                     action: 'toggle', 
                     id, 
-                    enabled: !supplier?.active 
+                    enabled: !supplier?.enabled 
                 })
             });
             refreshData();
@@ -333,13 +336,7 @@ export default function AdminPage() {
 
                     {/* Main Content Area */}
                     <div className="lg:col-span-3 space-y-6">
-                        {/* Manual Product Import */}
-                        <DistributorImport />
-
-                        {/* Generic Scraper */}
-                        <GenericScraper />
-
-                        {/* Suppliers Management */}
+                        {/* XML Suppliers Management - First */}
                         <div className="bg-white rounded-lg shadow-sm p-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">XML Suppliers Management</h2>
                             <div className="space-y-4">
@@ -356,26 +353,32 @@ export default function AdminPage() {
                                         <tbody className="bg-white divide-y divide-gray-200">
                                             {suppliers.map((supplier) => (
                                                 <tr key={supplier.id}>
-                                                    <td className="px-4 py-2 text-sm text-gray-900">{supplier.name}</td>
-                                                    <td className="px-4 py-2 text-sm text-gray-500">{supplier.type}</td>
+                                                    <td className="px-4 py-2 text-sm font-medium text-gray-900">{supplier.name}</td>
+                                                    <td className="px-4 py-2 text-sm text-gray-700">{supplier.type}</td>
                                                     <td className="px-4 py-2">
                                                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                                            supplier.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                                            supplier.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                                                         }`}>
-                                                            {supplier.active ? 'Active' : 'Inactive'}
+                                                            {supplier.enabled ? 'Active' : 'Inactive'}
                                                         </span>
                                                     </td>
                                                     <td className="px-4 py-2 text-sm">
                                                         <div className="flex gap-2">
                                                             <button
-                                                                onClick={() => handleToggleSupplier(supplier.id)}
-                                                                className="text-blue-600 hover:text-blue-700"
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    handleToggleSupplier(supplier.id);
+                                                                }}
+                                                                className="text-blue-600 hover:text-blue-700 font-medium"
                                                             >
-                                                                {supplier.active ? 'Disable' : 'Enable'}
+                                                                {supplier.enabled ? 'Disable' : 'Enable'}
                                                             </button>
                                                             <button
-                                                                onClick={() => handleDeleteSupplier(supplier.id)}
-                                                                className="text-red-600 hover:text-red-700"
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    handleDeleteSupplier(supplier.id);
+                                                                }}
+                                                                className="text-red-600 hover:text-red-700 font-medium"
                                                             >
                                                                 Delete
                                                             </button>
@@ -424,13 +427,62 @@ export default function AdminPage() {
                                         </select>
                                     </div>
                                     <button
-                                        onClick={handleAddSupplier}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            handleAddSupplier();
+                                        }}
                                         className="mt-3 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm font-medium"
                                     >
                                         Add XML Supplier
                                     </button>
                                 </div>
                             </div>
+                        </div>
+
+                        {/* Manual Product Import - Second */}
+                        <DistributorImport />
+
+                        {/* Generic Scraper - Last with close option */}
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                                        <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h2 className="text-lg font-semibold text-gray-900">Generic Web Scraper</h2>
+                                        <p className="text-sm text-gray-600">Experimental feature - Currently inactive</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setShowScraper(!showScraper)}
+                                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50"
+                                >
+                                    {showScraper ? (
+                                        <>
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                            </svg>
+                                            Hide
+                                        </>
+                                    ) : (
+                                        <>
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                            Show
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                            
+                            {showScraper && (
+                                <div className="p-6">
+                                    <GenericScraper />
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
