@@ -351,13 +351,13 @@ export default function Home() {
           {!hasSearched && (
             <div className="space-y-6 mb-12 animate-in fade-in slide-in-from-bottom-5 duration-700">
               <div className="inline-block px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-xs font-bold tracking-widest uppercase border border-blue-100 shadow-sm">
-                The Ultimate IT Sourcing Engine
+                For IT Companies & MSPs
               </div>
               <h2 className="text-5xl sm:text-6xl md:text-7xl font-black text-gray-900 leading-[0.95] tracking-tight">
                 Find Stock, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Instantly.</span>
               </h2>
               <p className="text-gray-500 text-xl sm:text-2xl font-medium max-w-3xl mx-auto leading-relaxed">
-                Aggregating stock from South Africa's leading IT suppliers into one seamless interface.
+                Compare pricing and stock levels across all major South African IT suppliers in one powerful search.
               </p>
             </div>
           )}
@@ -498,17 +498,19 @@ export default function Home() {
                 Powered by AI Technology
               </div>
               <h3 className="text-4xl md:text-5xl font-black text-gray-900 leading-[1.1] tracking-tight mb-6">
-                One Search. <br />
+                Stop Juggling Supplier Websites. <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
-                  10,000+ Products.
+                  Source Smarter.
                 </span>
               </h3>
               <div className="text-gray-500 text-lg font-medium leading-relaxed max-w-2xl mx-auto mb-10">
                 <p className="mb-4">
-                  WhosGotStock revolutionizes IT procurement in South Africa. We aggregate real-time inventory from the nation's top distributors into one lightning-fast search engine.
+                  Built specifically for IT companies and MSPs who need to compare pricing and stock levels across 
+                  Scoop, Esquire, Pinnacle, Mustek, and Miro. One search, all suppliers, instant results.
                 </p>
                 <p className="text-base">
-                  No more juggling multiple supplier websites. Compare pricing, check stock levels, and generate professional quotes in seconds.
+                  Generate professional quotes in seconds. Connect with Smart Integrate for procurement, 
+                  or use staff/manager portals for direct supplier orders.
                 </p>
               </div>
               <div className="flex flex-wrap justify-center gap-4 mb-12">
@@ -576,31 +578,89 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Built by Blake & AI - Footer */}
-            <div className="text-center space-y-4 py-12 border-t border-gray-100">
-              <div className="space-y-3">
-                <h3 className="text-lg font-bold text-gray-700 tracking-tight">
-                  Engineered by <span className="text-blue-600">Blake</span> & <span className="text-indigo-600">AI</span>
+            {/* Professional Footer with Disclaimer */}
+            <div className="text-center space-y-6 py-16 border-t border-gray-100">
+              {/* Main Value Proposition */}
+              <div className="space-y-4 mb-8">
+                <h3 className="text-xl font-bold text-gray-800 tracking-tight">
+                  Built for <span className="text-blue-600">IT Companies</span> & <span className="text-indigo-600">MSPs</span>
                 </h3>
-                <p className="text-gray-500 font-medium max-w-lg mx-auto leading-relaxed text-sm">
-                  Combining human expertise in South African IT markets with cutting-edge artificial intelligence to deliver the most advanced sourcing platform in the region.
-                </p>
+                <div className="max-w-4xl mx-auto text-gray-600 leading-relaxed space-y-4">
+                  <p className="text-base font-medium">
+                    Are you an IT company or Managed Service Provider constantly comparing prices across multiple suppliers? 
+                    Tired of checking stock levels on Scoop, Esquire, Pinnacle, Mustek, and Miro separately?
+                  </p>
+                  <p className="text-sm">
+                    <strong className="text-gray-800">WhosGotStock was born to solve this exact problem.</strong> This sourcing tool aggregates live inventory and pricing 
+                    from South Africa's major IT distributors into one powerful search interface, saving you hours of manual comparison work.
+                  </p>
+                </div>
               </div>
-              
-              {/* Enhanced feature highlights */}
-              <div className="flex justify-center items-center gap-8 text-xs text-gray-500 pt-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-sm"></div>
-                  <span className="font-medium">Lightning Performance</span>
+
+              {/* How It Works */}
+              <div className="max-w-3xl mx-auto mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                  <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                    <h4 className="font-bold text-blue-800 mb-2">🏢 For IT Companies & MSPs</h4>
+                    <p className="text-blue-700">
+                      Generate professional quotes instantly. Our quote tool connects with Smart Integrate for procurement assistance, 
+                      or staff/manager portals can generate direct supplier orders.
+                    </p>
+                  </div>
+                  <div className="bg-amber-50 p-4 rounded-xl border border-amber-100">
+                    <h4 className="font-bold text-amber-800 mb-2">⚠️ Not an E-commerce Store</h4>
+                    <p className="text-amber-700">
+                      We're a sourcing tool, not a retailer. We help you find and compare products, 
+                      then facilitate orders through established supplier relationships.
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-gradient-to-r from-green-500 to-green-600 rounded-full shadow-sm"></div>
-                  <span className="font-medium">Always Accurate</span>
+              </div>
+
+              {/* Supplier Network */}
+              <div className="mb-8">
+                <h4 className="text-sm font-bold text-gray-600 uppercase tracking-widest mb-4">Integrated Suppliers</h4>
+                <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-gray-500">
+                  {[
+                    'Scoop', 'Esquire', 'Pinnacle', 'Mustek', 'Miro'
+                  ].map(supplier => (
+                    <span
+                      key={supplier}
+                      className="text-base font-bold text-gray-500 px-3 py-1 rounded-lg bg-gray-50 border border-gray-100"
+                    >
+                      {supplier}
+                    </span>
+                  ))}
+                  <span className="text-sm text-blue-600 font-medium italic">+ more suppliers coming soon</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full shadow-sm"></div>
-                  <span className="font-medium">Built for Business</span>
+              </div>
+
+              {/* Legal Disclaimer */}
+              <div className="max-w-4xl mx-auto pt-6 border-t border-gray-100">
+                <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                  <h4 className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">Important Disclaimer</h4>
+                  <div className="text-xs text-gray-600 leading-relaxed space-y-2">
+                    <p>
+                      <strong>WhosGotStock is a sourcing tool, not a retailer.</strong> We aggregate product information from supplier feeds 
+                      and cannot be held liable for pricing errors, stock discrepancies, or outdated information provided by suppliers.
+                    </p>
+                    <p>
+                      All pricing and availability information is sourced directly from supplier systems and may not reflect real-time accuracy. 
+                      Final pricing, availability, and terms are subject to confirmation with the respective suppliers.
+                    </p>
+                    <p>
+                      This platform is designed to assist IT professionals in product sourcing and comparison. 
+                      Always verify critical information directly with suppliers before making purchasing decisions.
+                    </p>
+                  </div>
                 </div>
+              </div>
+
+              {/* Powered By */}
+              <div className="pt-4">
+                <p className="text-xs text-gray-400 font-medium">
+                  Powered by advanced AI technology • Built for the South African IT industry
+                </p>
               </div>
             </div>
           </div>
