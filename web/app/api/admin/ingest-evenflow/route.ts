@@ -51,16 +51,22 @@ function mapColumns(headerRow: any[]): { [key: string]: number } {
   headerRow.forEach((cell, index) => {
     const cellText = String(cell || '').toLowerCase().trim();
     
-    // Map SKU/Item Code columns
-    if (cellText.includes('item code') || cellText.includes('ef code') || cellText.includes('model') || cellText === 'sku') {
+    // Map SKU/Item Code columns - prioritize EF Code
+    if (cellText.includes('ef code') || cellText === 'ef code') {
+      mapping.sku = index;
+    }
+    else if (!mapping.sku && (cellText.includes('item code') || cellText.includes('model') || cellText === 'sku')) {
       mapping.sku = index;
     }
     // Map description columns
     else if (cellText.includes('description') || cellText.includes('name') || cellText.includes('product')) {
       mapping.name = index;
     }
-    // Map price columns
-    else if (cellText.includes('price') || cellText.includes('cost') || cellText.includes('amount')) {
+    // Map price columns - prioritize Standard Price, then Selling Price
+    else if (cellText.includes('standard price') || cellText === 'standard price') {
+      mapping.price = index;
+    }
+    else if (!mapping.price && (cellText.includes('selling price') || cellText.includes('price') || cellText.includes('cost') || cellText.includes('amount'))) {
       mapping.price = index;
     }
   });
