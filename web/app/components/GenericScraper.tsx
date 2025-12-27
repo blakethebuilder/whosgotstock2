@@ -45,6 +45,8 @@ export default function GenericScraper() {
   const [isScrapingFull, setIsScrapingFull] = useState(false);
   const [result, setResult] = useState<ScrapeResult | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [logs, setLogs] = useState<string[]>([]);
+  const [isConnecting, setIsConnecting] = useState(false);
 
   const currentSupplier = SUPPLIERS.find(s => s.name === selectedSupplier) || SUPPLIERS[0];
 
@@ -66,8 +68,19 @@ export default function GenericScraper() {
     }
     
     setResult(null);
+    setLogs(['🚀 Starting scraper...']);
+    setIsConnecting(true);
+
+    // Add timeout for user feedback
+    const timeoutId = setTimeout(() => {
+      if (isConnecting) {
+        setLogs(prev => [...prev, '⏳ Still connecting... This may take a moment']);
+      }
+    }, 5000);
 
     try {
+      setLogs(prev => [...prev, '📡 Sending request to scraper...']);
+      
       const response = await fetch('/api/admin/scrape-linkqage', {
         method: 'POST',
         headers: {
@@ -81,12 +94,27 @@ export default function GenericScraper() {
         }),
       });
 
+      clearTimeout(timeoutId);
+      setIsConnecting(false);
+      setLogs(prev => [...prev, '✅ Response received from server']);
+
       const data = await response.json();
+      
+      if (data.success) {
+        setLogs(prev => [...prev, `🎯 Success! Found ${data.productsFound || 0} products`]);
+      } else {
+        setLogs(prev => [...prev, `❌ Error: ${data.message}`]);
+      }
+      
       setResult(data);
     } catch (error: any) {
+      clearTimeout(timeoutId);
+      setIsConnecting(false);
+      const errorMsg = `Request failed: ${error.message}`;
+      setLogs(prev => [...prev, `❌ ${errorMsg}`]);
       setResult({
         success: false,
-        message: `Request failed: ${error.message}`
+        message: errorMsg
       });
     } finally {
       setIsScrapingTest(false);
@@ -107,6 +135,28 @@ export default function GenericScraper() {
           <p className="text-sm text-gray-600">Scrape products from various supplier portals</p>
         </div>
       </div>
+
+      {/* Real-time Logs */}
+      {(isScrapingTest || isScrapingFull || logs.length > 0) && !result && (
+        <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm mb-4">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            <span className="text-green-300 font-semibold">Live Status</span>
+          </div>
+          <div className="space-y-1 max-h-32 overflow-y-auto">
+            {logs.map((log, index) => (
+              <div key={index} className="text-xs">
+                {log}
+              </div>
+            ))}
+            {(isScrapingTest || isScrapingFull) && (
+              <div className="text-xs text-yellow-400 animate-pulse">
+                {isConnecting ? '🔄 Connecting to website...' : '⚙️ Processing...'}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {!result && (
         <div className="space-y-4">
@@ -311,7 +361,10 @@ export default function GenericScraper() {
 
           <div className="flex gap-3">
             <button
-              onClick={() => setResult(null)}
+              onClick={() => {
+                setResult(null);
+                setLogs([]);
+              }}
               className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
             >
               Run Another Scrape
