@@ -125,24 +125,40 @@ async function ingestData(client) {
                 if (!Array.isArray(raw)) raw = raw ? [raw] : [];
 
                 products = raw.map(p => {
-                    // Better stock quantity handling for Esquire
+                    // Enhanced stock quantity handling for Esquire
                     let stockQty = 0;
-                    if (p.AvailableQty) {
-                        // Try to parse as number first
-                        const numQty = parseInt(p.AvailableQty);
-                        if (!isNaN(numQty)) {
-                            stockQty = numQty;
+                    
+                    console.log(`Debug - Product: ${p.ProductCode}, AvailableQty: "${p.AvailableQty}" (type: ${typeof p.AvailableQty})`);
+                    
+                    if (p.AvailableQty !== undefined && p.AvailableQty !== null) {
+                        // First try direct number parsing
+                        const directNum = parseFloat(p.AvailableQty);
+                        if (!isNaN(directNum) && directNum >= 0) {
+                            stockQty = Math.floor(directNum);
                         } else if (typeof p.AvailableQty === 'string') {
-                            // Handle string values like "Yes", "No", "In Stock", etc.
                             const qtyStr = p.AvailableQty.toLowerCase().trim();
-                            if (qtyStr === 'yes' || qtyStr === 'in stock' || qtyStr === 'available') {
-                                stockQty = 1; // Show as 1 in stock instead of 100
-                            } else if (qtyStr === 'no' || qtyStr === 'out of stock' || qtyStr === 'unavailable') {
+                            
+                            // Handle various string formats
+                            if (qtyStr === 'yes' || qtyStr === 'y' || qtyStr === 'true' || qtyStr === '1') {
+                                stockQty = 1;
+                            } else if (qtyStr === 'no' || qtyStr === 'n' || qtyStr === 'false' || qtyStr === '0') {
+                                stockQty = 0;
+                            } else if (qtyStr.includes('in stock') || qtyStr.includes('available')) {
+                                // Try to extract number from "5 in stock", "10 available", etc.
+                                const match = qtyStr.match(/(\d+)/);
+                                stockQty = match ? parseInt(match[1]) : 1;
+                            } else if (qtyStr.includes('out of stock') || qtyStr.includes('unavailable')) {
                                 stockQty = 0;
                             } else {
-                                // Try to extract number from string like "5 units", "10+", etc.
-                                const match = qtyStr.match(/(\d+)/);
-                                stockQty = match ? parseInt(match[1]) : 0;
+                                // Last resort: try to extract any number from the string
+                                const numMatch = qtyStr.match(/(\d+)/);
+                                if (numMatch) {
+                                    stockQty = parseInt(numMatch[1]);
+                                } else {
+                                    // If we can't parse anything, default to 0
+                                    stockQty = 0;
+                                    console.log(`Warning: Could not parse AvailableQty "${p.AvailableQty}" for product ${p.ProductCode}`);
+                                }
                             }
                         }
                     }
