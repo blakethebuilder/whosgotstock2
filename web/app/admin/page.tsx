@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import DistributorImport from '../components/DistributorImport';
+import LinkqageScraper from '../components/LinkqageScraper';
 
 export default function AdminPage() {
     const [suppliers, setSuppliers] = useState<any[]>([]);
@@ -209,6 +210,9 @@ export default function AdminPage() {
 
                 {/* Distributor Import Section */}
                 <DistributorImport />
+
+                {/* Linkqage Scraper Section */}
+                <LinkqageScraper />
 
                 {/* Suppliers Section */}
                 <div className="bg-white p-6 rounded shadow">
