@@ -195,36 +195,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.log('Manual ingest: Connecting to database, products to insert:', Object.keys(allProducts).length);
     
     try {
-      // First check if table exists
-      const tableCheck = await client.query(`
-        SELECT EXISTS (
-          SELECT FROM information_schema.tables 
-          WHERE table_schema = 'public' 
-          AND table_name = 'manual_products'
-        );
-      `);
-      
-      if (!tableCheck.rows[0].exists) {
-        console.log('Manual ingest: manual_products table does not exist, creating...');
-        await client.query(`
-          CREATE TABLE manual_products (
-            id SERIAL PRIMARY KEY,
-            supplier_sku VARCHAR(255) NOT NULL,
-            supplier_name VARCHAR(255) NOT NULL,
-            name VARCHAR(255) NOT NULL,
-            brand VARCHAR(255),
-            price_ex_vat DECIMAL(10, 2) NOT NULL,
-            qty_on_hand INTEGER DEFAULT 0,
-            category VARCHAR(255),
-            description TEXT,
-            last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            raw_data JSONB,
-            UNIQUE(supplier_name, supplier_sku)
-          );
-        `);
-        console.log('Manual ingest: manual_products table created');
-      }
-      
       await client.query('BEGIN');
 
       for (const product of Object.values(allProducts)) {
@@ -234,16 +204,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
         const upsertQuery = `
           INSERT INTO manual_products (
-            supplier_sku, supplier_name, name, 
-            price_ex_vat, category, description,
+            ef_code, supplier_name, product_name, 
+            standard_price, category, description,
             raw_data, last_updated
           ) VALUES (
             $1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP
           )
-          ON CONFLICT (supplier_name, supplier_sku) 
+          ON CONFLICT (supplier_name, ef_code) 
           DO UPDATE SET 
-            name = EXCLUDED.name,
-            price_ex_vat = EXCLUDED.price_ex_vat,
+            product_name = EXCLUDED.product_name,
+            standard_price = EXCLUDED.standard_price,
             category = EXCLUDED.category,
             description = EXCLUDED.description,
             raw_data = EXCLUDED.raw_data,
