@@ -48,7 +48,7 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>
         </div>
       </div>
@@ -126,7 +126,7 @@ export default function DashboardPage() {
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Link href="/" className="text-2xl font-black text-blue-600 hover:opacity-80">
+              <Link href="/" className="text-2xl font-black text-orange-600 hover:opacity-80">
                 WhosGotStock
               </Link>
               <span className="text-gray-300">|</span>
@@ -175,21 +175,21 @@ export default function DashboardPage() {
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Usage Statistics</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                    <div className="bg-orange-50 rounded-xl p-4 border border-orange-100">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm font-medium text-blue-600">Searches This Month</p>
-                          <p className="text-2xl font-bold text-blue-900">
+                          <p className="text-sm font-medium text-orange-600">Searches This Month</p>
+                          <p className="text-2xl font-bold text-orange-900">
                             {usageData?.searchesThisMonth || 0}
                             {user.role === 'public' && (
-                              <span className="text-sm font-normal text-blue-600">
+                              <span className="text-sm font-normal text-orange-600">
                                 /{usageData?.searchLimit || 25}
                               </span>
                             )}
                           </p>
                         </div>
-                        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                          <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                          <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                           </svg>
                         </div>

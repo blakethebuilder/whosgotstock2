@@ -99,13 +99,13 @@ export default function OrderModal({ isOpen, onClose, items, totalExVat, totalIn
                         return (
                             <div key={supplier} className="space-y-4">
                                 <div className="flex items-center justify-between">
-                                    <h3 className="text-xl font-extrabold text-blue-600 flex items-center gap-2">
-                                        <span className="w-2 h-6 bg-blue-600 rounded-full"></span>
+                                    <h3 className="text-xl font-extrabold text-orange-600 flex items-center gap-2">
+                                        <span className="w-2 h-6 bg-orange-600 rounded-full"></span>
                                         {supplier}
                                     </h3>
                                     <button
                                         onClick={() => copyToClipboard(template, supplier)}
-                                        className="text-xs font-bold bg-blue-50 text-blue-600 px-4 py-2 rounded-full hover:bg-blue-600 hover:text-white transition-all flex items-center gap-2 border border-blue-100"
+                                        className="text-xs font-bold bg-orange-50 text-orange-600 px-4 py-2 rounded-full hover:bg-orange-600 hover:text-white transition-all flex items-center gap-2 border border-orange-100"
                                     >
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
                                         Copy Template
@@ -124,7 +124,7 @@ export default function OrderModal({ isOpen, onClose, items, totalExVat, totalIn
                                 <div className="p-8 border-t border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
                     <div className="text-center sm:text-left">
                         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Grand Total (Inc VAT)</p>
-                        <p className="text-3xl font-black text-blue-700 tracking-tighter">R {formatPrice(totalIncVat)}</p>
+                        <p className="text-3xl font-black text-orange-700 tracking-tighter">R {formatPrice(totalIncVat)}</p>
                     </div>
                     <button
                         onClick={onClose}

@@ -219,7 +219,7 @@ export default function AdminPage() {
                         
                         <button
                             onClick={handleAuth}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+                            className="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 px-4 rounded-lg font-medium transition-colors"
                         >
                             Access Admin Portal
                         </button>
@@ -233,7 +233,7 @@ export default function AdminPage() {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <div className="w-12 h-12 border-4 border-orange-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                     <p className="text-gray-600">Loading admin portal...</p>
                 </div>
             </div>
@@ -250,7 +250,7 @@ export default function AdminPage() {
                         <div className="flex items-center gap-4">
                             <a 
                                 href="/" 
-                                className="text-blue-600 hover:text-blue-700 font-medium"
+                                className="text-orange-600 hover:text-orange-700 font-medium"
                             >
                                 Back to Search
                             </a>
@@ -286,7 +286,7 @@ export default function AdminPage() {
                                 </div>
                                 <button
                                     onClick={handleUpdateSettings}
-                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md text-sm font-medium"
+                                    className="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 px-4 rounded-md text-sm font-medium"
                                 >
                                     Save Settings
                                 </button>
