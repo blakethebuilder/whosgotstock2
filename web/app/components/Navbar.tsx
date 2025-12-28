@@ -69,8 +69,8 @@ export default function Navbar({
             )}
           </button>
 
-          {/* Admin Portal Link - Show when admin access */}
-          {(userRole === 'admin' || userRole === 'management') && (
+          {/* Admin Portal Link - Show ONLY for admin access */}
+          {userRole === 'admin' && (
             <a
               href="/admin"
               className="flex items-center space-x-2 p-2.5 bg-green-50 dark:bg-green-50 backdrop-blur-sm rounded-xl border border-green-200 dark:border-green-200 hover:bg-green-100 dark:hover:bg-green-100 transition-all shadow-sm hover:shadow-md"
@@ -131,7 +131,7 @@ export default function Navbar({
                       >
                         Account Settings
                       </Link>
-                      {(user.role === 'management' || user.role === 'admin') && (
+                      {user.role === 'admin' && (
                         <Link
                           href="/admin"
                           className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-700 hover:bg-gray-50 dark:hover:bg-gray-50"

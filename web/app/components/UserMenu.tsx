@@ -103,7 +103,7 @@ export default function UserMenu() {
                 Account Settings
               </Link>
               
-              {(user.role === 'management' || user.role === 'admin') && (
+              {user.role === 'admin' && (
                 <Link
                   href="/admin"
                   className="flex items-center px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"

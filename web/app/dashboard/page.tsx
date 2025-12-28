@@ -269,7 +269,7 @@ export default function DashboardPage() {
                 >
                   Account Settings
                 </Link>
-              {(user.role === 'management' || user.role === 'admin') && (
+              {user.role === 'admin' && (
                   <Link
                     href="/admin"
                     className="btn-secondary w-full text-center block"
