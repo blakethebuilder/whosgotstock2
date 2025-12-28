@@ -929,7 +929,7 @@ export default function Home() {
             </div>
 
             {/* Internal Access Tiers */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 sm:mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 sm:mb-8">
               {/* Team */}
               <div className="border-2 border-blue-200 rounded-2xl p-4 sm:p-6 bg-blue-50/50">
                 <div className="text-center mb-3 sm:mb-4">
@@ -947,7 +947,7 @@ export default function Home() {
               {/* Management */}
               <div className="border-2 border-purple-200 rounded-2xl p-4 sm:p-6 bg-purple-50/50 relative">
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold">
-                  Recommended
+                  Enhanced
                 </div>
                 <div className="text-center mb-3 sm:mb-4">
                   <h4 className="text-base sm:text-lg font-bold text-purple-900">Management</h4>
@@ -955,23 +955,9 @@ export default function Home() {
                 </div>
                 <ul className="text-xs text-purple-800 space-y-1 sm:space-y-2 mb-4">
                   <li>✓ Everything in Team</li>
-                  <li>✓ Preferred pricing</li>
                   <li>✓ Priority support</li>
                   <li>✓ Advanced reporting</li>
-                </ul>
-              </div>
-
-              {/* Admin */}
-              <div className="border-2 border-green-200 rounded-2xl p-4 sm:p-6 bg-green-50/50">
-                <div className="text-center mb-3 sm:mb-4">
-                  <h4 className="text-base sm:text-lg font-bold text-green-900">Admin</h4>
-                  <p className="text-sm text-green-700">Administrative access</p>
-                </div>
-                <ul className="text-xs text-green-800 space-y-1 sm:space-y-2 mb-4">
-                  <li>✓ Everything in Management</li>
-                  <li>✓ Best available pricing</li>
-                  <li>✓ Full system access</li>
-                  <li>✓ Backend administration</li>
+                  <li>✓ Enhanced features</li>
                 </ul>
               </div>
             </div>
@@ -993,7 +979,7 @@ export default function Home() {
             {/* Access Code Entry - Always Visible */}
             <div className="border-t pt-4 sm:pt-6 bg-white sticky bottom-0">
               <p className="text-sm text-gray-600 mb-4 text-center font-medium">
-                Have an access code for internal pricing?
+                Have an access code for enhanced features?
               </p>
               <div className="space-y-4">
                 <input
