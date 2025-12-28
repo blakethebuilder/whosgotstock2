@@ -6,8 +6,7 @@ import CategoryTiles from './components/CategoryTiles';
 import CartDrawer from './components/CartDrawer';
 import ProductDetailModal from './components/ProductDetailModal';
 import ComparisonModal from './components/ComparisonModal';
-import UserMenu from './components/UserMenu';
-import ThemeToggle from './components/ThemeToggle';
+import Navbar from './components/Navbar';
 import { Product, Supplier, CartItem, UserRole, UsageStats } from './types';
 import { debounce } from '@/lib/debounce';
 import { calculatePrice, formatPrice } from '@/lib/pricing';
@@ -353,57 +352,15 @@ export default function Home() {
   };
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans selection:bg-blue-100 dark:selection:bg-blue-900 selection:text-blue-900 dark:selection:text-blue-100 transition-colors duration-300">
-      {/* Navbarish Header */}
-      <div className="absolute top-0 w-full p-4 sm:p-6 flex justify-between items-center z-50 gap-4">
-        <div className="flex-shrink-0">
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 cursor-pointer hover:opacity-80 transition-opacity" onClick={clearSearch}>
-            WhosGotStock
-          </h1>
-        </div>
-        <div className="flex gap-2 sm:gap-4 items-center">
-          {/* Theme Toggle */}
-          <ThemeToggle />
-
-          {/* Cart Trigger */}
-          <button
-            onClick={() => setIsCartOpen(true)}
-            className="flex-shrink-0 p-2 sm:p-2.5 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all bg-white/70 dark:bg-gray-800/70 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-sm border border-white/50 dark:border-gray-700/50 hover:shadow-md active:scale-95"
-            title="View Quote Cart"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-            {cart.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-gradient-to-br from-red-500 to-pink-600 text-white text-[9px] font-bold w-4.5 h-4.5 flex items-center justify-center rounded-full shadow-sm border-2 border-white dark:border-gray-800">
-                {cart.reduce((s, i) => s + i.quantity, 0)}
-              </span>
-            )}
-          </button>
-
-          {/* User Menu - New Auth System */}
-          <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-sm border border-white/50 dark:border-gray-700/50">
-            <UserMenu />
-          </div>
-
-          {/* Legacy Role Switch - Fallback */}
-          <div
-            onClick={handleRoleSwitch}
-            className={`flex-shrink-0 flex items-center space-x-2 bg-white/70 dark:bg-gray-800/70 backdrop-blur-md px-3 sm:px-4 py-1.5 rounded-xl sm:rounded-2xl text-[11px] sm:text-[13px] shadow-sm border border-white/50 dark:border-gray-700/50 cursor-pointer hover:shadow-md transition-all ${userRole !== 'free' ? 'ring-2 ring-blue-100 dark:ring-blue-900' : ''}`}
-          >
-            <span className="font-bold text-gray-800 dark:text-gray-200 capitalize truncate max-w-[50px] sm:max-w-none">
-              {userRole === 'free' ? 'Free' : userRole === 'professional' ? 'Pro' : userRole === 'enterprise' ? 'Enterprise' : userRole === 'staff' ? 'Staff' : 'Partner'}
-            </span>
-            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${userRole === 'free' ? 'bg-gray-300 dark:bg-gray-600' : userRole === 'professional' ? 'bg-blue-500' : userRole === 'enterprise' ? 'bg-purple-500' : userRole === 'staff' ? 'bg-orange-500' : 'bg-green-500'}`}></div>
-            {userRole === 'free' && (
-              <span className="text-[9px] text-gray-500 dark:text-gray-400 hidden sm:inline">
-                {usageStats.searchesThisMonth}/{usageStats.searchLimit}
-              </span>
-            )}
-          </div>
-
-          {(userRole === 'enterprise' || userRole === 'staff' || userRole === 'partner') && (
-            <Link href="/admin" className="flex-shrink-0 text-[11px] sm:text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 px-3 sm:px-4 py-1.5 bg-white/70 dark:bg-gray-800/70 backdrop-blur-md rounded-xl sm:rounded-2xl border border-white/50 dark:border-gray-700/50 shadow-sm transition-all hover:shadow-md">Admin</Link>
-          )}
-        </div>
-      </div>
+      {/* Navigation */}
+      <Navbar
+        cart={cart}
+        onCartOpen={() => setIsCartOpen(true)}
+        userRole={userRole}
+        usageStats={usageStats}
+        onRoleSwitch={handleRoleSwitch}
+        onClearSearch={clearSearch}
+      />
 
       {/* Hero Section */}
       <div className={`transition-all duration-700 ease-in-out relative overflow-hidden ${hasSearched ? 'pt-24 pb-8 min-h-[auto]' : 'min-h-[85vh] flex flex-col justify-center items-center'}`}>
