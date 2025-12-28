@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from './AuthProvider';
-import ThemeToggle from './ThemeToggle';
 import { CartItem, UserRole, UsageStats } from '../types';
 
 interface NavbarProps {
@@ -51,7 +50,7 @@ export default function Navbar({
         {/* Right Side Actions */}
         <div className="flex items-center space-x-3">
           {/* Theme Toggle */}
-          <ThemeToggle />
+          {/* Removed - keeping light theme only */}
 
           {/* Quote Cart */}
           <button
@@ -89,13 +88,13 @@ export default function Navbar({
             <div className="relative">
               <button
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex items-center space-x-2 p-2 bg-white/90 dark:bg-white/90 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-gray-200/50 hover:bg-white dark:hover:bg-white transition-all shadow-sm hover:shadow-md"
+                className="flex items-center space-x-2 p-2 bg-white/90 backdrop-blur-sm rounded-xl border border-gray-200/50 hover:bg-white transition-all shadow-sm hover:shadow-md"
               >
                 <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
                   {user.firstName.charAt(0)}{user.lastName.charAt(0)}
                 </div>
                 <div className="hidden sm:block text-left">
-                  <div className="text-sm font-medium text-gray-900 dark:text-gray-900">
+                  <div className="text-sm font-medium text-gray-900">
                     {user.firstName}
                   </div>
                   <div className={`text-xs px-2 py-0.5 rounded-full text-white ${getRoleColor(user.role)}`}>
@@ -108,13 +107,13 @@ export default function Navbar({
               {isUserMenuOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setIsUserMenuOpen(false)} />
-                  <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-white rounded-xl shadow-xl border border-gray-200 dark:border-gray-200 z-50">
-                    <div className="p-4 border-b border-gray-100 dark:border-gray-100">
-                      <p className="font-semibold text-gray-900 dark:text-gray-900">
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-200 z-50">
+                    <div className="p-4 border-b border-gray-100">
+                      <p className="font-semibold text-gray-900">
                         {user.firstName} {user.lastName}
                       </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-600">{user.email}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-500">{user.companyName}</p>
+                      <p className="text-sm text-gray-600">{user.email}</p>
+                      <p className="text-xs text-gray-500">{user.companyName}</p>
                     </div>
                     <div className="py-2">
                       <Link

@@ -7,35 +7,29 @@
   --foreground: #171717;
 }
 
-.dark {
-  --background: #0f172a;
-  --foreground: #f1f5f9;
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Component Classes for Consistency */
 @layer components {
   /* Button Styles */
   .btn-primary {
-    @apply bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all duration-200 shadow-sm hover:shadow-md;
+    @apply bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all duration-200 shadow-sm hover:shadow-md;
   }
   
   .btn-secondary {
-    @apply bg-gray-100 hover:bg-gray-200 dark:bg-gray-100 dark:hover:bg-gray-200 text-gray-900 dark:text-gray-900 px-6 py-3 rounded-xl font-bold transition-all duration-200;
+    @apply bg-gray-100 hover:bg-gray-200 text-gray-900 px-6 py-3 rounded-xl font-bold transition-all duration-200;
   }
   
   .btn-success {
-    @apply bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold transition-all duration-200;
+    @apply bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold transition-all duration-200;
   }
   
   .btn-danger {
-    @apply bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold transition-all duration-200;
+    @apply bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold transition-all duration-200;
   }
   
   .btn-sm {
@@ -48,11 +42,11 @@ body {
 
   /* Card Styles */
   .card {
-    @apply bg-white dark:bg-white rounded-2xl shadow-sm border border-gray-100 dark:border-gray-200 p-6 transition-all duration-200;
+    @apply bg-white rounded-2xl shadow-sm border border-gray-100 p-6 transition-all duration-200;
   }
   
   .card-hover {
-    @apply hover:shadow-lg hover:border-gray-200 dark:hover:border-gray-300;
+    @apply hover:shadow-lg hover:border-gray-200;
   }
   
   .card-compact {
@@ -61,7 +55,7 @@ body {
 
   /* Input Styles */
   .input-field {
-    @apply w-full px-4 py-3 border border-gray-300 dark:border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-900 bg-white dark:bg-white placeholder-gray-400 dark:placeholder-gray-500;
+    @apply w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 bg-white placeholder-gray-400;
   }
   
   .input-field:focus {
@@ -78,39 +72,35 @@ body {
   }
   
   .badge-success {
-    @apply bg-green-100 dark:bg-green-100 text-green-800 dark:text-green-800;
+    @apply bg-green-100 text-green-800;
   }
   
   .badge-danger {
-    @apply bg-red-100 dark:bg-red-100 text-red-800 dark:text-red-800;
+    @apply bg-red-100 text-red-800;
   }
   
   .badge-warning {
-    @apply bg-amber-100 dark:bg-amber-100 text-amber-800 dark:text-amber-800;
+    @apply bg-amber-100 text-amber-800;
   }
   
   .badge-info {
-    @apply bg-blue-100 dark:bg-blue-100 text-blue-800 dark:text-blue-800;
+    @apply bg-blue-100 text-blue-800;
   }
 
   /* Pricing Tier Colors */
-  .tier-free {
-    @apply text-red-600 dark:text-red-600 border-red-200 dark:border-red-200 bg-red-50 dark:bg-red-50;
+  .tier-public {
+    @apply text-red-600 border-red-200 bg-red-50;
   }
   
-  .tier-professional {
-    @apply text-blue-600 dark:text-blue-600 border-blue-200 dark:border-blue-200 bg-blue-50 dark:bg-blue-50;
+  .tier-team {
+    @apply text-blue-600 border-blue-200 bg-blue-50;
   }
   
-  .tier-enterprise {
-    @apply text-purple-600 dark:text-purple-600 border-purple-200 dark:border-purple-200 bg-purple-50 dark:bg-purple-50;
+  .tier-management {
+    @apply text-purple-600 border-purple-200 bg-purple-50;
   }
   
-  .tier-staff {
-    @apply text-orange-600 dark:text-orange-600 border-orange-200 dark:border-orange-200 bg-orange-50 dark:bg-orange-50;
-  }
-  
-  .tier-partner {
-    @apply text-green-600 dark:text-green-600 border-green-200 dark:border-green-200 bg-green-50 dark:bg-green-50;
+  .tier-admin {
+    @apply text-green-600 border-green-200 bg-green-50;
   }
 }
