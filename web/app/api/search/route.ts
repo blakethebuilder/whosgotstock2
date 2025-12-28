@@ -24,20 +24,10 @@ export async function GET(request: Request) {
     return NextResponse.json(cached);
   }
 
-  // Simple query for main products only (for now)
-  let sql = `
-    SELECT 
-      p.id, p.supplier_sku, p.name, p.brand, p.price_ex_vat, 
-      p.qty_on_hand, p.image_url,
-      s.name as supplier_name, s.slug as supplier_slug,
-      p.last_updated
-    FROM products p
-    JOIN suppliers s ON p.supplier_name = s.name
-    WHERE 1=1
-  `;
-
+  // Build separate queries for main products and manual products
   const params: any[] = [];
-  let conditions = '';
+  let mainProductsWhere = '1=1';
+  let manualProductsWhere = '1=1';
 
   // Enhanced Search Logic with synonyms and fuzzy matching
   if (rawQuery) {
@@ -45,7 +35,7 @@ export async function GET(request: Request) {
     const searchTerms = expandSearchTerms(normalizedQuery);
     
     // Create OR conditions for main products
-    const searchConditions = searchTerms.map((term) => {
+    const mainSearchConditions = searchTerms.map((term) => {
       params.push(`%${term}%`);
       const paramIndex = params.length;
       return `(
@@ -55,14 +45,67 @@ export async function GET(request: Request) {
       )`;
     });
     
-    conditions += ` AND (${searchConditions.join(' OR ')})`;
+    // Create OR conditions for evenflow products (same terms, different param indices)
+    const manualSearchConditions = searchTerms.map((term) => {
+      params.push(`%${term}%`);
+      const paramIndex = params.length;
+      return `(
+        e.product_name ILIKE $${paramIndex} OR 
+        e.ef_code ILIKE $${paramIndex} OR 
+        e.category ILIKE $${paramIndex}
+      )`;
+    });
+    
+    mainProductsWhere += ` AND (${mainSearchConditions.join(' OR ')})`;
+    manualProductsWhere += ` AND (${manualSearchConditions.join(' OR ')})`;
   }
 
   // Supplier Filter
-  if (supplier && supplier !== 'evenflow') {
-    params.push(supplier);
-    conditions += ` AND s.slug = $${params.length}`;
+  if (supplier) {
+    if (supplier === 'evenflow' || supplier === 'even-flow' || supplier === 'Even Flow') {
+      // Only include evenflow products for EvenFlow
+      params.push('Even Flow');
+      manualProductsWhere += ` AND 'Even Flow' = $${params.length}`;
+      mainProductsWhere += ` AND 1=0`; // Exclude main products
+    } else {
+      // Only include main products for other suppliers
+      params.push(supplier);
+      mainProductsWhere += ` AND s.slug = $${params.length}`;
+      manualProductsWhere += ` AND 1=0`; // Exclude evenflow products
+    }
   }
+
+  // Enhanced query that includes both main products and manual products
+  let sql = `
+    SELECT 
+      p.id, p.supplier_sku, p.name, p.brand, p.price_ex_vat, 
+      p.qty_on_hand, p.image_url, p.supplier_name, p.supplier_slug,
+      p.last_updated, p.category, p.description
+    FROM (
+      -- Main products
+      SELECT 
+        p.id, p.supplier_sku, p.name, p.brand, p.price_ex_vat, 
+        p.qty_on_hand, p.image_url, s.name as supplier_name, s.slug as supplier_slug,
+        p.last_updated, p.category, p.description
+      FROM products p
+      JOIN suppliers s ON p.supplier_name = s.name
+      WHERE ${mainProductsWhere}
+      
+      UNION ALL
+      
+      -- EvenFlow products
+      SELECT 
+        e.id + 100000 as id, e.ef_code as supplier_sku, e.product_name as name, 
+        '' as brand, e.standard_price as price_ex_vat, 
+        999 as qty_on_hand, '' as image_url, 'Even Flow' as supplier_name, 'evenflow' as supplier_slug,
+        e.last_updated, e.category, e.description
+      FROM evenflow_products e
+      WHERE e.standard_price > 0 AND ${manualProductsWhere}
+    ) p
+    WHERE 1=1
+  `;
+
+  let conditions = '';
 
   // Brand Filter
   if (brand) {
@@ -75,18 +118,6 @@ export async function GET(request: Request) {
       conditions += ` AND (${brandConditions.join(' OR ')})`;
     }
   }
-
-  // Category Filter - skip for now since category column may not exist
-  // if (category) {
-  //   const categories = category.split(',').filter(c => c.trim() !== '');
-  //   if (categories.length > 0) {
-  //     const categoryConditions = categories.map(c => {
-  //       params.push(`%${c.trim()}%`);
-  //       return `p.category ILIKE $${params.length}`;
-  //     });
-  //     conditions += ` AND (${categoryConditions.join(' OR ')})`;
-  //   }
-  // }
 
   // Price Filter
   if (minPrice) {

@@ -176,47 +176,35 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
     }
 
-    // Insert/Update products in database
+    // Insert/Update products in evenflow_products table
     const client = await pool.connect();
     
     try {
       await client.query('BEGIN');
 
       for (const product of Object.values(allProducts)) {
-        const { sku, name, price, category, source_type } = product as any;
-
-        // Ensure all string fields are truncated to fit VARCHAR(255) constraints
-        const truncatedSku = sku.substring(0, 255);
-        const truncatedName = name.substring(0, 255);
-        const truncatedCategory = category.substring(0, 255);
-        const truncatedSupplierName = 'Manual Upload'.substring(0, 255);
-        const truncatedBrand = 'Even Flow'.substring(0, 255);
-        const truncatedMasterSku = `manual-${truncatedSku}`.substring(0, 255);
+        const { sku, name, price, category } = product as any;
 
         const upsertQuery = `
-          INSERT INTO products (
-            supplier_sku, supplier_name, name, brand, 
-            price_ex_vat, qty_on_hand, category, source_type, 
-            master_sku, raw_data, last_updated
+          INSERT INTO evenflow_products (
+            ef_code, product_name, standard_price, 
+            category, sheet_name, raw_data, last_updated
           ) VALUES (
-            $1, $2, $3, $4, 
-            $5, 1, $6, $7, 
-            $8, $9, CURRENT_TIMESTAMP
+            $1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP
           )
-          ON CONFLICT (supplier_name, supplier_sku) 
+          ON CONFLICT (ef_code) 
           DO UPDATE SET 
-            name = EXCLUDED.name,
-            price_ex_vat = EXCLUDED.price_ex_vat,
+            product_name = EXCLUDED.product_name,
+            standard_price = EXCLUDED.standard_price,
             category = EXCLUDED.category,
-            source_type = EXCLUDED.source_type,
+            sheet_name = EXCLUDED.sheet_name,
+            raw_data = EXCLUDED.raw_data,
             last_updated = CURRENT_TIMESTAMP
           RETURNING (xmax = 0) AS is_new;
         `;
 
         const upsertResult = await client.query(upsertQuery, [
-          truncatedSku, truncatedSupplierName, truncatedName, truncatedBrand, 
-          price, truncatedCategory, source_type,
-          truncatedMasterSku, JSON.stringify(product)
+          sku, name, price, category, category, JSON.stringify(product)
         ]);
 
         if (upsertResult.rows[0]?.is_new) {
