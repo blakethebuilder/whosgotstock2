@@ -349,7 +349,7 @@ export default function Home() {
     setShowFilters(false);
   };
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-100 text-gray-900 dark:text-gray-800 font-sans selection:bg-blue-100 dark:selection:bg-blue-200 selection:text-blue-900 dark:selection:text-blue-800 transition-colors duration-300">
+    <main className="min-h-screen bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-slate-100 font-sans selection:bg-blue-100 dark:selection:bg-blue-900 selection:text-blue-900 dark:selection:text-blue-100 transition-colors duration-300">
       {/* Navigation */}
       <Navbar
         cart={cart}
@@ -853,10 +853,10 @@ export default function Home() {
                     <div className="col-span-full my-8 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 text-center">
                       <div className="max-w-md mx-auto">
                         <h3 className="text-lg font-bold text-blue-900 mb-2">
-                          Unlock Better Pricing
+                          Enhanced Features Available
                         </h3>
                         <p className="text-sm text-blue-700 mb-4">
-                          Team users save an average of R500 per quote with better pricing and supplier access
+                          Get unlimited searches and enhanced features with team access
                         </p>
                         <button
                           onClick={() => setShowRoleModal(true)}
