@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from './AuthProvider';
 import { CartItem, UserRole, UsageStats } from '../types';
+import ThemeToggle from './ThemeToggle';
 
 interface NavbarProps {
   cart: CartItem[];
@@ -50,7 +51,7 @@ export default function Navbar({
         {/* Right Side Actions */}
         <div className="flex items-center space-x-3">
           {/* Theme Toggle */}
-          {/* Removed - keeping light theme only */}
+          <ThemeToggle />
 
           {/* Quote Cart */}
           <button
