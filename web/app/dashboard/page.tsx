@@ -181,7 +181,7 @@ export default function DashboardPage() {
                           <p className="text-sm font-medium text-blue-600">Searches This Month</p>
                           <p className="text-2xl font-bold text-blue-900">
                             {usageData?.searchesThisMonth || 0}
-                            {user.role === 'free' && (
+                            {user.role === 'public' && (
                               <span className="text-sm font-normal text-blue-600">
                                 /{usageData?.searchLimit || 25}
                               </span>
@@ -241,7 +241,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {user.role === 'free' && (
+              {user.role === 'public' && (
                 <div className="mt-6 pt-4 border-t border-gray-100">
                   <Link
                     href="/upgrade"
@@ -269,7 +269,7 @@ export default function DashboardPage() {
                 >
                   Account Settings
                 </Link>
-                {(user.role === 'staff' || user.role === 'partner') && (
+              {(user.role === 'management' || user.role === 'admin') && (
                   <Link
                     href="/admin"
                     className="btn-secondary w-full text-center block"

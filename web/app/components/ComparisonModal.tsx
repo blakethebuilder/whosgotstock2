@@ -200,7 +200,7 @@ export default function ComparisonModal({
                                                 case 'supplier_name':
                                                     content = (
                                                         <p className="text-sm font-bold text-gray-700">
-                                                            {userRole === 'free' ? 'Verified Supplier' : product.supplier_name}
+                                                            {userRole === 'public' ? 'Verified Supplier' : product.supplier_name}
                                                         </p>
                                                     );
                                                     break;

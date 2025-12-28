@@ -12,11 +12,10 @@ export default function AdminPage() {
     const [suppliers, setSuppliers] = useState<any[]>([]);
     const [settings, setSettings] = useState({
         update_interval_minutes: '60',
-        free_markup: '15',
-        professional_markup: '5',
-        enterprise_markup: '0',
-        staff_markup: '10',
-        partner_markup: '0'
+        public_markup: '15',
+        team_markup: '10',
+        management_markup: '5',
+        admin_markup: '0'
     });
     const [loading, setLoading] = useState(true);
 
@@ -34,7 +33,7 @@ export default function AdminPage() {
             const response = await fetch('/api/auth/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ passphrase, role: 'partner' })
+                body: JSON.stringify({ passphrase, role: 'admin' })
             });
             
             const data = await response.json();
@@ -85,11 +84,10 @@ export default function AdminPage() {
             setSuppliers(Array.isArray(supData) ? supData : []);
             setSettings({
                 update_interval_minutes: (setData as any)?.update_interval_minutes || '60',
-                free_markup: (setData as any)?.free_markup || '15',
-                professional_markup: (setData as any)?.professional_markup || '5',
-                enterprise_markup: (setData as any)?.enterprise_markup || '0',
-                staff_markup: (setData as any)?.staff_markup || '10',
-                partner_markup: (setData as any)?.partner_markup || '0'
+                public_markup: (setData as any)?.public_markup || '15',
+                team_markup: (setData as any)?.team_markup || '10',
+                management_markup: (setData as any)?.management_markup || '5',
+                admin_markup: (setData as any)?.admin_markup || '0'
             });
         } catch (e) {
             console.error('Error fetching data:', e);
@@ -97,11 +95,10 @@ export default function AdminPage() {
             setSuppliers([]);
             setSettings({
                 update_interval_minutes: '60',
-                free_markup: '15',
-                professional_markup: '5',
-                enterprise_markup: '0',
-                staff_markup: '10',
-                partner_markup: '0'
+                public_markup: '15',
+                team_markup: '10',
+                management_markup: '5',
+                admin_markup: '0'
             });
         } finally {
             setLoading(false);
@@ -296,65 +293,53 @@ export default function AdminPage() {
                             </div>
                         </div>
 
-                        {/* Pricing Tiers */}
+                        {/* Internal Access Levels */}
                         <div className="bg-white rounded-lg shadow-sm p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Pricing Tiers</h2>
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Internal Access Levels</h2>
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-semibold text-red-600">Free:</span>
+                                    <span className="text-sm font-semibold text-red-600">Public:</span>
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="number"
-                                            value={settings.free_markup}
-                                            onChange={(e) => setSettings({...settings, free_markup: e.target.value})}
+                                            value={settings.public_markup}
+                                            onChange={(e) => setSettings({...settings, public_markup: e.target.value})}
                                             className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white font-medium"
                                         />
                                         <span className="text-sm text-gray-900 font-medium">%</span>
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-semibold text-blue-600">Professional:</span>
+                                    <span className="text-sm font-semibold text-blue-600">Team:</span>
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="number"
-                                            value={settings.professional_markup}
-                                            onChange={(e) => setSettings({...settings, professional_markup: e.target.value})}
+                                            value={settings.team_markup}
+                                            onChange={(e) => setSettings({...settings, team_markup: e.target.value})}
                                             className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white font-medium"
                                         />
                                         <span className="text-sm text-gray-900 font-medium">%</span>
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-semibold text-purple-600">Enterprise:</span>
+                                    <span className="text-sm font-semibold text-purple-600">Management:</span>
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="number"
-                                            value={settings.enterprise_markup}
-                                            onChange={(e) => setSettings({...settings, enterprise_markup: e.target.value})}
+                                            value={settings.management_markup}
+                                            onChange={(e) => setSettings({...settings, management_markup: e.target.value})}
                                             className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white font-medium"
                                         />
                                         <span className="text-sm text-gray-900 font-medium">%</span>
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-semibold text-orange-600">Staff:</span>
+                                    <span className="text-sm font-semibold text-green-600">Admin:</span>
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="number"
-                                            value={settings.staff_markup}
-                                            onChange={(e) => setSettings({...settings, staff_markup: e.target.value})}
-                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white font-medium"
-                                        />
-                                        <span className="text-sm text-gray-900 font-medium">%</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-semibold text-green-600">Partner:</span>
-                                    <div className="flex items-center gap-2">
-                                        <input
-                                            type="number"
-                                            value={settings.partner_markup}
-                                            onChange={(e) => setSettings({...settings, partner_markup: e.target.value})}
+                                            value={settings.admin_markup}
+                                            onChange={(e) => setSettings({...settings, admin_markup: e.target.value})}
                                             className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white font-medium"
                                         />
                                         <span className="text-sm text-gray-900 font-medium">%</span>
@@ -364,7 +349,7 @@ export default function AdminPage() {
                                     onClick={handleUpdateSettings}
                                     className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm font-medium mt-3"
                                 >
-                                    Update Pricing
+                                    Update Access Levels
                                 </button>
                             </div>
                         </div>
@@ -375,24 +360,20 @@ export default function AdminPage() {
                             <p className="text-xs text-gray-700 mb-3">Example: R1,000 base price</p>
                             <div className="space-y-2 text-xs">
                                 <div className="flex justify-between">
-                                    <span className="text-red-600 font-medium">Free:</span>
-                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.free_markup || '15') / 100)).toFixed(0)}</span>
+                                    <span className="text-red-600 font-medium">Public:</span>
+                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.public_markup || '15') / 100)).toFixed(0)}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-blue-600 font-medium">Professional:</span>
-                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.professional_markup || '5') / 100)).toFixed(0)}</span>
+                                    <span className="text-blue-600 font-medium">Team:</span>
+                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.team_markup || '10') / 100)).toFixed(0)}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-purple-600 font-medium">Enterprise:</span>
-                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.enterprise_markup || '0') / 100)).toFixed(0)}</span>
+                                    <span className="text-purple-600 font-medium">Management:</span>
+                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.management_markup || '5') / 100)).toFixed(0)}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-orange-600 font-medium">Staff:</span>
-                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.staff_markup || '10') / 100)).toFixed(0)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-green-600 font-medium">Partner:</span>
-                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.partner_markup || '0') / 100)).toFixed(0)}</span>
+                                    <span className="text-green-600 font-medium">Admin:</span>
+                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.admin_markup || '0') / 100)).toFixed(0)}</span>
                                 </div>
                             </div>
                         </div>

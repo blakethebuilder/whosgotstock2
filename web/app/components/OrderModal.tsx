@@ -18,17 +18,16 @@ export default function OrderModal({ isOpen, onClose, items, totalExVat, totalIn
 
     // Default pricing settings
     const pricingSettings: PricingSettings = {
-        free_markup: 15,
-        professional_markup: 5,
-        enterprise_markup: 0,
-        staff_markup: 10,
-        partner_markup: 0
+        public_markup: 15,
+        team_markup: 10,
+        management_markup: 5,
+        admin_markup: 0
     };
 
     // Group items by supplier
     const itemsBySupplier: Record<string, CartItem[]> = {};
     items.forEach(item => {
-        const key = userRole === 'free' ? 'Smart Integrate' : item.supplier_name;
+        const key = userRole === 'public' ? 'Smart Integrate' : item.supplier_name;
         if (!itemsBySupplier[key]) {
             itemsBySupplier[key] = [];
         }
@@ -44,9 +43,9 @@ export default function OrderModal({ isOpen, onClose, items, totalExVat, totalIn
     };
 
     const getTemplateForSupplier = (supplier: string, supplierItems: CartItem[]) => {
-        let template = `--- ${userRole === 'free' ? 'QUOTE' : 'ORDER'} REQUEST: ${supplier.toUpperCase()} ---\n\n`;
-        template += "Dear " + (userRole === 'free' ? "Support Team" : "Account Manager") + ",\n\n";
-        template += "Please process the following " + (userRole === 'free' ? "quote request" : "order") + ":\n\n";
+        let template = `--- ${userRole === 'public' ? 'QUOTE' : 'ORDER'} REQUEST: ${supplier.toUpperCase()} ---\n\n`;
+        template += "Dear " + (userRole === 'public' ? "Support Team" : "Account Manager") + ",\n\n";
+        template += "Please process the following " + (userRole === 'public' ? "quote request" : "order") + ":\n\n";
 
         supplierItems.forEach(item => {
             let data: any = {};
@@ -60,9 +59,9 @@ export default function OrderModal({ isOpen, onClose, items, totalExVat, totalIn
                 data = {};
             }
 
-            // For free role, we hide the supplier name and use a slug or generic ref if possible
+            // For public role, we hide the supplier name and use a slug or generic ref if possible
             const supplierSlug = (data as any)?.supplier_slug || item.supplier_name?.toLowerCase().replace(/\s+/g, '-') || 'unknown';
-            const supplierRef = userRole === 'free' ? `[Ref: ${supplierSlug}]` : '';
+            const supplierRef = userRole === 'public' ? `[Ref: ${supplierSlug}]` : '';
             template += `- SKU: ${item.supplier_sku} ${supplierRef} | Qty: ${item.quantity} | Item: ${item.name}\n`;
         });
 

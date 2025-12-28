@@ -5,7 +5,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 interface User {
   id: number;
   email: string;
-  role: 'free' | 'professional' | 'enterprise' | 'staff' | 'partner';
+  role: 'public' | 'team' | 'management' | 'admin';
   firstName: string;
   lastName: string;
   companyName: string;

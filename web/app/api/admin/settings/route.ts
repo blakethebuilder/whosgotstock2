@@ -12,13 +12,12 @@ export async function GET() {
             settings[row.key] = row.value;
         });
 
-        // Default values for new tier structure
+        // Default values for internal tool structure
         if (!settings.update_interval_minutes) settings.update_interval_minutes = '60';
-        if (!settings.free_markup) settings.free_markup = '15';
-        if (!settings.professional_markup) settings.professional_markup = '5';
-        if (!settings.enterprise_markup) settings.enterprise_markup = '0';
-        if (!settings.staff_markup) settings.staff_markup = '10';
-        if (!settings.partner_markup) settings.partner_markup = '0';
+        if (!settings.public_markup) settings.public_markup = '15';
+        if (!settings.team_markup) settings.team_markup = '10';
+        if (!settings.management_markup) settings.management_markup = '5';
+        if (!settings.admin_markup) settings.admin_markup = '0';
 
         return NextResponse.json(settings);
     } catch (err: any) {

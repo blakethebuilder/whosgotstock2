@@ -11,9 +11,9 @@ import { Product, Supplier, CartItem, UserRole, UsageStats } from './types';
 import { debounce } from '@/lib/debounce';
 import { calculatePrice, formatPrice } from '@/lib/pricing';
 
-// Pricing logic: Free = +15%, Professional = +8%, Enterprise = +5%, Partner = Cost
+// Internal tool pricing: Public = +15%, Team = +10%, Management = +5%, Admin = Cost
 export default function Home() {
-  const [userRole, setUserRole] = useState<UserRole>('free');
+  const [userRole, setUserRole] = useState<UserRole>('public');
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [passphrase, setPassphrase] = useState('');
   const [passphraseError, setPassphraseError] = useState('');
@@ -53,11 +53,10 @@ export default function Home() {
 
   // Pricing settings from database
   const [pricingSettings, setPricingSettings] = useState({
-    free_markup: 15,
-    professional_markup: 5, // Changed to 5% handling fee
-    enterprise_markup: 0,   // No markup for Enterprise
-    staff_markup: 10,       // Smart Integrate staff tier
-    partner_markup: 0       // Cost pricing for admin
+    public_markup: 15,
+    team_markup: 10,
+    management_markup: 5,
+    admin_markup: 0
   });
 
   // Comparison State
@@ -89,11 +88,10 @@ export default function Home() {
       if (Array.isArray(suppliersData)) setSuppliers(suppliersData);
       if (settingsData) {
         setPricingSettings({
-          free_markup: parseInt(settingsData.free_markup || '15'),
-          professional_markup: parseInt(settingsData.professional_markup || '5'),
-          enterprise_markup: parseInt(settingsData.enterprise_markup || '0'),
-          staff_markup: parseInt(settingsData.staff_markup || '10'),
-          partner_markup: parseInt(settingsData.partner_markup || '0')
+          public_markup: parseInt(settingsData.public_markup || '15'),
+          team_markup: parseInt(settingsData.team_markup || '10'),
+          management_markup: parseInt(settingsData.management_markup || '5'),
+          admin_markup: parseInt(settingsData.admin_markup || '0')
         });
       }
       if (usageData) {
@@ -114,7 +112,7 @@ export default function Home() {
     }
     // Load user role from localStorage
     const savedRole = localStorage.getItem('whosgotstock_user_role');
-    if (savedRole && ['free', 'professional', 'enterprise', 'staff', 'partner'].includes(savedRole)) {
+    if (savedRole && ['public', 'team', 'management', 'admin'].includes(savedRole)) {
       setUserRole(savedRole as UserRole);
     }
   }, []);
@@ -172,9 +170,9 @@ export default function Home() {
     const currentQuery = searchQuery !== undefined ? searchQuery : query;
     const currentSupplier = searchSupplier !== undefined ? searchSupplier : selectedSupplier;
 
-    // Check usage limits for free tier
-    if (userRole === 'free' && usageStats.isLimitReached) {
-      alert('You\'ve reached your monthly search limit. Upgrade to Professional for unlimited searches!');
+    // Check usage limits for public tier
+    if (userRole === 'public' && usageStats.isLimitReached) {
+      alert('You\'ve reached your monthly search limit. Upgrade to Team for unlimited searches!');
       return;
     }
 
@@ -195,8 +193,8 @@ export default function Home() {
       setTotalResults(data.total || 0);
       setPage(1);
 
-      // Track usage for free tier
-      if (userRole === 'free') {
+      // Track usage for public tier
+      if (userRole === 'public') {
         const newSearchCount = usageStats.searchesThisMonth + 1;
         setUsageStats(prev => ({
           ...prev,
@@ -271,23 +269,23 @@ export default function Home() {
     const price = calculatePrice(basePrice, userRole, pricingSettings);
     
     // Calculate discount information for paid tiers
-    const freePrice = calculatePrice(basePrice, 'free', pricingSettings);
-    const discount = userRole !== 'free' ? parseFloat(freePrice.exVat) - parseFloat(price.exVat) : 0;
-    const discountPercentage = userRole !== 'free' ? 
-      (discount / parseFloat(freePrice.exVat) * 100) : 0;
+    const publicPrice = calculatePrice(basePrice, 'public', pricingSettings);
+    const discount = userRole !== 'public' ? parseFloat(publicPrice.exVat) - parseFloat(price.exVat) : 0;
+    const discountPercentage = userRole !== 'public' ? 
+      (discount / parseFloat(publicPrice.exVat) * 100) : 0;
 
     return {
       ...price,
-      originalPrice: freePrice.exVat,
+      originalPrice: publicPrice.exVat,
       discount: discount.toFixed(2),
       discountPercentage: discountPercentage.toFixed(1),
-      hasDiscount: userRole !== 'free' && discount > 0
+      hasDiscount: userRole !== 'public' && discount > 0
     };
   };
 
   const handleRoleSwitch = () => {
-    if (userRole !== 'free') {
-      setUserRole('free');
+    if (userRole !== 'public') {
+      setUserRole('public');
       return;
     }
     setShowRoleModal(true);
@@ -298,7 +296,7 @@ export default function Home() {
     setIsAuthenticating(true);
     
     // Try each role until we find a match
-    const roles = ['professional', 'enterprise', 'staff', 'partner'];
+    const roles = ['team', 'management', 'admin'];
     
     for (const role of roles) {
       try {
@@ -515,8 +513,8 @@ export default function Home() {
 
       {/* Content Area */}
       <div className="max-w-6xl mx-auto px-6 pb-16">
-        {/* Usage Warning for Free Tier */}
-        {userRole === 'free' && usageStats.searchesThisMonth >= usageStats.searchLimit * 0.8 && (
+        {/* Usage Warning for Public Tier */}
+        {userRole === 'public' && usageStats.searchesThisMonth >= usageStats.searchLimit * 0.8 && (
           <div className="mb-6 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 animate-in slide-in-from-top-4 duration-300">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -757,10 +755,10 @@ export default function Home() {
             {!loading && results.length === 0 && (
               <div className="text-center py-20 bg-white rounded-lg shadow-sm border border-dashed text-gray-500">
                 No products found for your filters.
-                {userRole === 'free' && (
+                {userRole === 'public' && (
                   <div className="mt-4">
                     <p className="text-sm text-gray-400 mb-3">
-                      Upgrade to Professional for access to more suppliers and better search results
+                      Upgrade to Team for access to more suppliers and better search results
                     </p>
                     <button
                       onClick={() => setShowRoleModal(true)}
@@ -809,9 +807,9 @@ export default function Home() {
 
                       <div className="flex items-center gap-2 mb-4">
                         <span className="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded uppercase">
-                          {userRole === 'free' ? 'Verified Stock' : product.supplier_name}
+                          {userRole === 'public' ? 'Verified Stock' : product.supplier_name}
                         </span>
-                        {userRole === 'free' && (
+                        {userRole === 'public' && (
                           <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded uppercase">
                             Upgrade for supplier details
                           </span>
@@ -850,21 +848,21 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* Upgrade Prompt every 10 results for free users */}
-                  {userRole === 'free' && (index + 1) % 10 === 0 && index < results.length - 1 && (
+                  {/* Upgrade Prompt every 10 results for public users */}
+                  {userRole === 'public' && (index + 1) % 10 === 0 && index < results.length - 1 && (
                     <div className="col-span-full my-8 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 text-center">
                       <div className="max-w-md mx-auto">
                         <h3 className="text-lg font-bold text-blue-900 mb-2">
                           Unlock Better Pricing
                         </h3>
                         <p className="text-sm text-blue-700 mb-4">
-                          Professional users save an average of R500 per quote with better pricing and supplier access
+                          Team users save an average of R500 per quote with better pricing and supplier access
                         </p>
                         <button
                           onClick={() => setShowRoleModal(true)}
                           className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-lg"
                         >
-                          Upgrade to Professional - R399/month
+                          Upgrade to Team Access
                         </button>
                       </div>
                     </div>
@@ -926,73 +924,87 @@ export default function Home() {
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowRoleModal(false)} />
           <div className="relative bg-white rounded-3xl shadow-2xl p-4 sm:p-8 max-w-2xl w-full animate-in zoom-in-95 duration-200 my-8 max-h-[90vh] overflow-y-auto">
             <div className="text-center mb-6 sm:mb-8">
-              <h3 className="text-xl sm:text-2xl font-black text-gray-900 mb-2">Upgrade Your Access</h3>
-              <p className="text-sm text-gray-500">Choose a plan that fits your business needs</p>
+              <h3 className="text-xl sm:text-2xl font-black text-gray-900 mb-2">Internal Access Levels</h3>
+              <p className="text-sm text-gray-500">Enter your access code to unlock internal pricing</p>
             </div>
 
-            {/* Pricing Tiers */}
+            {/* Internal Access Tiers */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 sm:mb-8">
-              {/* Professional */}
+              {/* Team */}
               <div className="border-2 border-blue-200 rounded-2xl p-4 sm:p-6 bg-blue-50/50">
                 <div className="text-center mb-3 sm:mb-4">
-                  <h4 className="text-base sm:text-lg font-bold text-blue-900">Professional</h4>
-                  <p className="text-xl sm:text-2xl font-black text-blue-600">R399<span className="text-sm font-normal">/month</span></p>
-                  <p className="text-xs text-blue-700">5% handling fee • Unlimited searches</p>
+                  <h4 className="text-base sm:text-lg font-bold text-blue-900">Team</h4>
+                  <p className="text-xl sm:text-2xl font-black text-blue-600">10% markup</p>
+                  <p className="text-xs text-blue-700">Internal team members</p>
                 </div>
                 <ul className="text-xs text-blue-800 space-y-1 sm:space-y-2 mb-4">
                   <li>✓ Unlimited searches</li>
-                  <li>✓ Professional quotes</li>
                   <li>✓ Supplier contact info</li>
-                  <li>✓ Email support</li>
+                  <li>✓ Professional quotes</li>
+                  <li>✓ Team support</li>
                 </ul>
               </div>
 
-              {/* Enterprise */}
+              {/* Management */}
               <div className="border-2 border-purple-200 rounded-2xl p-4 sm:p-6 bg-purple-50/50 relative">
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold">
-                  Most Popular
+                  Recommended
                 </div>
                 <div className="text-center mb-3 sm:mb-4">
-                  <h4 className="text-base sm:text-lg font-bold text-purple-900">Enterprise</h4>
-                  <p className="text-xl sm:text-2xl font-black text-purple-600">R1599<span className="text-sm font-normal">/month</span></p>
-                  <p className="text-xs text-purple-700">No markup • White labeled</p>
+                  <h4 className="text-base sm:text-lg font-bold text-purple-900">Management</h4>
+                  <p className="text-xl sm:text-2xl font-black text-purple-600">5% markup</p>
+                  <p className="text-xs text-purple-700">Management level access</p>
                 </div>
                 <ul className="text-xs text-purple-800 space-y-1 sm:space-y-2 mb-4">
-                  <li>✓ Everything in Professional</li>
-                  <li>✓ Multi-user accounts (10 users)</li>
-                  <li>✓ White label solution</li>
-                  <li>✓ Custom branding</li>
+                  <li>✓ Everything in Team</li>
+                  <li>✓ Reduced markup pricing</li>
                   <li>✓ Priority support</li>
+                  <li>✓ Advanced reporting</li>
                 </ul>
               </div>
 
-              {/* Free Tier Info */}
-              <div className="border-2 border-gray-200 rounded-2xl p-4 sm:p-6 bg-gray-50/50">
+              {/* Admin */}
+              <div className="border-2 border-green-200 rounded-2xl p-4 sm:p-6 bg-green-50/50">
                 <div className="text-center mb-3 sm:mb-4">
-                  <h4 className="text-base sm:text-lg font-bold text-gray-900">Free</h4>
-                  <p className="text-xl sm:text-2xl font-black text-gray-600">R0<span className="text-sm font-normal">/month</span></p>
-                  <p className="text-xs text-gray-700">25 searches • 15% markup</p>
+                  <h4 className="text-base sm:text-lg font-bold text-green-900">Admin</h4>
+                  <p className="text-xl sm:text-2xl font-black text-green-600">Cost pricing</p>
+                  <p className="text-xs text-green-700">Administrative access</p>
                 </div>
-                <ul className="text-xs text-gray-800 space-y-1 sm:space-y-2 mb-4">
-                  <li>✓ 25 searches per month</li>
-                  <li>✓ Basic product information</li>
-                  <li>✓ Watermarked quotes</li>
-                  <li>✓ Community support</li>
+                <ul className="text-xs text-green-800 space-y-1 sm:space-y-2 mb-4">
+                  <li>✓ Everything in Management</li>
+                  <li>✓ Cost pricing (0% markup)</li>
+                  <li>✓ Full system access</li>
+                  <li>✓ Backend administration</li>
                 </ul>
               </div>
             </div>
 
-            {/* Temporary Access - Always Visible */}
+            {/* Public Tier Info */}
+            <div className="mb-6 border-2 border-gray-200 rounded-2xl p-4 sm:p-6 bg-gray-50/50">
+              <div className="text-center mb-3 sm:mb-4">
+                <h4 className="text-base sm:text-lg font-bold text-gray-900">Public Access</h4>
+                <p className="text-xl sm:text-2xl font-black text-gray-600">15% markup</p>
+                <p className="text-xs text-gray-700">25 searches • Basic access</p>
+              </div>
+              <ul className="text-xs text-gray-800 space-y-1 sm:space-y-2 mb-4">
+                <li>✓ 25 searches per month</li>
+                <li>✓ Basic product information</li>
+                <li>✓ Standard quotes</li>
+                <li>✓ Community support</li>
+              </ul>
+            </div>
+
+            {/* Access Code Entry - Always Visible */}
             <div className="border-t pt-4 sm:pt-6 bg-white sticky bottom-0">
               <p className="text-sm text-gray-600 mb-4 text-center font-medium">
-                Have a passphrase for temporary access?
+                Have an access code for internal pricing?
               </p>
               <div className="space-y-4">
                 <input
                   type="password"
                   value={passphrase}
                   onChange={e => setPassphrase(e.target.value)}
-                  placeholder="Enter passphrase"
+                  placeholder="Enter access code"
                   className="w-full px-4 py-4 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all font-mono text-center text-base bg-white shadow-sm"
                   onKeyDown={e => e.key === 'Enter' && verifyPassphrase()}
                   autoComplete="off"
@@ -1008,7 +1020,7 @@ export default function Home() {
                     onClick={() => setShowRoleModal(false)}
                     className="flex-1 bg-gray-100 text-gray-700 font-bold py-4 rounded-xl hover:bg-gray-200 transition-colors text-sm"
                   >
-                    Continue Free
+                    Continue Public Access
                   </button>
                   <button
                     onClick={verifyPassphrase}

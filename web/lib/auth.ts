@@ -7,7 +7,7 @@ import pool from './db';
 export interface User {
   id: number;
   email: string;
-  role: 'free' | 'professional' | 'enterprise' | 'staff' | 'partner';
+  role: 'public' | 'team' | 'management' | 'admin';
   company_name?: string;
   first_name?: string;
   last_name?: string;
@@ -73,7 +73,7 @@ export async function createUser(userData: {
       [
         userData.email.toLowerCase(),
         passwordHash,
-        userData.role || 'free',
+        userData.role || 'public',
         userData.company_name,
         userData.first_name,
         userData.last_name
@@ -231,11 +231,10 @@ export function validatePassword(password: string): { valid: boolean; message?: 
 // Role utilities
 export function hasPermission(userRole: string, requiredRole: string): boolean {
   const roleHierarchy = {
-    'free': 0,
-    'professional': 1,
-    'enterprise': 2,
-    'staff': 3,
-    'partner': 4
+    'public': 0,
+    'team': 1,
+    'management': 2,
+    'admin': 3
   };
   
   return (roleHierarchy[userRole as keyof typeof roleHierarchy] || 0) >= 

@@ -1,11 +1,10 @@
 import { UserRole } from '@/app/types';
 
 export interface PricingSettings {
-  free_markup: number;
-  professional_markup: number;
-  enterprise_markup: number;
-  staff_markup: number;
-  partner_markup: number;
+  public_markup: number;
+  team_markup: number;
+  management_markup: number;
+  admin_markup: number;
 }
 
 export interface PriceResult {
@@ -15,7 +14,7 @@ export interface PriceResult {
 
 /**
  * Calculate pricing based on user role and markup settings
- * Centralizes pricing logic to avoid duplication across components
+ * Internal tool structure: Public > Team > Management > Admin
  */
 export function calculatePrice(
   basePrice: string | number, 
@@ -31,23 +30,20 @@ export function calculatePrice(
   // Get markup percentage based on user role
   let markup = 0;
   switch (userRole) {
-    case 'free':
-      markup = pricingSettings.free_markup;
+    case 'public':
+      markup = pricingSettings.public_markup;
       break;
-    case 'professional':
-      markup = pricingSettings.professional_markup;
+    case 'team':
+      markup = pricingSettings.team_markup;
       break;
-    case 'enterprise':
-      markup = pricingSettings.enterprise_markup;
+    case 'management':
+      markup = pricingSettings.management_markup;
       break;
-    case 'staff':
-      markup = pricingSettings.staff_markup;
-      break;
-    case 'partner':
-      markup = pricingSettings.partner_markup;
+    case 'admin':
+      markup = pricingSettings.admin_markup;
       break;
     default:
-      markup = pricingSettings.free_markup; // Default to free tier
+      markup = pricingSettings.public_markup; // Default to public tier
   }
 
   const markedUp = raw * (1 + (markup / 100));
@@ -75,11 +71,10 @@ export function formatPrice(amount: string | number): string {
  */
 export function getMarkupPercentage(userRole: UserRole, pricingSettings: PricingSettings): number {
   switch (userRole) {
-    case 'free': return pricingSettings.free_markup;
-    case 'professional': return pricingSettings.professional_markup;
-    case 'enterprise': return pricingSettings.enterprise_markup;
-    case 'staff': return pricingSettings.staff_markup;
-    case 'partner': return pricingSettings.partner_markup;
-    default: return pricingSettings.free_markup;
+    case 'public': return pricingSettings.public_markup;
+    case 'team': return pricingSettings.team_markup;
+    case 'management': return pricingSettings.management_markup;
+    case 'admin': return pricingSettings.admin_markup;
+    default: return pricingSettings.public_markup;
   }
 }

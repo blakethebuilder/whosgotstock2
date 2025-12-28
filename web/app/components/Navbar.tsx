@@ -29,11 +29,10 @@ export default function Navbar({
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'free': return 'bg-gray-400';
-      case 'professional': return 'bg-blue-500';
-      case 'enterprise': return 'bg-purple-500';
-      case 'staff': return 'bg-orange-500';
-      case 'partner': return 'bg-green-500';
+      case 'public': return 'bg-gray-400';
+      case 'team': return 'bg-blue-500';
+      case 'management': return 'bg-purple-500';
+      case 'admin': return 'bg-green-500';
       default: return 'bg-gray-400';
     }
   };
@@ -117,7 +116,7 @@ export default function Navbar({
                       >
                         Account Settings
                       </Link>
-                      {(user.role === 'staff' || user.role === 'partner') && (
+                      {(user.role === 'management' || user.role === 'admin') && (
                         <Link
                           href="/admin"
                           className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-700 hover:bg-gray-50 dark:hover:bg-gray-50"
@@ -148,10 +147,10 @@ export default function Navbar({
                 className="flex items-center space-x-2 px-3 py-2 bg-white/90 dark:bg-white/90 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-gray-200/50 hover:bg-white dark:hover:bg-white transition-all shadow-sm hover:shadow-md text-sm"
               >
                 <span className="font-medium text-gray-900 dark:text-gray-900 capitalize">
-                  {userRole === 'free' ? 'Free' : userRole === 'professional' ? 'Pro' : userRole === 'enterprise' ? 'Enterprise' : userRole === 'staff' ? 'Staff' : 'Partner'}
+                  {userRole === 'public' ? 'Public' : userRole === 'team' ? 'Team' : userRole === 'management' ? 'Management' : 'Admin'}
                 </span>
                 <div className={`w-2 h-2 rounded-full ${getRoleColor(userRole)}`} />
-                {userRole === 'free' && (
+                {userRole === 'public' && (
                   <span className="text-xs text-gray-500 dark:text-gray-500">
                     {usageStats.searchesThisMonth}/{usageStats.searchLimit}
                   </span>

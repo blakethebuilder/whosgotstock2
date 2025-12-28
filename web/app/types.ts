@@ -1,4 +1,4 @@
-export type UserRole = 'free' | 'professional' | 'enterprise' | 'staff' | 'partner';
+export type UserRole = 'public' | 'team' | 'management' | 'admin';
 
 export interface Product {
     id: number;
