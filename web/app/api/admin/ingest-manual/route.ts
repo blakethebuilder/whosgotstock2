@@ -194,19 +194,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
         const upsertQuery = `
           INSERT INTO manual_products (
-            ef_code, supplier_name, product_name, 
-            standard_price, selling_price, category, sheet_name,
+            supplier_sku, supplier_name, name, 
+            price_ex_vat, category, description,
             raw_data, last_updated
           ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP
+            $1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP
           )
-          ON CONFLICT (supplier_name, ef_code) 
+          ON CONFLICT (supplier_name, supplier_sku) 
           DO UPDATE SET 
-            product_name = EXCLUDED.product_name,
-            standard_price = EXCLUDED.standard_price,
-            selling_price = EXCLUDED.selling_price,
+            name = EXCLUDED.name,
+            price_ex_vat = EXCLUDED.price_ex_vat,
             category = EXCLUDED.category,
-            sheet_name = EXCLUDED.sheet_name,
+            description = EXCLUDED.description,
             raw_data = EXCLUDED.raw_data,
             last_updated = CURRENT_TIMESTAMP
           RETURNING (xmax = 0) AS is_new;
@@ -214,7 +213,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
         const upsertResult = await client.query(upsertQuery, [
           efCode, 'Even Flow', productName, 
-          standardPrice, sellingPrice, category, sheetName,
+          standardPrice > 0 ? standardPrice : sellingPrice, category, productName,
           JSON.stringify(product)
         ]);
 
