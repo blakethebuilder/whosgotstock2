@@ -30,8 +30,8 @@ export default function Navbar({
   const getRoleColor = (role: string) => {
     switch (role) {
       case 'public': return 'bg-gray-400';
-      case 'team': return 'bg-blue-500';
-      case 'management': return 'bg-purple-500';
+      case 'team': return 'bg-orange-500';
+      case 'management': return 'bg-orange-600';
       case 'admin': return 'bg-green-500';
       default: return 'bg-gray-400';
     }
@@ -63,7 +63,7 @@ export default function Navbar({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             {cartItemCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+              <span className="absolute -top-1 -right-1 bg-orange-600 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
                 {cartItemCount > 99 ? '99+' : cartItemCount}
               </span>
             )}
@@ -91,7 +91,7 @@ export default function Navbar({
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                 className="flex items-center space-x-2 p-2 bg-white/90 backdrop-blur-sm rounded-xl border border-gray-200/50 hover:bg-white transition-all shadow-sm hover:shadow-md"
               >
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
                   {user.firstName.charAt(0)}{user.lastName.charAt(0)}
                 </div>
                 <div className="hidden sm:block text-left">

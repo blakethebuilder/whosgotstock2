@@ -85,10 +85,10 @@ export default function CategoryTiles({ onCategoryClick }: CategoryTilesProps) {
           onClick={() => handleCategoryClick(category)}
           onMouseEnter={() => setHoveredIndex(index)}
           onMouseLeave={() => setHoveredIndex(null)}
-          className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-blue-100 hover:-translate-y-1 transition-all duration-300 cursor-pointer p-4 text-center min-h-[100px] flex flex-col items-center justify-center relative overflow-hidden"
+          className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-orange-100 hover:-translate-y-1 transition-all duration-300 cursor-pointer p-4 text-center min-h-[100px] flex flex-col items-center justify-center relative overflow-hidden"
         >
           {/* Background gradient on hover */}
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-orange-50 opacity-0 group-hover:opacity-100 transition-opacity" />
           
           {/* Content */}
           <div className="relative z-10 flex flex-col items-center justify-center space-y-2">
@@ -97,7 +97,7 @@ export default function CategoryTiles({ onCategoryClick }: CategoryTilesProps) {
             </div>
             
             <div className="space-y-1">
-              <span className="text-xs font-bold text-gray-900 group-hover:text-blue-600 transition-colors block leading-tight">
+              <span className="text-xs font-bold text-gray-900 group-hover:text-orange-600 transition-colors block leading-tight">
                 {category.name}
               </span>
               
@@ -110,7 +110,7 @@ export default function CategoryTiles({ onCategoryClick }: CategoryTilesProps) {
           </div>
 
           {/* Hover effect border */}
-          <div className="absolute inset-0 border-2 border-blue-500 rounded-2xl opacity-0 group-hover:opacity-20 transition-opacity" />
+          <div className="absolute inset-0 border-2 border-orange-500 rounded-2xl opacity-0 group-hover:opacity-20 transition-opacity" />
         </div>
       ))}
     </div>

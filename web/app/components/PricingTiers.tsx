@@ -36,10 +36,10 @@ export default function PricingTiers({ pricingSettings, onUpdate }: PricingTiers
       key: 'team_markup' as keyof PricingSettings,
       name: 'Team',
       description: 'Internal team members',
-      color: 'bg-blue-500',
-      textColor: 'text-blue-600',
-      bgColor: 'bg-blue-50 dark:bg-blue-50',
-      borderColor: 'border-blue-200 dark:border-blue-200'
+      color: 'bg-orange-500',
+      textColor: 'text-orange-600',
+      bgColor: 'bg-orange-50 dark:bg-orange-50',
+      borderColor: 'border-orange-200 dark:border-orange-200'
     },
     {
       key: 'management_markup' as keyof PricingSettings,
@@ -98,7 +98,7 @@ export default function PricingTiers({ pricingSettings, onUpdate }: PricingTiers
                   step="1"
                   value={settings[tier.key]}
                   onChange={(e) => handleChange(tier.key, parseInt(e.target.value) || 0)}
-                  className="w-16 px-2 py-1 text-sm font-bold text-center border border-gray-300 dark:border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-white text-gray-900 dark:text-gray-900"
+                  className="w-16 px-2 py-1 text-sm font-bold text-center border border-gray-300 dark:border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white dark:bg-white text-gray-900 dark:text-gray-900"
                 />
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-600">%</span>
               </div>
@@ -120,7 +120,7 @@ export default function PricingTiers({ pricingSettings, onUpdate }: PricingTiers
         </div>
         <button
           onClick={handleUpdate}
-          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-all shadow-sm hover:shadow-md"
+          className="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg transition-all shadow-sm hover:shadow-md"
         >
           Update Pricing
         </button>

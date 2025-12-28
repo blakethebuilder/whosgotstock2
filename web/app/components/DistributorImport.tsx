@@ -123,7 +123,7 @@ export default function DistributorImport() {
         <div
           className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
             isDragOver
-              ? 'border-blue-400 bg-blue-50'
+              ? 'border-orange-400 bg-orange-50'
               : 'border-gray-300 hover:border-gray-400'
           } ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}
           onDrop={handleDrop}
@@ -132,7 +132,7 @@ export default function DistributorImport() {
         >
           {isUploading ? (
             <div className="flex flex-col items-center gap-4">
-              <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-12 h-12 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
               <div className="text-center">
                 <p className="font-semibold text-gray-900">Processing Excel File...</p>
                 <p className="text-sm text-gray-500">Parsing sheets, mapping columns, and updating database</p>
@@ -158,7 +158,7 @@ export default function DistributorImport() {
                 </p>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                  className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
                 >
                   Choose File
                 </button>
@@ -186,8 +186,8 @@ export default function DistributorImport() {
               <p className="text-sm text-green-600">Products Processed</p>
             </div>
             <div className="bg-white p-4 rounded-lg border border-green-200">
-              <p className="text-2xl font-black text-blue-700">{result.newItems.toLocaleString()}</p>
-              <p className="text-sm text-blue-600">New Items Added</p>
+              <p className="text-2xl font-black text-orange-700">{result.newItems.toLocaleString()}</p>
+              <p className="text-sm text-orange-600">New Items Added</p>
             </div>
             <div className="bg-white p-4 rounded-lg border border-green-200">
               <p className="text-2xl font-black text-orange-700">{result.updatedItems.toLocaleString()}</p>

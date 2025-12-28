@@ -360,8 +360,8 @@ export default function Home() {
         {/* Animated Background Blobs (Premium Touch) */}
         {!hasSearched && (
           <>
-            <div className="absolute top-[15%] left-[8%] w-80 h-80 bg-blue-400/15 rounded-full blur-[100px] animate-pulse" />
-            <div className="absolute bottom-[15%] right-[8%] w-96 h-96 bg-purple-400/10 rounded-full blur-[100px] animate-pulse delay-700" />
+            <div className="absolute top-[15%] left-[8%] w-80 h-80 bg-orange-400/15 rounded-full blur-[100px] animate-pulse" />
+            <div className="absolute bottom-[15%] right-[8%] w-96 h-96 bg-orange-400/10 rounded-full blur-[100px] animate-pulse delay-700" />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.9)_0%,transparent_100%)] z-0" />
           </>
         )}
@@ -384,7 +384,7 @@ export default function Home() {
           <div className={`bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl transition-all duration-500 relative overflow-hidden border border-white/60 dark:border-gray-700/60 ${hasSearched ? 'ring-1 ring-gray-200 dark:ring-gray-700' : 'hover:shadow-3xl'}`}>
             <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-stretch sm:items-center w-full">
               <div className="flex items-center flex-1">
-                <div className="pl-8 text-blue-500 hidden sm:block">
+                <div className="pl-8 text-orange-500 hidden sm:block">
                   <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                 </div>
                 <input
@@ -424,7 +424,7 @@ export default function Home() {
                   <select
                     value={selectedSupplier}
                     onChange={e => setSelectedSupplier(e.target.value)}
-                    className="w-full p-2 rounded border border-gray-200 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="w-full p-2 rounded border border-gray-200 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
                   >
                     <option value="">All Suppliers</option>
                     {suppliers.map(s => (
@@ -440,14 +440,14 @@ export default function Home() {
                     <input
                       type="number"
                       placeholder="Min"
-                      className="w-full p-2 rounded border border-gray-200 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="w-full p-2 rounded border border-gray-200 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
                       value={minPrice}
                       onChange={e => setMinPrice(e.target.value)}
                     />
                     <input
                       type="number"
                       placeholder="Max"
-                      className="w-full p-2 rounded border border-gray-200 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="w-full p-2 rounded border border-gray-200 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
                       value={maxPrice}
                       onChange={e => setMaxPrice(e.target.value)}
                     />
@@ -458,7 +458,7 @@ export default function Home() {
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">Sort By</label>
                   <select
-                    className="w-full p-2 rounded border border-gray-200 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="w-full p-2 rounded border border-gray-200 text-sm focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
                     value={sortBy}
                     onChange={e => setSortBy(e.target.value)}
                   >
@@ -478,7 +478,7 @@ export default function Home() {
                         type="checkbox"
                         checked={inStockOnly}
                         onChange={e => setInStockOnly(e.target.checked)}
-                        className="rounded text-blue-600 focus:ring-blue-500"
+                        className="rounded text-orange-600 focus:ring-orange-500"
                       />
                       <span className="text-sm text-gray-700">In Stock Only</span>
                     </label>
@@ -513,7 +513,7 @@ export default function Home() {
           <div className="py-20 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
             {/* Hero Value Proposition */}
             <div className="text-center mb-20">
-              <div className="inline-block px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-600 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-6 border border-blue-100">
+              <div className="inline-block px-4 py-2 bg-gradient-to-r from-orange-50 to-orange-50 text-orange-600 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-6 border border-orange-100">
                 Powered by AI Technology
               </div>
               <h3 className="text-4xl md:text-5xl font-black text-gray-900 leading-[1.1] tracking-tight mb-6">
@@ -533,17 +533,17 @@ export default function Home() {
                 </p>
               </div>
               <div className="flex flex-wrap justify-center gap-4 mb-12">
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 px-6 py-4 rounded-2xl border border-blue-100 shadow-sm">
-                  <p className="text-2xl font-black text-blue-600">15,000+</p>
-                  <p className="text-xs font-bold text-blue-500 uppercase tracking-widest">Live Products</p>
+                <div className="bg-gradient-to-br from-orange-50 to-orange-50 px-6 py-4 rounded-2xl border border-orange-100 shadow-sm">
+                  <p className="text-2xl font-black text-orange-600">15,000+</p>
+                  <p className="text-xs font-bold text-orange-500 uppercase tracking-widest">Live Products</p>
                 </div>
                 <div className="bg-gradient-to-br from-green-50 to-emerald-50 px-6 py-4 rounded-2xl border border-green-100 shadow-sm">
                   <p className="text-2xl font-black text-green-600">Real-Time</p>
                   <p className="text-xs font-bold text-green-500 uppercase tracking-widest">Stock Updates</p>
                 </div>
-                <div className="bg-gradient-to-br from-purple-50 to-violet-50 px-6 py-4 rounded-2xl border border-purple-100 shadow-sm">
-                  <p className="text-2xl font-black text-purple-600">5+</p>
-                  <p className="text-xs font-bold text-purple-500 uppercase tracking-widest">Major Suppliers</p>
+                <div className="bg-gradient-to-br from-orange-50 to-orange-50 px-6 py-4 rounded-2xl border border-orange-100 shadow-sm">
+                  <p className="text-2xl font-black text-orange-600">5+</p>
+                  <p className="text-xs font-bold text-orange-500 uppercase tracking-widest">Major Suppliers</p>
                 </div>
                 <div className="bg-gradient-to-br from-orange-50 to-amber-50 px-6 py-4 rounded-2xl border border-orange-100 shadow-sm">
                   <p className="text-2xl font-black text-orange-600">Instant</p>
@@ -555,7 +555,7 @@ export default function Home() {
             {/* Popular Categories */}
             <div className="mb-20">
               <div className="text-center mb-10">
-                <div className="inline-block px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-4">
+                <div className="inline-block px-4 py-2 bg-orange-50 text-orange-600 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-4">
                   Popular Categories
                 </div>
                 <h3 className="text-2xl md:text-3xl font-black text-gray-900 mb-3">
@@ -589,7 +589,7 @@ export default function Home() {
                   <span
                     key={brand}
                     onClick={() => { setQuery(brand); performSearch(brand); }}
-                    className="text-lg md:text-xl font-black text-gray-400 cursor-pointer hover:text-blue-600 transition-colors px-3 py-2 rounded hover:bg-blue-50"
+                    className="text-lg md:text-xl font-black text-gray-400 cursor-pointer hover:text-orange-600 transition-colors px-3 py-2 rounded hover:bg-orange-50"
                   >
                     {brand.toUpperCase()}
                   </span>
@@ -601,7 +601,7 @@ export default function Home() {
             <div className="text-center space-y-8 py-20 border-t border-gray-200">
               {/* Main Value Proposition */}
               <div className="space-y-6 mb-12">
-                <div className="inline-block px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-4 border border-blue-200">
+                <div className="inline-block px-4 py-2 bg-gradient-to-r from-orange-50 to-orange-50 text-orange-700 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-4 border border-orange-200">
                   Built for Professionals
                 </div>
                 <h3 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight leading-tight">
@@ -610,7 +610,7 @@ export default function Home() {
                 <div className="max-w-4xl mx-auto text-gray-700 leading-relaxed space-y-6">
                   <p className="text-lg font-medium text-gray-900">
                     Stop juggling multiple supplier websites. Compare prices and stock levels across 
-                    <strong className="text-blue-600"> Scoop, Esquire, Pinnacle, Mustek, and Miro</strong> in one powerful search.
+                    <strong className="text-orange-600"> Scoop, Esquire, Pinnacle, Mustek, and Miro</strong> in one powerful search.
                   </p>
                   <p className="text-base text-gray-600">
                     <strong className="text-gray-900">WhosGotStock eliminates the tedious manual work.</strong> Our intelligent sourcing platform aggregates live inventory and pricing 
@@ -622,14 +622,14 @@ export default function Home() {
               {/* How It Works */}
               <div className="max-w-4xl mx-auto mb-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-8 rounded-2xl border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
-                    <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mb-4">
+                  <div className="bg-gradient-to-br from-orange-50 to-orange-50 p-8 rounded-2xl border border-orange-200 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="w-12 h-12 bg-orange-600 rounded-xl flex items-center justify-center mb-4">
                       <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                       </svg>
                     </div>
-                    <h4 className="text-xl font-bold text-blue-900 mb-3">For IT Companies & MSPs</h4>
-                    <p className="text-blue-800 leading-relaxed">
+                    <h4 className="text-xl font-bold text-orange-900 mb-3">For IT Companies & MSPs</h4>
+                    <p className="text-orange-800 leading-relaxed">
                       Generate professional quotes instantly. Connect with Smart Integrate for procurement assistance, 
                       or use staff/manager portals for direct supplier orders. Streamline your sourcing workflow.
                     </p>
@@ -659,18 +659,18 @@ export default function Home() {
                   ].map(supplier => (
                     <div
                       key={supplier}
-                      className="bg-white text-gray-900 font-bold text-lg px-6 py-3 rounded-xl border-2 border-gray-200 shadow-sm hover:shadow-md hover:border-blue-300 transition-all"
+                      className="bg-white text-gray-900 font-bold text-lg px-6 py-3 rounded-xl border-2 border-gray-200 shadow-sm hover:shadow-md hover:border-orange-300 transition-all"
                     >
                       {supplier}
                     </div>
                   ))}
                 </div>
-                <p className="text-sm text-blue-600 font-semibold">+ More suppliers being added regularly</p>
+                <p className="text-sm text-orange-600 font-semibold">+ More suppliers being added regularly</p>
               </div>
 
               {/* Legal Disclaimer */}
               <div className="max-w-5xl mx-auto pt-8 border-t border-gray-200">
-                <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-8 rounded-2xl border border-gray-200 shadow-sm">
+                <div className="bg-gradient-to-r from-gray-50 to-orange-50 p-8 rounded-2xl border border-gray-200 shadow-sm">
                   <div className="flex items-center justify-center mb-4">
                     <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center mr-3">
                       <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -741,14 +741,14 @@ export default function Home() {
                         </div>
                       )}
                       <div className="absolute top-3 left-3">
-                        <span className="bg-white/80 backdrop-blur px-2 py-0.5 rounded-full text-[9px] font-bold text-blue-600 border border-blue-50 tracking-wider uppercase">{product.brand}</span>
+                        <span className="bg-white/80 backdrop-blur px-2 py-0.5 rounded-full text-[9px] font-bold text-orange-600 border border-orange-50 tracking-wider uppercase">{product.brand}</span>
                       </div>
                       <div className="absolute top-3 right-3 flex flex-col gap-2">
                         <button
                           onClick={(e) => { e.stopPropagation(); toggleCompare(product); }}
                           className={`p-2 rounded-full backdrop-blur shadow-sm transition-all border ${compareList.find(p => p.id === product.id)
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'bg-white/80 text-gray-400 border-gray-100 hover:text-blue-600'
+                            ? 'bg-orange-600 text-white border-orange-600'
+                            : 'bg-white/80 text-gray-400 border-gray-100 hover:text-orange-600'
                             }`}
                           title="Add to Compare"
                         >
@@ -757,10 +757,10 @@ export default function Home() {
                       </div>
                     </div>
                     <div className="p-5 flex-1 flex flex-col">
-                      <h4 className="font-bold text-gray-900 text-sm line-clamp-2 mb-3 group-hover:text-blue-600 transition-colors">{product.name}</h4>
+                      <h4 className="font-bold text-gray-900 text-sm line-clamp-2 mb-3 group-hover:text-orange-600 transition-colors">{product.name}</h4>
 
                       <div className="flex items-center gap-2 mb-4">
-                        <span className="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded uppercase">
+                        <span className="text-[10px] font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded uppercase">
                           {userRole === 'public' ? 'Verified Stock' : product.supplier_name}
                         </span>
                       </div>
@@ -811,7 +811,7 @@ export default function Home() {
                 >
                   {loadingMore ? (
                     <>
-                      <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-5 h-5 border-2 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
                       Loading...
                     </>
                   ) : (
@@ -861,12 +861,12 @@ export default function Home() {
             {/* Internal Access Tiers */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 sm:mb-8">
               {/* Team */}
-              <div className="border-2 border-blue-200 rounded-2xl p-4 sm:p-6 bg-blue-50/50">
+              <div className="border-2 border-orange-200 rounded-2xl p-4 sm:p-6 bg-orange-50/50">
                 <div className="text-center mb-3 sm:mb-4">
-                  <h4 className="text-base sm:text-lg font-bold text-blue-900">Team</h4>
-                  <p className="text-sm text-blue-700">Internal team members</p>
+                  <h4 className="text-base sm:text-lg font-bold text-orange-900">Team</h4>
+                  <p className="text-sm text-orange-700">Internal team members</p>
                 </div>
-                <ul className="text-xs text-blue-800 space-y-1 sm:space-y-2 mb-4">
+                <ul className="text-xs text-orange-800 space-y-1 sm:space-y-2 mb-4">
                   <li>✓ Unlimited searches</li>
                   <li>✓ Supplier contact info</li>
                   <li>✓ Professional quotes</li>
@@ -875,12 +875,12 @@ export default function Home() {
               </div>
 
               {/* Management */}
-              <div className="border-2 border-purple-200 rounded-2xl p-4 sm:p-6 bg-purple-50/50 relative">
+              <div className="border-2 border-orange-200 rounded-2xl p-4 sm:p-6 bg-orange-50/50 relative">
                 <div className="text-center mb-3 sm:mb-4">
-                  <h4 className="text-base sm:text-lg font-bold text-purple-900">Management</h4>
-                  <p className="text-sm text-purple-700">Management level access</p>
+                  <h4 className="text-base sm:text-lg font-bold text-orange-900">Management</h4>
+                  <p className="text-sm text-orange-700">Management level access</p>
                 </div>
-                <ul className="text-xs text-purple-800 space-y-1 sm:space-y-2 mb-4">
+                <ul className="text-xs text-orange-800 space-y-1 sm:space-y-2 mb-4">
                   <li>✓ Everything in Team</li>
                   <li>✓ Priority support</li>
                   <li>✓ Advanced reporting</li>
@@ -914,7 +914,7 @@ export default function Home() {
                   value={passphrase}
                   onChange={e => setPassphrase(e.target.value)}
                   placeholder="Enter access code"
-                  className="w-full px-4 py-4 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all font-mono text-center text-base bg-white shadow-sm"
+                  className="w-full px-4 py-4 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all font-mono text-center text-base bg-white shadow-sm"
                   onKeyDown={e => e.key === 'Enter' && verifyPassphrase()}
                   autoComplete="off"
                   autoCapitalize="off"
@@ -934,7 +934,7 @@ export default function Home() {
                   <button
                     onClick={verifyPassphrase}
                     disabled={isAuthenticating}
-                    className="flex-1 bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 disabled:bg-blue-400 transition-colors text-sm shadow-lg flex items-center justify-center gap-2"
+                    className="flex-1 bg-orange-600 text-white font-bold py-4 rounded-xl hover:bg-orange-700 disabled:bg-orange-400 transition-colors text-sm shadow-lg flex items-center justify-center gap-2"
                   >
                     {isAuthenticating ? (
                       <>
