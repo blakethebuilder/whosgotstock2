@@ -344,7 +344,7 @@ export default function Home() {
     setShowFilters(false);
   };
   return (
-    <main className="min-h-screen bg-gray-50 text-gray-900 font-sans selection:bg-blue-100 selection:text-blue-900 transition-colors duration-300">
+    <main className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans selection:bg-orange-100 dark:selection:bg-orange-900 selection:text-orange-900 dark:selection:text-orange-100 transition-colors duration-300">
       {/* Navigation */}
       <Navbar
         cart={cart}
@@ -369,7 +369,7 @@ export default function Home() {
         <div className={`w-full max-w-4xl px-6 mx-auto relative z-10 ${hasSearched ? '' : 'text-center'}`}>
           {!hasSearched && (
             <div className="space-y-6 mb-12 animate-in fade-in slide-in-from-bottom-5 duration-700">
-              <div className="inline-block px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-xs font-bold tracking-widest uppercase border border-blue-100 shadow-sm">
+              <div className="inline-block px-4 py-2 bg-orange-50 text-orange-600 rounded-full text-xs font-bold tracking-widest uppercase border border-orange-100 shadow-sm">
                 For IT Companies & MSPs
               </div>
               <h2 className="text-5xl sm:text-6xl md:text-7xl font-black text-gray-900 leading-[0.95] tracking-tight">
@@ -381,7 +381,7 @@ export default function Home() {
             </div>
           )}
 
-          <div className={`bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl transition-all duration-500 relative overflow-hidden border border-white/60 ${hasSearched ? 'ring-1 ring-gray-200' : 'hover:shadow-3xl'}`}>
+          <div className={`bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl transition-all duration-500 relative overflow-hidden border border-white/60 dark:border-gray-700/60 ${hasSearched ? 'ring-1 ring-gray-200 dark:ring-gray-700' : 'hover:shadow-3xl'}`}>
             <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-stretch sm:items-center w-full">
               <div className="flex items-center flex-1">
                 <div className="pl-8 text-blue-500 hidden sm:block">
@@ -389,7 +389,7 @@ export default function Home() {
                 </div>
                 <input
                   type="text"
-                  className="flex-1 p-6 text-xl sm:text-2xl bg-transparent focus:outline-none min-w-0 font-medium placeholder-gray-400"
+                  className="flex-1 p-6 text-xl sm:text-2xl bg-transparent focus:outline-none min-w-0 font-medium placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-gray-100"
                   placeholder="Search 15,000+ IT products instantly..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
@@ -400,12 +400,12 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setShowFilters(!showFilters)}
-                  className={`flex-1 sm:flex-none py-6 px-8 text-sm font-bold hover:bg-white transition-all flex items-center justify-center gap-2 ${showFilters ? 'text-blue-600 bg-white' : 'text-gray-500'}`}
+                  className={`flex-1 sm:flex-none py-6 px-8 text-sm font-bold hover:bg-white transition-all flex items-center justify-center gap-2 ${showFilters ? 'text-orange-600 bg-white' : 'text-gray-500'}`}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
                   <span>Filters</span>
                   {(selectedSupplier || inStockOnly || minPrice || maxPrice) &&
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.5)]"></span>
                   }
                 </button>
                 <button type="submit" className="flex-1 sm:flex-none bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-12 py-6 font-black text-xl transition-all active:scale-[0.98] shadow-lg shadow-orange-200">
