@@ -351,7 +351,7 @@ export default function Home() {
     setShowFilters(false);
   };
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans selection:bg-blue-100 dark:selection:bg-blue-900 selection:text-blue-900 dark:selection:text-blue-100 transition-colors duration-300">
+    <main className="min-h-screen bg-gray-50 dark:bg-gray-100 text-gray-900 dark:text-gray-800 font-sans selection:bg-blue-100 dark:selection:bg-blue-200 selection:text-blue-900 dark:selection:text-blue-800 transition-colors duration-300">
       {/* Navigation */}
       <Navbar
         cart={cart}
