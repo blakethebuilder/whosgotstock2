@@ -42,7 +42,7 @@ export default function Navbar({
         {/* Logo */}
         <button
           onClick={onClearSearch}
-          className="text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:opacity-80 transition-opacity"
+          className="text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-orange-500 via-orange-600 to-orange-700 hover:opacity-80 transition-opacity"
         >
           WhosGotStock
         </button>

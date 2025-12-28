@@ -6,7 +6,7 @@
 @layer components {
   /* Button Styles */
   .btn-primary {
-    @apply bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all duration-200 shadow-sm hover:shadow-md;
+    @apply bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-bold transition-all duration-200 shadow-sm hover:shadow-md;
   }
   
   .btn-secondary {

@@ -373,7 +373,7 @@ export default function Home() {
                 For IT Companies & MSPs
               </div>
               <h2 className="text-5xl sm:text-6xl md:text-7xl font-black text-gray-900 leading-[0.95] tracking-tight">
-                Find Stock, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Instantly.</span>
+                Find Stock, <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-orange-600">Instantly.</span>
               </h2>
               <p className="text-gray-500 text-xl sm:text-2xl font-medium max-w-3xl mx-auto leading-relaxed">
                 Built specifically for IT companies and MSPs. Compare pricing and stock levels across Scoop, Esquire, Pinnacle, Mustek, and Miro. One search, all suppliers, instant results.
@@ -408,7 +408,7 @@ export default function Home() {
                     <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
                   }
                 </button>
-                <button type="submit" className="flex-1 sm:flex-none bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white px-12 py-6 font-black text-xl transition-all active:scale-[0.98] shadow-lg shadow-blue-200">
+                <button type="submit" className="flex-1 sm:flex-none bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-12 py-6 font-black text-xl transition-all active:scale-[0.98] shadow-lg shadow-orange-200">
                   Search
                 </button>
               </div>
@@ -518,7 +518,7 @@ export default function Home() {
               </div>
               <h3 className="text-4xl md:text-5xl font-black text-gray-900 leading-[1.1] tracking-tight mb-6">
                 Stop Juggling Supplier Websites. <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-orange-600 to-orange-700">
                   Source Smarter.
                 </span>
               </h3>
@@ -605,7 +605,7 @@ export default function Home() {
                   Built for Professionals
                 </div>
                 <h3 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight leading-tight">
-                  Designed for <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">IT Companies</span> & <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">MSPs</span>
+                  Designed for <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-orange-600">IT Companies</span> & <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-orange-700">MSPs</span>
                 </h3>
                 <div className="max-w-4xl mx-auto text-gray-700 leading-relaxed space-y-6">
                   <p className="text-lg font-medium text-gray-900">
@@ -788,7 +788,7 @@ export default function Home() {
                           </div>
                           <button
                             onClick={(e) => { e.stopPropagation(); addToCart(product); }}
-                            className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black px-3 py-1.5 rounded-xl transition-all shadow-sm active:scale-90"
+                            className="bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-black px-3 py-1.5 rounded-xl transition-all shadow-sm active:scale-90"
                           >
                             + Quote
                           </button>
@@ -989,7 +989,7 @@ export default function Home() {
             <button
               onClick={() => setIsCompareModalOpen(true)}
               disabled={compareList.length < 2}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-200 text-white px-4 sm:px-8 py-3 rounded-xl sm:rounded-[1.5rem] font-black text-[10px] sm:text-xs uppercase tracking-widest transition-all shadow-xl shadow-blue-100 active:scale-95 flex items-center gap-2"
+              className="bg-orange-500 hover:bg-orange-600 disabled:bg-gray-200 text-white px-4 sm:px-8 py-3 rounded-xl sm:rounded-[1.5rem] font-black text-[10px] sm:text-xs uppercase tracking-widest transition-all shadow-xl shadow-orange-100 active:scale-95 flex items-center gap-2"
             >
               <span className="hidden sm:inline">Compare</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
