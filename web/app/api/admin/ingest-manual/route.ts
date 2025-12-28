@@ -78,16 +78,22 @@ function mapColumns(headerRow: any[]): { [key: string]: number } {
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
+    console.log('Manual ingest: Starting file processing...');
+    
     const formData = await request.formData();
     const file = formData.get('file') as File;
     
     if (!file) {
+      console.log('Manual ingest: No file provided');
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
     if (!file.name.endsWith('.xlsx')) {
+      console.log('Manual ingest: Invalid file type:', file.name);
       return NextResponse.json({ error: 'Only .xlsx files are supported' }, { status: 400 });
     }
+
+    console.log('Manual ingest: Processing file:', file.name, 'Size:', file.size);
 
     // Convert file to buffer
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -97,6 +103,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     
     // Parse the Excel file
     const workbook = XLSX.read(buffer, { type: 'buffer' });
+    console.log('Manual ingest: Workbook sheets:', workbook.SheetNames);
     
     const result: ProcessingResult = {
       totalProcessed: 0,
@@ -157,7 +164,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           const standardPrice = sanitizePrice(rawStandardPrice);
           const sellingPrice = sanitizePrice(rawSellingPrice);
 
-          if (standardPrice <= 0 && sellingPrice <= 0) continue;
+          // For EvenFlow, only use standard price - skip if no standard price
+          if (standardPrice <= 0) continue;
 
           const product = {
             efCode,
@@ -168,10 +176,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             sheetName
           };
 
-          // Deduplication: keep lowest standard price (or selling price if no standard)
-          const currentPrice = standardPrice > 0 ? standardPrice : sellingPrice;
-          if (!allProducts[efCode] || 
-              (allProducts[efCode].standardPrice > 0 ? allProducts[efCode].standardPrice : allProducts[efCode].sellingPrice) > currentPrice) {
+          // Deduplication: keep lowest standard price
+          if (!allProducts[efCode] || allProducts[efCode].standardPrice > standardPrice) {
             allProducts[efCode] = product;
           }
 
@@ -186,11 +192,45 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Insert/Update products in manual_products table
     const client = await pool.connect();
     
+    console.log('Manual ingest: Connecting to database, products to insert:', Object.keys(allProducts).length);
+    
     try {
+      // First check if table exists
+      const tableCheck = await client.query(`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+          AND table_name = 'manual_products'
+        );
+      `);
+      
+      if (!tableCheck.rows[0].exists) {
+        console.log('Manual ingest: manual_products table does not exist, creating...');
+        await client.query(`
+          CREATE TABLE manual_products (
+            id SERIAL PRIMARY KEY,
+            supplier_sku VARCHAR(255) NOT NULL,
+            supplier_name VARCHAR(255) NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            brand VARCHAR(255),
+            price_ex_vat DECIMAL(10, 2) NOT NULL,
+            qty_on_hand INTEGER DEFAULT 0,
+            category VARCHAR(255),
+            description TEXT,
+            last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            raw_data JSONB,
+            UNIQUE(supplier_name, supplier_sku)
+          );
+        `);
+        console.log('Manual ingest: manual_products table created');
+      }
+      
       await client.query('BEGIN');
 
       for (const product of Object.values(allProducts)) {
-        const { efCode, productName, standardPrice, sellingPrice, category, sheetName } = product as any;
+        const { efCode, productName, standardPrice, category } = product as any;
+
+        console.log('Manual ingest: Inserting product:', efCode, productName, standardPrice);
 
         const upsertQuery = `
           INSERT INTO manual_products (
@@ -213,7 +253,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
         const upsertResult = await client.query(upsertQuery, [
           efCode, 'Even Flow', productName, 
-          standardPrice > 0 ? standardPrice : sellingPrice, category, productName,
+          standardPrice, category, productName,
           JSON.stringify(product)
         ]);
 
@@ -225,8 +265,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
 
       await client.query('COMMIT');
+      console.log('Manual ingest: Database transaction completed successfully');
     } catch (dbError) {
       await client.query('ROLLBACK');
+      console.error('Manual ingest: Database error:', dbError);
       throw dbError;
     } finally {
       client.release();
