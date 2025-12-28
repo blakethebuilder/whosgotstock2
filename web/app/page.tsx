@@ -934,8 +934,7 @@ export default function Home() {
               <div className="border-2 border-blue-200 rounded-2xl p-4 sm:p-6 bg-blue-50/50">
                 <div className="text-center mb-3 sm:mb-4">
                   <h4 className="text-base sm:text-lg font-bold text-blue-900">Team</h4>
-                  <p className="text-xl sm:text-2xl font-black text-blue-600">10% markup</p>
-                  <p className="text-xs text-blue-700">Internal team members</p>
+                  <p className="text-sm text-blue-700">Internal team members</p>
                 </div>
                 <ul className="text-xs text-blue-800 space-y-1 sm:space-y-2 mb-4">
                   <li>✓ Unlimited searches</li>
@@ -952,12 +951,11 @@ export default function Home() {
                 </div>
                 <div className="text-center mb-3 sm:mb-4">
                   <h4 className="text-base sm:text-lg font-bold text-purple-900">Management</h4>
-                  <p className="text-xl sm:text-2xl font-black text-purple-600">5% markup</p>
-                  <p className="text-xs text-purple-700">Management level access</p>
+                  <p className="text-sm text-purple-700">Management level access</p>
                 </div>
                 <ul className="text-xs text-purple-800 space-y-1 sm:space-y-2 mb-4">
                   <li>✓ Everything in Team</li>
-                  <li>✓ Reduced markup pricing</li>
+                  <li>✓ Preferred pricing</li>
                   <li>✓ Priority support</li>
                   <li>✓ Advanced reporting</li>
                 </ul>
@@ -967,12 +965,11 @@ export default function Home() {
               <div className="border-2 border-green-200 rounded-2xl p-4 sm:p-6 bg-green-50/50">
                 <div className="text-center mb-3 sm:mb-4">
                   <h4 className="text-base sm:text-lg font-bold text-green-900">Admin</h4>
-                  <p className="text-xl sm:text-2xl font-black text-green-600">Cost pricing</p>
-                  <p className="text-xs text-green-700">Administrative access</p>
+                  <p className="text-sm text-green-700">Administrative access</p>
                 </div>
                 <ul className="text-xs text-green-800 space-y-1 sm:space-y-2 mb-4">
                   <li>✓ Everything in Management</li>
-                  <li>✓ Cost pricing (0% markup)</li>
+                  <li>✓ Best available pricing</li>
                   <li>✓ Full system access</li>
                   <li>✓ Backend administration</li>
                 </ul>
@@ -983,8 +980,7 @@ export default function Home() {
             <div className="mb-6 border-2 border-gray-200 rounded-2xl p-4 sm:p-6 bg-gray-50/50">
               <div className="text-center mb-3 sm:mb-4">
                 <h4 className="text-base sm:text-lg font-bold text-gray-900">Public Access</h4>
-                <p className="text-xl sm:text-2xl font-black text-gray-600">15% markup</p>
-                <p className="text-xs text-gray-700">25 searches • Basic access</p>
+                <p className="text-sm text-gray-700">25 searches • Basic access</p>
               </div>
               <ul className="text-xs text-gray-800 space-y-1 sm:space-y-2 mb-4">
                 <li>✓ 25 searches per month</li>
