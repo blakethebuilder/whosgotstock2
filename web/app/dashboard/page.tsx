@@ -240,17 +240,6 @@ export default function DashboardPage() {
                   <span className="text-sm font-medium text-gray-900">{features.support}</span>
                 </div>
               </div>
-
-              {user.role === 'public' && (
-                <div className="mt-6 pt-4 border-t border-gray-100">
-                  <Link
-                    href="/upgrade"
-                    className="btn-primary w-full text-center block"
-                  >
-                    Upgrade Account
-                  </Link>
-                </div>
-              )}
             </div>
 
             {/* Quick Actions */}

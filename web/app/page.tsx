@@ -170,11 +170,7 @@ export default function Home() {
     const currentQuery = searchQuery !== undefined ? searchQuery : query;
     const currentSupplier = searchSupplier !== undefined ? searchSupplier : selectedSupplier;
 
-    // Check usage limits for public tier
-    if (userRole === 'public' && usageStats.isLimitReached) {
-      alert('You\'ve reached your monthly search limit. Upgrade to Team for unlimited searches!');
-      return;
-    }
+    // No usage limits for internal tool
 
     setLoading(true);
     setHasSearched(true);
@@ -513,34 +509,6 @@ export default function Home() {
 
       {/* Content Area */}
       <div className="max-w-6xl mx-auto px-6 pb-16">
-        {/* Usage Warning for Public Tier */}
-        {userRole === 'public' && usageStats.searchesThisMonth >= usageStats.searchLimit * 0.8 && (
-          <div className="mb-6 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 animate-in slide-in-from-top-4 duration-300">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
-                  <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-bold text-amber-800">
-                    {usageStats.isLimitReached ? 'Search limit reached!' : `${usageStats.searchLimit - usageStats.searchesThisMonth} searches remaining`}
-                  </p>
-                  <p className="text-sm text-amber-700">
-                    {usageStats.isLimitReached ? 'Upgrade to continue searching' : 'Upgrade for unlimited searches and better pricing'}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowRoleModal(true)}
-                className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors"
-              >
-                Upgrade Now
-              </button>
-            </div>
-          </div>
-        )}
         {/* Category Tiles - Show when not searching */}
         {!hasSearched && (
           <div className="py-20 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
@@ -755,19 +723,6 @@ export default function Home() {
             {!loading && results.length === 0 && (
               <div className="text-center py-20 bg-white rounded-lg shadow-sm border border-dashed text-gray-500">
                 No products found for your filters.
-                {userRole === 'public' && (
-                  <div className="mt-4">
-                    <p className="text-sm text-gray-400 mb-3">
-                      Upgrade to Team for access to more suppliers and better search results
-                    </p>
-                    <button
-                      onClick={() => setShowRoleModal(true)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm"
-                    >
-                      Upgrade Now
-                    </button>
-                  </div>
-                )}
               </div>
             )}
 
@@ -809,11 +764,6 @@ export default function Home() {
                         <span className="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded uppercase">
                           {userRole === 'public' ? 'Verified Stock' : product.supplier_name}
                         </span>
-                        {userRole === 'public' && (
-                          <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded uppercase">
-                            Upgrade for supplier details
-                          </span>
-                        )}
                       </div>
 
                       <div className="mt-auto pt-4 border-t border-gray-50 flex items-end justify-between">
@@ -848,25 +798,6 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* Upgrade Prompt every 10 results for public users */}
-                  {userRole === 'public' && (index + 1) % 10 === 0 && index < results.length - 1 && (
-                    <div className="col-span-full my-8 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 text-center">
-                      <div className="max-w-md mx-auto">
-                        <h3 className="text-lg font-bold text-blue-900 mb-2">
-                          Enhanced Features Available
-                        </h3>
-                        <p className="text-sm text-blue-700 mb-4">
-                          Get unlimited searches and enhanced features with team access
-                        </p>
-                        <button
-                          onClick={() => setShowRoleModal(true)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-lg"
-                        >
-                          Upgrade to Team Access
-                        </button>
-                      </div>
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
@@ -946,9 +877,6 @@ export default function Home() {
 
               {/* Management */}
               <div className="border-2 border-purple-200 rounded-2xl p-4 sm:p-6 bg-purple-50/50 relative">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold">
-                  Enhanced
-                </div>
                 <div className="text-center mb-3 sm:mb-4">
                   <h4 className="text-base sm:text-lg font-bold text-purple-900">Management</h4>
                   <p className="text-sm text-purple-700">Management level access</p>
@@ -957,7 +885,7 @@ export default function Home() {
                   <li>✓ Everything in Team</li>
                   <li>✓ Priority support</li>
                   <li>✓ Advanced reporting</li>
-                  <li>✓ Enhanced features</li>
+                  <li>✓ Full system access</li>
                 </ul>
               </div>
             </div>
@@ -979,7 +907,7 @@ export default function Home() {
             {/* Access Code Entry - Always Visible */}
             <div className="border-t pt-4 sm:pt-6 bg-white sticky bottom-0">
               <p className="text-sm text-gray-600 mb-4 text-center font-medium">
-                Have an access code for enhanced features?
+                Enter your access code:
               </p>
               <div className="space-y-4">
                 <input
