@@ -11,11 +11,10 @@ export async function POST(request: NextRequest) {
     if (user) {
       // User is authenticated, check if they have the required role
       const roleHierarchy = {
-        'free': 0,
-        'professional': 1,
-        'enterprise': 2,
-        'staff': 3,
-        'partner': 4
+        'public': 0,
+        'team': 1,
+        'management': 2,
+        'admin': 3
       };
       
       const userLevel = roleHierarchy[user.role as keyof typeof roleHierarchy] || 0;
@@ -36,34 +35,30 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // Fall back to legacy passphrase system
-    const professionalPassphrase = process.env.NEXT_PUBLIC_PROFESSIONAL_PASSPHRASE;
-    const enterprisePassphrase = process.env.NEXT_PUBLIC_ENTERPRISE_PASSPHRASE;
-    const staffPassphrase = process.env.NEXT_PUBLIC_STAFF_PASSPHRASE;
-    const partnerPassphrase = process.env.PARTNER_PASSPHRASE; // Partner passphrase should be server-side only
+    // Fall back to legacy passphrase system for internal access codes
+    const teamPassphrase = process.env.TEAM_ACCESS_CODE;
+    const managementPassphrase = process.env.MANAGEMENT_ACCESS_CODE;
+    const adminPassphrase = process.env.ADMIN_ACCESS_CODE;
     
     let isValid = false;
-    let userRole = 'free';
+    let userRole = 'public';
     
     // Check passphrase against requested role
-    if (role === 'partner' && passphrase === partnerPassphrase) {
+    if (role === 'admin' && passphrase === adminPassphrase) {
       isValid = true;
-      userRole = 'partner';
-    } else if (role === 'enterprise' && passphrase === enterprisePassphrase) {
+      userRole = 'admin';
+    } else if (role === 'management' && passphrase === managementPassphrase) {
       isValid = true;
-      userRole = 'enterprise';
-    } else if (role === 'staff' && passphrase === staffPassphrase) {
+      userRole = 'management';
+    } else if (role === 'team' && passphrase === teamPassphrase) {
       isValid = true;
-      userRole = 'staff';
-    } else if (role === 'professional' && passphrase === professionalPassphrase) {
-      isValid = true;
-      userRole = 'professional';
+      userRole = 'team';
     }
     
     return NextResponse.json({
       success: isValid,
-      role: isValid ? userRole : 'free',
-      message: isValid ? 'Authentication successful' : 'Invalid passphrase',
+      role: isValid ? userRole : 'public',
+      message: isValid ? 'Access granted' : 'Invalid access code',
       legacy: isValid // Indicate this is legacy auth
     });
     
