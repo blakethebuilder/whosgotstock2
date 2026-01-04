@@ -88,13 +88,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     // Convert file to buffer
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
     
-    // Import xlsx dynamically (since it's a Node.js library)
-    const XLSX = await import('xlsx');
+    // Import exceljs for secure Excel processing
+    const ExcelJS = await import('exceljs');
     
     // Parse the Excel file
-    const workbook = XLSX.read(buffer, { type: 'buffer' });
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(arrayBuffer);
     
     const result: ProcessingResult = {
       totalProcessed: 0,
@@ -108,32 +110,41 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const allProducts: { [sku: string]: any } = {};
 
     // Process each sheet
-    for (const sheetName of workbook.SheetNames) {
+    for (const worksheet of workbook.worksheets) {
       // Skip junk sheets
-      if (sheetName.toLowerCase().includes('index') || 
-          sheetName.toLowerCase().includes('summary') ||
-          sheetName.toLowerCase().includes('contents')) {
+      if (worksheet.name.toLowerCase().includes('index') || 
+          worksheet.name.toLowerCase().includes('summary') ||
+          worksheet.name.toLowerCase().includes('contents')) {
         continue;
       }
 
-      const worksheet = workbook.Sheets[sheetName];
-      const sheetData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+      if (worksheet.rowCount < 2) continue; // Skip empty sheets
+
+      // Convert worksheet to array format for processing
+      const sheetData: any[][] = [];
+      worksheet.eachRow((row, rowNumber) => {
+        const rowData: any[] = [];
+        row.eachCell((cell, colNumber) => {
+          rowData[colNumber - 1] = cell.value;
+        });
+        sheetData.push(rowData);
+      });
       
       if (sheetData.length < 2) continue; // Skip empty sheets
 
       // Find header row
-      const headerRowIndex = findHeaderRow(sheetData as any[][]);
-      const headerRow = sheetData[headerRowIndex] as any[];
+      const headerRowIndex = findHeaderRow(sheetData);
+      const headerRow = sheetData[headerRowIndex];
       
       // Map columns
       const columnMapping = mapColumns(headerRow);
       
       if (!columnMapping.sku || !columnMapping.price) {
-        result.errors.push(`Sheet "${sheetName}": Could not find required columns (SKU and Price)`);
+        result.errors.push(`Sheet "${worksheet.name}": Could not find required columns (SKU and Price)`);
         continue;
       }
 
-      result.categories.push(sheetName);
+      result.categories.push(worksheet.name);
 
       // Process data rows
       for (let i = headerRowIndex + 1; i < sheetData.length; i++) {
@@ -150,7 +161,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           // Truncate fields to fit database constraints (VARCHAR 255)
           const sku = rawSku.substring(0, 255);
           const name = (rawName || rawSku).substring(0, 255);
-          const category = sheetName.substring(0, 255);
+          const category = worksheet.name.substring(0, 255);
 
           const price = sanitizePrice(rawPrice);
           if (price <= 0) continue;
@@ -170,7 +181,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
           result.totalProcessed++;
         } catch (rowError: any) {
-          result.errors.push(`Sheet "${sheetName}", Row ${i + 1}: ${rowError.message}`);
+          result.errors.push(`Sheet "${worksheet.name}", Row ${i + 1}: ${rowError.message}`);
           continue;
         }
       }

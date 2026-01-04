@@ -96,14 +96,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     console.log('Manual ingest: Processing file:', file.name, 'Size:', file.size);
 
     // Convert file to buffer
-    const buffer = Buffer.from(await file.arrayBuffer());
+    // Convert file to buffer
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
     
-    // Import xlsx dynamically
-    const XLSX = await import('xlsx');
+    // Import exceljs for secure Excel processing
+    const ExcelJS = await import('exceljs');
     
     // Parse the Excel file
-    const workbook = XLSX.read(buffer, { type: 'buffer' });
-    console.log('Manual ingest: Workbook sheets:', workbook.SheetNames);
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(arrayBuffer);
+    console.log('Manual ingest: Workbook sheets:', workbook.worksheets.map(ws => ws.name));
     
     const result: ProcessingResult = {
       totalProcessed: 0,
@@ -117,16 +120,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const allProducts: { [sku: string]: any } = {};
 
     // Process each sheet
-    for (const sheetName of workbook.SheetNames) {
+    for (const worksheet of workbook.worksheets) {
       // Skip junk sheets
-      if (sheetName.toLowerCase().includes('index') || 
-          sheetName.toLowerCase().includes('summary') ||
-          sheetName.toLowerCase().includes('contents')) {
+      if (worksheet.name.toLowerCase().includes('index') || 
+          worksheet.name.toLowerCase().includes('summary') ||
+          worksheet.name.toLowerCase().includes('contents')) {
         continue;
       }
 
-      const worksheet = workbook.Sheets[sheetName];
-      const sheetData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+      // Convert worksheet to array format for processing
+      const sheetData: any[][] = [];
+      worksheet.eachRow((row, rowNumber) => {
+        const rowData: any[] = [];
+        row.eachCell((cell, colNumber) => {
+          rowData[colNumber - 1] = cell.value;
+        });
+        sheetData.push(rowData);
+      });
       
       if (sheetData.length < 2) continue;
 
@@ -138,11 +148,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const columnMapping = mapColumns(headerRow);
       
       if (!columnMapping.sku || (!columnMapping.standardPrice && !columnMapping.sellingPrice)) {
-        result.errors.push(`Sheet "${sheetName}": Could not find required columns (SKU and Price)`);
+        result.errors.push(`Sheet "${worksheet.name}": Could not find required columns (SKU and Price)`);
         continue;
       }
 
-      result.categories.push(sheetName);
+      result.categories.push(worksheet.name);
 
       // Process data rows
       for (let i = headerRowIndex + 1; i < sheetData.length; i++) {
@@ -159,7 +169,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
           const efCode = rawSku.substring(0, 255);
           const productName = (rawName || rawSku).substring(0, 500); // Allow longer names
-          const category = sheetName.substring(0, 255);
+          const category = worksheet.name.substring(0, 255);
 
           const standardPrice = sanitizePrice(rawStandardPrice);
           const sellingPrice = sanitizePrice(rawSellingPrice);
@@ -173,7 +183,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             standardPrice,
             sellingPrice,
             category,
-            sheetName
+            sheetName: worksheet.name
           };
 
           // Deduplication: keep lowest standard price
@@ -183,7 +193,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
           result.totalProcessed++;
         } catch (rowError: any) {
-          result.errors.push(`Sheet "${sheetName}", Row ${i + 1}: ${rowError.message}`);
+          result.errors.push(`Sheet "${worksheet.name}", Row ${i + 1}: ${rowError.message}`);
           continue;
         }
       }

@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "security:audit": "npm audit --audit-level=moderate",
+    "security:fix": "npm audit fix",
+    "type-check": "tsc --noEmit",
+    "build:analyze": "ANALYZE=true npm run build",
+    "test:security": "npm run security:audit && npm run type-check"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
@@ -15,6 +20,7 @@
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "exceljs": "^4.4.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.562.0",
     "next": "16.1.1",
@@ -24,7 +30,6 @@
     "react-dom": "19.2.3",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
-    "xlsx": "^0.18.5",
     "zod": "^3.22.4"
   },
   "devDependencies": {
