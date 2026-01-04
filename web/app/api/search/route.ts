@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
-import { expandSearchTerms, normalizeSearchQuery } from '@/lib/search-utils';
+import { normalizeSearchQuery } from '@/lib/search-utils';
 import { getCached, setCache } from '@/lib/cache';
 import { searchRateLimit } from '@/lib/rate-limit';
 
@@ -64,52 +64,7 @@ export async function GET(request: Request) {
 
   // Build parameterized queries to prevent SQL injection
   const params: any[] = [];
-  let mainProductsWhere = '1=1';
-  let manualProductsWhere = '1=1';
-
-  // Enhanced Search Logic with synonyms and fuzzy matching
-  if (rawQuery) {
-    const normalizedQuery = normalizeSearchQuery(rawQuery);
-    const searchTerms = expandSearchTerms(normalizedQuery);
-    
-    // Create OR conditions for main products with parameterized queries
-    const mainSearchConditions = searchTerms.map((term) => {
-      params.push(`%${term}%`);
-      const paramIndex = params.length;
-      return `(
-        p.name ILIKE $${paramIndex} OR 
-        p.brand ILIKE $${paramIndex} OR 
-        p.supplier_sku ILIKE $${paramIndex}
-      )`;
-    });
-    
-    // Create OR conditions for evenflow products
-    const manualSearchConditions = searchTerms.map((term) => {
-      params.push(`%${term}%`);
-      const paramIndex = params.length;
-      return `(
-        e.product_name ILIKE $${paramIndex} OR 
-        e.ef_code ILIKE $${paramIndex} OR 
-        e.category ILIKE $${paramIndex}
-      )`;
-    });
-    
-    mainProductsWhere += ` AND (${mainSearchConditions.join(' OR ')})`;
-    manualProductsWhere += ` AND (${manualSearchConditions.join(' OR ')})`;
-  }
-
-  // Supplier Filter with parameterized queries
-  if (supplier) {
-    if (supplier === 'evenflow' || supplier === 'even-flow' || supplier === 'Even Flow') {
-      params.push('Even Flow');
-      manualProductsWhere += ` AND 'Even Flow' = $${params.length}`;
-      mainProductsWhere += ` AND 1=0`; // Exclude main products
-    } else {
-      params.push(supplier);
-      mainProductsWhere += ` AND s.slug = $${params.length}`;
-      manualProductsWhere += ` AND 1=0`; // Exclude evenflow products
-    }
-  }
+  let whereConditions: string[] = [];
 
   // Enhanced query with proper parameterization
   let sql = `
@@ -125,7 +80,6 @@ export async function GET(request: Request) {
         p.last_updated, p.category, p.description
       FROM products p
       JOIN suppliers s ON p.supplier_name = s.name
-      WHERE ${mainProductsWhere}
       
       UNION ALL
       
@@ -136,14 +90,33 @@ export async function GET(request: Request) {
         999 as qty_on_hand, '' as image_url, 'Even Flow' as supplier_name, 'evenflow' as supplier_slug,
         e.last_updated, e.category, e.description
       FROM evenflow_products e
-      WHERE e.standard_price > 0 AND ${manualProductsWhere}
+      WHERE e.standard_price > 0
     ) p
     WHERE 1=1
   `;
 
-  let conditions = '';
+  // Search Logic
+  if (rawQuery) {
+    const normalizedQuery = normalizeSearchQuery(rawQuery);
+    params.push(`%${normalizedQuery}%`);
+    whereConditions.push(`(
+      p.name ILIKE $${params.length} OR 
+      p.brand ILIKE $${params.length} OR 
+      p.supplier_sku ILIKE $${params.length}
+    )`);
+  }
 
-  // Brand Filter with parameterized queries
+  // Supplier Filter
+  if (supplier) {
+    if (supplier === 'evenflow' || supplier === 'even-flow' || supplier === 'Even Flow') {
+      whereConditions.push(`p.supplier_name = 'Even Flow'`);
+    } else {
+      params.push(supplier);
+      whereConditions.push(`p.supplier_slug = $${params.length}`);
+    }
+  }
+
+  // Brand Filter
   if (brand) {
     const brands = brand.split(',').filter(b => b.trim() !== '').slice(0, 10); // Limit brands
     if (brands.length > 0) {
@@ -151,32 +124,34 @@ export async function GET(request: Request) {
         params.push(`%${b.trim()}%`);
         return `p.brand ILIKE $${params.length}`;
       });
-      conditions += ` AND (${brandConditions.join(' OR ')})`;
+      whereConditions.push(`(${brandConditions.join(' OR ')})`);
     }
   }
 
-  // Price Filter with parameterized queries
+  // Price Filter
   if (minPrice > 0) {
     params.push(minPrice);
-    conditions += ` AND p.price_ex_vat >= $${params.length}`;
+    whereConditions.push(`p.price_ex_vat >= $${params.length}`);
   }
   if (maxPrice < 999999) {
     params.push(maxPrice);
-    conditions += ` AND p.price_ex_vat <= $${params.length}`;
+    whereConditions.push(`p.price_ex_vat <= $${params.length}`);
   }
 
   // Stock Filter
   if (inStock) {
-    conditions += ` AND p.qty_on_hand > 0`;
+    whereConditions.push(`p.qty_on_hand > 0`);
   }
 
-  // Add conditions to SQL
-  sql += conditions;
+  // Add all conditions to SQL
+  if (whereConditions.length > 0) {
+    sql += ` AND ${whereConditions.join(' AND ')}`;
+  }
 
   // Count Query
   const countSql = `SELECT COUNT(*) FROM (${sql}) as total`;
 
-  // Add sorting and pagination
+  // Add sorting
   if (sort === 'price_asc') {
     sql += ` ORDER BY p.price_ex_vat ASC`;
   } else if (sort === 'price_desc') {
@@ -184,13 +159,10 @@ export async function GET(request: Request) {
   } else if (sort === 'newest') {
     sql += ` ORDER BY p.last_updated DESC`;
   } else if (sort === 'relevance' && rawQuery) {
-    // Use parameterized query for relevance sorting
-    params.push(`%${normalizeSearchQuery(rawQuery)}%`);
-    const relevanceParam = params.length;
     sql += ` ORDER BY 
       CASE 
-        WHEN p.name ILIKE $${relevanceParam} THEN 1
-        WHEN p.brand ILIKE $${relevanceParam} THEN 2
+        WHEN p.name ILIKE $1 THEN 1
+        WHEN p.brand ILIKE $1 THEN 2
         ELSE 3
       END,
       p.qty_on_hand DESC, 
@@ -200,7 +172,7 @@ export async function GET(request: Request) {
     sql += ` ORDER BY p.qty_on_hand DESC, p.price_ex_vat ASC`;
   }
 
-  // Add pagination with parameterized queries
+  // Add pagination
   params.push(limit, offset);
   sql += ` LIMIT $${params.length - 1} OFFSET $${params.length}`;
 
@@ -210,8 +182,8 @@ export async function GET(request: Request) {
     
     // Use Promise.all for concurrent queries
     const [countRes, dataRes] = await Promise.all([
-      client.query(countSql, params.slice(0, -2)), // Remove limit/offset for count
-      client.query(sql, params)
+      client.query(countSql, params.slice(0, -2)), // Count query without pagination
+      client.query(sql, params) // Main query with pagination
     ]);
 
     const result = {
@@ -219,7 +191,7 @@ export async function GET(request: Request) {
       total: parseInt(countRes.rows[0].count),
       page,
       limit,
-      searchTerms: rawQuery ? expandSearchTerms(normalizeSearchQuery(rawQuery)) : []
+      searchTerms: rawQuery ? [rawQuery] : []
     };
 
     // Cache for 2 minutes
