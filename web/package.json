@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "NEXT_PRIVATE_DISABLE_TURBOPACK=1 next build",
+    "build": "NEXT_PRIVATE_DISABLE_TURBOPACK=1 next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "security:audit": "npm audit --audit-level=moderate",

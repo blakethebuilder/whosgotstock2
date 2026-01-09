@@ -21,8 +21,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NEXT_PRIVATE_DISABLE_TURBOPACK=1
 ENV NEXT_PRIVATE_SKIP_TURBO=1
 
-# Build with explicit webpack flag
-RUN npm run build
+# Build with explicit --webpack flag to ensure webpack is used
+RUN npm run build -- --webpack
 
 # 3. Production runner
 FROM node:20-alpine AS runner
