@@ -3,9 +3,16 @@ const { Client } = require('pg');
 const { ingestData } = require('./src/ingestor');
 
 async function getDbClient() {
-  if (!process.env.DATABASE_URL) return null;
-  const client = new Client({ connectionString: process.env.DATABASE_URL });
+  if (!process.env.DATABASE_URL) {
+    console.error('DATABASE_URL not set - worker cannot connect to database');
+    return null;
+  }
+  const client = new Client({ 
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false
+  });
   await client.connect();
+  console.log('Database connected successfully');
   return client;
 }
 

@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS products (
     raw_data JSONB,
     image_url TEXT,
     description TEXT,
+    category VARCHAR(255),
     UNIQUE(supplier_name, supplier_sku)
 );
 

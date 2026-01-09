@@ -54,9 +54,9 @@ A comprehensive IT sourcing platform built for South African IT companies and MS
 
 ### Local Development
 
-1. **Clone the repository**
+1. **Clone repository**
 ```bash
-git clone <repository-url>
+git clone https://github.com/blakethebuilder/whosgotstock2.git
 cd whosgotstock
 ```
 
@@ -78,6 +78,9 @@ createdb whosgotstock
 
 # Run initialization script
 psql -d whosgotstock -f database/init.sql
+
+# Run supplier migration (IMPORTANT for Mustek API)
+psql -d whosgotstock -f database/migrate-suppliers.sql
 ```
 
 4. **Configure environment**
@@ -105,6 +108,38 @@ npm run dev
 6. **Access the application**
 - Web App: http://localhost:3000
 - API: http://localhost:3000/api/search
+
+### Production Deployment
+
+#### Database Setup
+```bash
+# 1. Run database initialization
+psql -d whosgotstock -f database/init.sql
+
+# 2. Run supplier migration (CRITICAL for Mustek)
+psql -d whosgotstock -f database/migrate-suppliers.sql
+
+# 3. Set environment variables
+export DATABASE_URL="postgresql://user@host:5432/whosgotstock"
+export MUSTEK_CUSTOMER_TOKEN="your-production-token"
+export ESQUIRE_EMAIL="your-production-email"
+export ESQUIRE_PASSWORD="your-production-password"
+```
+
+#### Environment Variables Required for Production
+```bash
+# Copy and configure environment
+cp .env.example .env
+# Edit .env with production values
+
+# Required variables:
+DATABASE_URL=postgresql://user@host:5432/whosgotstock
+MUSTEK_CUSTOMER_TOKEN=your-mustek-token
+ESQUIRE_EMAIL=your-esquire-email
+ESQUIRE_PASSWORD=your-esquire-password
+SYNTECH_API_KEY=your-syntech-key
+PINNACLE_API_KEY=your-pinnacle-key
+```
 
 ### Docker Deployment
 

@@ -19,7 +19,9 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 # Force webpack instead of turbopack for Docker stability
 ENV NEXT_PRIVATE_DISABLE_TURBOPACK=1
+ENV NEXT_PRIVATE_SKIP_TURBO=1
 
+# Build with explicit webpack flag
 RUN npm run build
 
 # 3. Production runner
