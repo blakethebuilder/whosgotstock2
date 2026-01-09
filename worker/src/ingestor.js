@@ -2,7 +2,50 @@ const { XMLParser } = require('fast-xml-parser');
 const fs = require('fs');
 const path = require('path');
 
-async function fetchXmlFeed(url) {
+// CSV Parser for Mustek API
+function parseCSV(csvText) {
+    const lines = csvText.trim().split('\n');
+    if (lines.length === 0) return [];
+    
+    // Parse header line - handle potential comma-in-quotes scenarios
+    const headers = lines[0].split(',').map(h => h.trim());
+    
+    const results = [];
+    for (let i = 1; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line.trim()) continue;
+        
+        // Simple CSV parsing - handles basic comma separation
+        // For complex CSVs with quoted fields containing commas, use regex
+        const values = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let j = 0; j < line.length; j++) {
+            const char = line[j];
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+                values.push(current.trim());
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+        values.push(current.trim()); // Push last value
+        
+        // Create object from headers and values
+        const obj = {};
+        headers.forEach((header, idx) => {
+            obj[header] = values[idx] || '';
+        });
+        results.push(obj);
+    }
+    
+    return results;
+}
+
+async function fetchFeed(url) {
     if (!url.startsWith('http')) {
         // Mock data fallback
         return ``;
@@ -78,20 +121,45 @@ async function ingestData(client) {
         console.log(`Starting ingest for ${supplier.name} (Type: ${supplier.type})...`);
 
         try {
-            const xmlData = await fetchXmlFeed(supplier.url);
-            const parser = new XMLParser();
-            const parsed = parser.parse(xmlData);
-
+            const feedData = await fetchFeed(supplier.url);
             let products = [];
-            let activeType = (supplier.type && supplier.type !== 'xml' && supplier.type !== 'json')
+            let activeType = (supplier.type && supplier.type !== 'xml' && supplier.type !== 'json' && supplier.type !== 'csv')
                 ? supplier.type.toLowerCase()
                 : supplier.id.toLowerCase();
 
-            // SENSITIVE DETECTION: If structure doesn't match Type, try to auto-detect
-            if (activeType === 'syntech' && parsed.Pinnacle) activeType = 'pinnacle';
-            if (activeType === 'pinnacle' && parsed.syntechstock) activeType = 'syntech';
-            if (parsed.syntechstock && activeType !== 'syntech') activeType = 'syntech';
-            if (parsed.Pinnacle && activeType !== 'pinnacle') activeType = 'pinnacle';
+            // Handle CSV format (Mustek)
+            if (supplier.type === 'csv' || activeType === 'mustek') {
+                console.log(`Parsing CSV feed for ${supplier.name}...`);
+                const csvData = parseCSV(feedData);
+                console.log(`Parsed ${csvData.length} CSV rows for ${supplier.name}`);
+                
+                // Mustek CSV mapping
+                // Headers: ItemId, Description, QtyAvailable, Price, SupplierItemId, ProductLine, Status, UPCBarcode, Primary Image, Thumbnail
+                products = csvData
+                    .filter(p => p.Status === 'Active') // Only include active products
+                    .map(p => ({
+                        supplier_sku: p.ItemId ? String(p.ItemId).trim().substring(0, 255) : 'UNKNOWN',
+                        supplier_name: supplier.name,
+                        name: (p.Description || '').substring(0, 250),
+                        description: p.Description || '',
+                        brand: (p.ProductLine || 'Mustek').substring(0, 100),
+                        price_ex_vat: parseFloat(p.Price || 0),
+                        qty_on_hand: parseInt(p.QtyAvailable || 0),
+                        image_url: p['Primary Image'] || p.Thumbnail || '',
+                        category: (p.ProductLine || 'General').substring(0, 100),
+                        master_sku: `${supplier.id}-${p.ItemId}`.substring(0, 255),
+                        raw_data: JSON.stringify(p)
+                    }));
+            } else {
+                // XML parsing for other suppliers
+                const parser = new XMLParser();
+                const parsed = parser.parse(feedData);
+
+                // SENSITIVE DETECTION: If structure doesn't match Type, try to auto-detect
+                if (activeType === 'syntech' && parsed.Pinnacle) activeType = 'pinnacle';
+                if (activeType === 'pinnacle' && parsed.syntechstock) activeType = 'syntech';
+                if (parsed.syntechstock && activeType !== 'syntech') activeType = 'syntech';
+                if (parsed.Pinnacle && activeType !== 'pinnacle') activeType = 'pinnacle';
 
             // Normalize data based on supplier structure (Schema Mapping)
             if (activeType === 'scoop') {
@@ -231,6 +299,7 @@ async function ingestData(client) {
                     raw_data: JSON.stringify(p)
                 }));
             }
+            } // End of XML parsing else block
 
             if (products.length === 0) {
                 console.log(`Warning: 0 products found for ${supplier.name}. Active Parser: ${activeType}`);

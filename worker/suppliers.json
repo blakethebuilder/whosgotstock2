@@ -23,8 +23,8 @@
   {
     "id": "mustek",
     "name": "Mustek",
-    "url": "https://api.mustek.co.za/stock.xml",
-    "type": "xml",
-    "enabled": false
+    "url": "https://api.mustek.co.za/Customer/ItemsStock.ashx?CustomerToken=f49294f4-cf6b-429c-895f-d27d539cdac4",
+    "type": "csv",
+    "enabled": true
   }
 ]

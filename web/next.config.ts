@@ -2,8 +2,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: 'standalone',
-  // Set output file tracing root to silence warnings
-  outputFileTracingRoot: __dirname,
   webpack: (config, { dev, isServer }) => {
     // Optimize for production builds
     if (!dev && !isServer) {
