@@ -12,7 +12,7 @@ interface ScrapeResult {
 }
 
 export default function LinkqageScraper() {
-  const [username, setUsername] = useState('blake@smartintegrate.co.za');
+  const [username, setUsername] = useState(process.env.NEXT_PUBLIC_ESQUIRE_EMAIL || '');
   const [password, setPassword] = useState('');
   const [isScrapingTest, setIsScrapingTest] = useState(false);
   const [isScrapingFull, setIsScrapingFull] = useState(false);

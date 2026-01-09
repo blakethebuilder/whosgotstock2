@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { XMLParser } = require('fast-xml-parser');
 const fs = require('fs');
 const path = require('path');
@@ -104,14 +105,25 @@ async function ingestData(client) {
                 type: r.type,
                 enabled: r.enabled
             }));
-        } catch (e) {
-            console.error("Failed to read suppliers from DB:", e);
+        } catch (err) {
+            console.error('Failed to load suppliers from DB:', err);
         }
     } else {
-        console.log('Loading suppliers from local JSON (No DB)...');
-        const suppliersPath = path.join(__dirname, '../suppliers.json');
-        if (fs.existsSync(suppliersPath)) {
-            suppliers = JSON.parse(fs.readFileSync(suppliersPath, 'utf8'));
+        // Fallback to suppliers.json with environment variable substitution
+        console.log('Loading suppliers from file...');
+        try {
+            let suppliersData = fs.readFileSync(path.join(__dirname, 'suppliers.json'), 'utf8');
+            // Replace environment variables in the JSON
+            suppliersData = suppliersData
+                .replace(/blake@smartintegrate\.co\.za/g, process.env.ESQUIRE_EMAIL || 'blake@smartintegrate.co.za')
+                .replace(/Smart@1991/g, process.env.ESQUIRE_PASSWORD || 'Smart@1991')
+                .replace(/f49294f4-cf6b-429c-895f-d27d539cdac4/g, process.env.MUSTEK_CUSTOMER_TOKEN || 'f49294f4-cf6b-429c-895f-d27d539cdac4')
+                .replace(/668EFF7-494A-43B9-90A8-E72B79648CFC/g, process.env.SYNTECH_API_KEY || '668EFF7-494A-43B9-90A8-E72B79648CFC')
+                .replace(/942709f3-9b39-4e93-9a5e-cdd883453178/g, process.env.PINNACLE_API_KEY || '942709f3-9b39-4e93-9a5e-cdd883453178');
+            suppliers = JSON.parse(suppliersData);
+        } catch (err) {
+            console.error('Failed to load suppliers from file:', err);
+            return;
         }
     }
 
