@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
-import { normalizeSearchQuery, expandSearchTerms } from '@/lib/search-utils';
+import { normalizeSearchQuery, expandQueryToGroups, expandSearchTerms } from '@/lib/search-utils';
 import { getCached, setCache } from '@/lib/cache';
 import { searchRateLimit } from '@/lib/rate-limit';
 
@@ -23,14 +23,12 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   
-  // Input validation and sanitization - Enhanced for IT-focused search
-  const rawQuery = searchParams.get('q')?.trim().slice(0, 200); // Increased for IT product names
-  const suppliersParam = searchParams.get('suppliers'); // Comma-separated list
+  const rawQuery = searchParams.get('q')?.trim().slice(0, 200);
+  const suppliersParam = searchParams.get('suppliers');
   const brand = searchParams.get('brand')?.trim().slice(0, 100);
-  const categoriesParam = searchParams.get('categories'); // Comma-separated list
+  const categoriesParam = searchParams.get('categories');
   const searchInDescription = searchParams.get('search_description') === 'true';
   
-  // Validate numeric inputs
   const minPrice = parseFloat(searchParams.get('min_price') || '0') || 0;
   const maxPrice = parseFloat(searchParams.get('max_price') || '999999') || 999999;
   const page = Math.max(1, Math.min(100, parseInt(searchParams.get('page') || '1')));
@@ -43,16 +41,13 @@ export async function GET(request: Request) {
   const limit = 50;
   const offset = (page - 1) * limit;
 
-  // Validate inputs
   if (minPrice < 0 || maxPrice < 0 || minPrice > maxPrice) {
     return NextResponse.json({ error: 'Invalid price range' }, { status: 400 });
   }
 
-  // Parse multi-select filters
   const suppliers = suppliersParam ? suppliersParam.split(',').filter(s => s.trim()).map(s => s.trim().toLowerCase()) : [];
   const categories = categoriesParam ? categoriesParam.split(',').filter(c => c.trim()).map(c => c.trim()) : [];
 
-  // Create cache key
   const cacheKey = `search:${JSON.stringify({
     q: rawQuery, suppliers, brand, categories, minPrice, maxPrice, inStock, sort, page, searchInDescription
   })}`;
@@ -67,18 +62,15 @@ export async function GET(request: Request) {
     });
   }
 
-  // Build parameterized queries to prevent SQL injection
   const params: any[] = [];
   let whereConditions: string[] = [];
 
-  // Enhanced query with ALL suppliers and product tables
   let sql = `
     SELECT 
       p.id, p.supplier_sku, p.name, p.brand, p.price_ex_vat, 
       p.qty_on_hand, p.image_url, p.supplier_name, p.supplier_slug,
       p.last_updated, p.category, p.description
     FROM (
-      -- Main products from XML feeds (Scoop, Esquire, Pinnacle, Mustek)
       SELECT 
         p.id, p.supplier_sku, p.name, p.brand, p.price_ex_vat, 
         p.qty_on_hand, p.image_url, s.name as supplier_name, s.slug as supplier_slug,
@@ -86,51 +78,40 @@ export async function GET(request: Request) {
       FROM products p
       JOIN suppliers s ON p.supplier_name = s.name
       WHERE s.enabled = true
-      
     ) p
     WHERE 1=1
   `;
 
-  // Enhanced Search Logic - IT-focused with description search
+  // DEEP SEARCH LOGIC: Match components of query with AND logic
   if (rawQuery) {
-    const normalizedQuery = normalizeSearchQuery(rawQuery);
-    const searchTerms = expandSearchTerms(normalizedQuery);
+    const termGroups = expandQueryToGroups(rawQuery);
     
-    // Build search conditions with expanded terms
-    const searchConditions: string[] = [];
-    searchTerms.forEach((term, idx) => {
-      params.push(`%${term}%`);
-      const paramNum = params.length;
-      const conditions = [
-        `p.name ILIKE $${paramNum}`,
-        `p.brand ILIKE $${paramNum}`,
-        `p.supplier_sku ILIKE $${paramNum}`
-      ];
-      
-      // Include description if requested
-      if (searchInDescription) {
-        conditions.push(`p.description ILIKE $${paramNum}`);
-      }
-      
-      searchConditions.push(`(${conditions.join(' OR ')})`);
+    termGroups.forEach(group => {
+      const groupConditions: string[] = [];
+      group.forEach(term => {
+        params.push(`%${term}%`);
+        const pNum = params.length;
+        let cond = `(p.name ILIKE $${pNum} OR p.supplier_sku ILIKE $${pNum} OR p.brand ILIKE $${pNum}`;
+        if (searchInDescription) {
+          cond += ` OR p.description ILIKE $${pNum}`;
+        }
+        cond += `)`;
+        groupConditions.push(cond);
+      });
+      // Within a group (synonyms), we use OR. Between groups (words), we use AND.
+      whereConditions.push(`(${groupConditions.join(' OR ')})`);
     });
-    
-    whereConditions.push(`(${searchConditions.join(' OR ')})`);
   }
 
-  // Multi-Supplier Filter
   if (suppliers.length > 0) {
     const supplierConditions: string[] = [];
     suppliers.forEach(supplier => {
         params.push(supplier);
         supplierConditions.push(`p.supplier_slug = $${params.length}`);
     });
-    if (supplierConditions.length > 0) {
-      whereConditions.push(`(${supplierConditions.join(' OR ')})`);
-    }
+    whereConditions.push(`(${supplierConditions.join(' OR ')})`);
   }
 
-  // Multi-Category Filter
   if (categories.length > 0) {
     const categoryConditions: string[] = [];
     categories.forEach(category => {
@@ -140,7 +121,6 @@ export async function GET(request: Request) {
     whereConditions.push(`(${categoryConditions.join(' OR ')})`);
   }
 
-  // Brand Filter
   if (brand) {
     const brands = brand.split(',').filter(b => b.trim() !== '').slice(0, 10);
     if (brands.length > 0) {
@@ -152,7 +132,6 @@ export async function GET(request: Request) {
     }
   }
 
-  // Price Filter
   if (minPrice > 0) {
     params.push(minPrice);
     whereConditions.push(`p.price_ex_vat >= $${params.length}`);
@@ -162,22 +141,18 @@ export async function GET(request: Request) {
     whereConditions.push(`p.price_ex_vat <= $${params.length}`);
   }
 
-  // Stock Filter
   if (inStock) {
     whereConditions.push(`p.qty_on_hand > 0`);
   }
 
-  // Add all conditions to SQL
   if (whereConditions.length > 0) {
     sql += ` AND ${whereConditions.join(' AND ')}`;
   }
 
-  // Count Query
   const countSql = `SELECT COUNT(*) FROM (${sql}) as total`;
-  // Parameters for count query exclude LIMIT/OFFSET, which are added later
   const countParams = [...params]; 
 
-  // Enhanced sorting options
+  // Sorting
   if (sort === 'price_asc') {
     sql += ` ORDER BY p.price_ex_vat ASC, p.qty_on_hand DESC`;
   } else if (sort === 'price_desc') {
@@ -189,39 +164,30 @@ export async function GET(request: Request) {
   } else if (sort === 'name_desc') {
     sql += ` ORDER BY p.name DESC, p.price_ex_vat ASC`;
   } else if (sort === 'relevance' && rawQuery) {
-    // Enhanced relevance scoring
-    const firstSearchTerm = rawQuery ? `%${normalizeSearchQuery(rawQuery)}%` : '';
-    if (firstSearchTerm) {
-      params.push(firstSearchTerm);
-      sql += ` ORDER BY 
-        CASE 
-          WHEN p.name ILIKE $${params.length} THEN 1
-          WHEN p.supplier_sku ILIKE $${params.length} THEN 2
-          WHEN p.brand ILIKE $${params.length} THEN 3
-          ELSE 4
-        END,
-        p.qty_on_hand DESC, 
-        p.price_ex_vat ASC`;
-    } else {
-      sql += ` ORDER BY p.qty_on_hand DESC, p.price_ex_vat ASC`;
-    }
+    const normalized = normalizeSearchQuery(rawQuery);
+    params.push(`%${normalized}%`);
+    sql += ` ORDER BY 
+      CASE 
+        WHEN p.name ILIKE $${params.length} THEN 1
+        WHEN p.supplier_sku ILIKE $${params.length} THEN 2
+        WHEN p.brand ILIKE $${params.length} THEN 3
+        ELSE 4
+      END,
+      p.qty_on_hand DESC, 
+      p.price_ex_vat ASC`;
   } else {
-    // Default sort: in stock first, then by price
     sql += ` ORDER BY p.qty_on_hand DESC, p.price_ex_vat ASC`;
   }
 
-  // Add pagination
   params.push(limit, offset);
   sql += ` LIMIT $${params.length - 1} OFFSET $${params.length}`;
 
   let client;
   try {
     client = await pool.connect();
-    
-    // Use Promise.all for concurrent queries
     const [countRes, dataRes] = await Promise.all([
-      client.query(countSql, countParams), // Count query without pagination
-      client.query(sql, params) // Main query with pagination
+      client.query(countSql, countParams),
+      client.query(sql, params)
     ]);
 
     const result = {
@@ -230,17 +196,9 @@ export async function GET(request: Request) {
       page,
       limit,
       searchTerms: rawQuery ? expandSearchTerms(normalizeSearchQuery(rawQuery)) : [],
-      filters: {
-        suppliers: suppliers,
-        categories: categories,
-        brand: brand || null,
-        priceRange: { min: minPrice, max: maxPrice },
-        inStock,
-        searchInDescription
-      }
+      filters: { suppliers, categories, brand: brand || null, priceRange: { min: minPrice, max: maxPrice }, inStock, searchInDescription }
     };
 
-    // Cache for 2 minutes
     setCache(cacheKey, result, 120000);
 
     return NextResponse.json(result, {
@@ -251,14 +209,8 @@ export async function GET(request: Request) {
     });
   } catch (err: any) {
     console.error('Search API error:', err);
-    return NextResponse.json({ 
-      error: 'Search failed', 
-      results: [], 
-      total: 0
-    }, { status: 500 });
+    return NextResponse.json({ error: 'Search failed', results: [], total: 0 }, { status: 500 });
   } finally {
-    if (client) {
-      client.release();
-    }
+    if (client) client.release();
   }
 }
