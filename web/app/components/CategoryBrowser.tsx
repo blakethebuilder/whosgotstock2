@@ -96,6 +96,7 @@ export default function CategoryBrowser({
 }: CategoryBrowserProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  // Initialize groups collapsed by default. We will conditionally expand if needed based on selection.
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'hierarchy' | 'flat'>('hierarchy');
@@ -105,8 +106,10 @@ export default function CategoryBrowser({
     if (selectedCategories.length > 0 && viewMode === 'hierarchy') {
       const requiredExpansions = new Set<string>();
       
-      Object.entries(IT_CATEGORIES_HIERARCHY).forEach(([groupName, subcategories]) => {
-        Object.entries(subcategories).forEach(([subcategoryName, keywords]) => {
+      // Use Object.entries with explicit typing for robust iteration
+      (Object.entries(IT_CATEGORIES_HIERARCHY) as Array<[keyof CategoryHierarchy, SubCategoryMap]>).forEach(([groupName, subcategories]) => {
+        (Object.entries(subcategories) as Array<[keyof SubCategoryMap, string[]]>).forEach(([subcategoryName, keywords]) => {
+          
           if (selectedCategories.some(selected => 
               subcategoryName.toLowerCase().includes(selected.toLowerCase()) ||
               keywords.some(term => selected.toLowerCase().includes(term.toLowerCase()))
@@ -174,12 +177,13 @@ export default function CategoryBrowser({
 
     return (
         <div className="space-y-4">
-            {Object.entries(IT_CATEGORIES_HIERARCHY).map(([groupName, subcategories]) => {
+            {(Object.keys(IT_CATEGORIES_HIERARCHY) as Array<keyof typeof IT_CATEGORIES_HIERARCHY>).map((groupName) => {
+                const subcategories = IT_CATEGORIES_HIERARCHY[groupName];
                 const isExpanded = expandedGroups.has(groupName);
                 
                 const groupHasSelectionOrMatch = selectedCategories.some(selected => {
-                    return Object.values(subcategories).some((keywords) => 
-                        keywords.some(term => selected.toLowerCase().includes(term.toLowerCase())) || 
+                    return Object.entries(subcategories).some(([, terms]) => 
+                        terms.some(term => selected.toLowerCase().includes(term.toLowerCase())) || 
                         selected.toLowerCase().includes(groupName.toLowerCase())
                     );
                 });
@@ -209,11 +213,11 @@ export default function CategoryBrowser({
 
                         {isExpanded && (
                             <div className="p-4 space-y-2 bg-white dark:bg-gray-800">
-                                {Object.entries(subcategories).map(([subcategoryName, keywords]) => {
+                                {Object.entries(subcategories).map(([subcategoryName]) => {
                                     const actualCategoryMatch = categories.find(c => 
                                         c.name.toLowerCase() === subcategoryName.toLowerCase() || 
                                         c.name.toLowerCase().includes(subcategoryName.toLowerCase()) ||
-                                        keywords.some(term => c.name.toLowerCase().includes(term.toLowerCase()))
+                                        IT_CATEGORIES_HIERARCHY[groupName][subcategoryName as keyof typeof subcategories].some(term => c.name.toLowerCase().includes(term.toLowerCase()))
                                     );
                                     
                                     const categoryName = actualCategoryMatch?.name || subcategoryName;
