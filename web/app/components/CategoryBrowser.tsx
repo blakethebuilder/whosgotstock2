@@ -101,11 +101,16 @@ export default function CategoryBrowser({
   useEffect(() => {
     if (selectedCategories.length > 0 && viewMode === 'hierarchy') {
       const requiredExpansions = new Set<string>();
+      
+      // Explicitly typing keys for group names
       (Object.keys(IT_CATEGORIES_HIERARCHY) as Array<keyof typeof IT_CATEGORIES_HIERARCHY>).forEach((groupName) => {
         const subcategories = IT_CATEGORIES_HIERARCHY[groupName];
+        
+        // Explicitly typing keys for subcategory names
         (Object.keys(subcategories) as Array<keyof typeof subcategories>).forEach(subcategoryName => {
-          // Check if any selected category matches this subcategory name/keyword
+          // TypeScript now knows subcategoryKeywords is string[] due to the cast on the outer loop's result
           const subcategoryKeywords = subcategories[subcategoryName] as string[];
+
           if (selectedCategories.some(selected => 
               subcategoryName.toLowerCase().includes(selected.toLowerCase()) ||
               subcategoryKeywords.some(term => selected.toLowerCase().includes(term.toLowerCase()))
