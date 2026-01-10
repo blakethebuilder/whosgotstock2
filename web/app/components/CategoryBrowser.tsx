@@ -101,10 +101,11 @@ export default function CategoryBrowser({
   useEffect(() => {
     if (selectedCategories.length > 0 && viewMode === 'hierarchy') {
       const requiredExpansions = new Set<string>();
-      Object.entries(IT_CATEGORIES_HIERARCHY).forEach(([groupName, subcategories]) => {
+      (Object.keys(IT_CATEGORIES_HIERARCHY) as Array<keyof typeof IT_CATEGORIES_HIERARCHY>).forEach((groupName) => {
+        const subcategories = IT_CATEGORIES_HIERARCHY[groupName];
         Object.keys(subcategories).forEach(subcategoryName => {
           // Check if any selected category matches this subcategory name/keyword
-          const subcategoryKeywords = IT_CATEGORIES_HIERARCHY[groupName][subcategoryName];
+          const subcategoryKeywords = subcategories[subcategoryName as keyof typeof subcategories];
           if (selectedCategories.some(selected => 
               subcategoryName.toLowerCase().includes(selected.toLowerCase()) ||
               subcategoryKeywords.some(term => selected.toLowerCase().includes(term.toLowerCase()))
@@ -182,7 +183,8 @@ export default function CategoryBrowser({
 
     return (
         <div className="space-y-4">
-            {Object.entries(IT_CATEGORIES_HIERARCHY).map(([groupName, subcategories]) => {
+            {(Object.keys(IT_CATEGORIES_HIERARCHY) as Array<keyof typeof IT_CATEGORIES_HIERARCHY>).map((groupName) => {
+                const subcategories = IT_CATEGORIES_HIERARCHY[groupName];
                 const isExpanded = expandedGroups.has(groupName);
                 
                 // Calculate if the group or any of its subcategories have selected items or match the search term
@@ -227,7 +229,7 @@ export default function CategoryBrowser({
                                     const actualCategoryMatch = categories.find(c => 
                                         c.name.toLowerCase() === subcategoryName.toLowerCase() || 
                                         c.name.toLowerCase().includes(subcategoryName.toLowerCase()) ||
-                                        IT_CATEGORIES_HIERARCHY[groupName][subcategoryName].some(term => c.name.toLowerCase().includes(term.toLowerCase()))
+                                        IT_CATEGORIES_HIERARCHY[groupName][subcategoryName as keyof typeof subcategories].some(term => c.name.toLowerCase().includes(term.toLowerCase()))
                                     );
                                     
                                     const categoryName = actualCategoryMatch?.name || subcategoryName;
