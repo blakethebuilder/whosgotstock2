@@ -260,23 +260,16 @@ export default function Home() {
                     </p>
                     <div className="pt-4 flex items-center gap-4">
                         <button 
-                            onClick={() => performSearch("laptop")}
+                            onClick={() => performSearch("")}
                             className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-8 py-4 rounded-2xl font-black text-sm hover:scale-105 transition-transform flex items-center gap-3 active:scale-95 shadow-xl shadow-gray-200 dark:shadow-none"
                         >
                             View All Products
                             <svg className="w-5 h-5 rotate-[-45deg]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                         </button>
-                        <div className="flex -space-x-3">
-                            {[1,2,3,4].map(i => (
-                                <div key={i} className="w-10 h-10 rounded-full border-4 border-white dark:border-gray-900 bg-gray-200 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
-                                    <img src={`https://i.pravatar.cc/100?u=${i}`} alt="User" />
-                                </div>
-                            ))}
-                        </div>
                     </div>
                 </div>
 
-                {/* VISUAL ELEMENT (Floating Headset Style) */}
+                {/* VISUAL ELEMENT */}
                 <div className="absolute right-[-5%] top-1/2 -translate-y-1/2 w-1/2 hidden md:block select-none group-hover:scale-110 transition-transform duration-1000 ease-out pointer-events-none">
                      <div className="relative">
                         <div className="absolute top-0 left-0 w-64 h-64 bg-orange-500/20 blur-[120px] rounded-full" />
@@ -291,7 +284,7 @@ export default function Home() {
 
             {/* SIDE TILE 1: SUPPLIERS */}
             <div className="md:col-span-4 flex flex-col gap-6">
-                <div className="flex-1 bg-[#D8E698] rounded-[2.5rem] p-8 flex flex-col justify-between group cursor-pointer hover:scale-[0.98] transition-all">
+                <div className="flex-1 bg-[#D8E698] rounded-[2.5rem] p-8 flex flex-col justify-between group cursor-pointer hover:scale-[0.98] transition-all border border-transparent hover:border-[#4A5D16]/20">
                     <div className="flex justify-between items-start">
                         <h3 className="text-2xl font-black text-gray-900 leading-none">Integrated <br/>Suppliers</h3>
                         <div className="w-10 h-10 bg-white/50 rounded-full flex items-center justify-center rotate-[-45deg] group-hover:rotate-0 transition-transform">
@@ -299,8 +292,14 @@ export default function Home() {
                         </div>
                     </div>
                     <div className="flex flex-wrap gap-2 mt-8">
-                        {['Scoop', 'Esquire', 'Pinnacle', 'Mustek', 'Miro'].map(s => (
-                            <span key={s} className="px-3 py-1.5 bg-white/40 rounded-xl text-xs font-black text-gray-800 border border-white/20 uppercase tracking-tighter">{s}</span>
+                        {suppliers.map(s => (
+                            <button 
+                                key={s.slug} 
+                                onClick={(e) => { e.stopPropagation(); setSelectedSuppliers([s.slug]); performSearch(""); }}
+                                className="px-3 py-1.5 bg-white/40 hover:bg-white rounded-xl text-xs font-black text-gray-800 border border-white/20 uppercase tracking-tighter transition-all"
+                            >
+                                {s.name}
+                            </button>
                         ))}
                     </div>
                 </div>
@@ -324,11 +323,14 @@ export default function Home() {
                 </div>
             </div>
 
-            {/* BOTTOM TILES: CATEGORIES */}
-            <div className="md:col-span-3 bg-[#E8E8E8] dark:bg-gray-900 rounded-[2.5rem] p-8 min-h-[220px] flex flex-col justify-between group cursor-pointer hover:bg-white transition-colors border border-transparent hover:border-gray-200">
+            {/* BOTTOM TILES: COMPREHENSIVE CATEGORIES */}
+            <div 
+                onClick={() => { setQuery("Networking"); performSearch("Networking"); }}
+                className="md:col-span-3 bg-[#E8E8E8] dark:bg-gray-900 rounded-[2.5rem] p-8 min-h-[220px] flex flex-col justify-between group cursor-pointer hover:bg-white transition-colors border border-transparent hover:border-gray-200"
+            >
                 <div className="flex justify-between items-start">
                     <h3 className="text-xl font-black text-gray-900 dark:text-white">Networking</h3>
-                    <div className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity">
+                    <div className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center rotate-[-45deg] group-hover:rotate-0 transition-all">
                         <svg className="w-4 h-4 text-gray-900 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                     </div>
                 </div>
@@ -339,41 +341,42 @@ export default function Home() {
                 </div>
             </div>
 
-            <div className="md:col-span-4 bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 border border-white/40 dark:border-gray-800/40 shadow-xl shadow-gray-200/40 min-h-[220px] flex items-center gap-6 group cursor-pointer hover:scale-[1.02] transition-all">
-                <div className="relative w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center shrink-0 overflow-hidden shadow-2xl shadow-blue-200">
-                     <span className="text-white font-black text-2xl z-10">5m+</span>
-                     <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-blue-700 opacity-50" />
+            <div className="md:col-span-9 bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 border border-white/40 dark:border-gray-800/40 shadow-xl shadow-gray-200/40 min-h-[220px]">
+                <div className="flex items-center justify-between mb-8">
+                    <h3 className="text-xl font-black text-gray-900 dark:text-white">Popular Quick-Tags</h3>
+                    <button onClick={() => setShowCategoryBrowser(true)} className="text-[10px] font-black uppercase tracking-widest text-orange-500 hover:text-orange-600">Explore More</button>
                 </div>
-                <div>
-                    <h3 className="text-xl font-black text-gray-900 dark:text-white">Active Catalog</h3>
-                    <p className="text-sm font-medium text-gray-400 leading-tight mt-1">Over 15,000 live IT products synced every hour.</p>
-                </div>
+                <CategoryTiles 
+                    onCategoryClick={(searchTerm) => {
+                        setQuery(searchTerm);
+                        performSearch(searchTerm);
+                    }}
+                />
             </div>
 
             <div 
                 onClick={() => setShowCategoryBrowser(true)}
-                className="md:col-span-5 bg-[#FF6B6B] rounded-[2.5rem] p-8 min-h-[220px] flex flex-col justify-between group cursor-pointer relative overflow-hidden hover:brightness-105 transition-all shadow-2xl shadow-red-200/50"
+                className="md:col-span-12 bg-[#FF6B6B] rounded-[2.5rem] p-8 min-h-[140px] flex items-center justify-between group cursor-pointer relative overflow-hidden hover:brightness-105 transition-all shadow-2xl shadow-red-200/50"
             >
-                <div className="flex justify-between items-start relative z-10">
-                    <h3 className="text-2xl font-black text-white leading-tight">Advanced <br/>Filtering</h3>
-                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center rotate-[-45deg] group-hover:rotate-0 transition-transform shadow-lg">
-                        <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                <div className="flex items-center gap-6 relative z-10">
+                    <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                        <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+                    </div>
+                    <div>
+                        <h3 className="text-2xl font-black text-white leading-tight">Advanced Categorical Drilldown</h3>
+                        <p className="text-red-100 text-sm font-medium mt-1 uppercase tracking-widest">Open the structural hierarchy explorer</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-3 relative z-10">
-                    <div className="px-4 py-2 bg-black/10 backdrop-blur rounded-xl text-white font-bold text-xs uppercase tracking-widest border border-white/20">
-                        {selectedCategories.length} Active
+                <div className="flex items-center gap-4 relative z-10">
+                    <div className="px-6 py-3 bg-black/10 backdrop-blur rounded-2xl text-white font-black text-xs uppercase tracking-widest border border-white/20">
+                        {selectedCategories.length} Categories Selected
                     </div>
-                </div>
-                {/* Decorative Visual */}
-                <div className="absolute bottom-[-20%] right-[-10%] w-48 h-48 opacity-20 pointer-events-none group-hover:scale-125 transition-transform duration-700">
-                     <svg className="w-full h-full text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /></svg>
                 </div>
             </div>
 
           </div>
         ) : (
-          /* MODERN SEARCH RESULTS VIEW */
+          /* SEARCH RESULTS VIEW (UNCHANGED LOGIC, UPDATED STYLING) */
           <div className="animate-in fade-in duration-500">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10 pb-6 border-b border-gray-200 dark:border-gray-800">
               <div>
@@ -407,71 +410,33 @@ export default function Home() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {results.map((product) => (
-                <div 
-                    key={product.id}
-                    onClick={() => setSelectedProduct(product)}
-                    className="group bg-white dark:bg-gray-900 rounded-[2.5rem] p-4 border border-white dark:border-gray-800 shadow-2xl shadow-gray-200/50 dark:shadow-none hover:-translate-y-2 transition-all duration-500 cursor-pointer relative"
-                >
-                    {/* Image Area */}
+                <div key={product.id} onClick={() => setSelectedProduct(product)} className="group bg-white dark:bg-gray-900 rounded-[2.5rem] p-4 border border-white dark:border-gray-800 shadow-2xl shadow-gray-200/50 dark:shadow-none hover:-translate-y-2 transition-all duration-500 cursor-pointer relative">
                     <div className="aspect-square bg-[#F8F9FA] dark:bg-gray-800 rounded-[2rem] mb-4 flex items-center justify-center overflow-hidden relative p-8">
                          {product.image_url ? (
                              <img src={product.image_url} alt={product.name} className="max-h-full max-w-full object-contain mix-blend-multiply dark:mix-blend-normal group-hover:scale-110 transition-transform duration-700" />
                          ) : (
                              <svg className="w-12 h-12 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                          )}
-                         <div className="absolute top-4 left-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-tighter border border-white/50 text-orange-600">
-                             {product.brand}
-                         </div>
-                         <button 
-                            onClick={(e) => { e.stopPropagation(); toggleCompare(product); }}
-                            className={`absolute top-4 right-4 p-2.5 rounded-full backdrop-blur shadow-sm transition-all border ${compareList.find(p => p.id === product.id) ? 'bg-orange-500 text-white border-orange-500' : 'bg-white/80 dark:bg-gray-700/80 text-gray-400 border-white hover:text-orange-500'}`}
-                         >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" /></svg>
-                         </button>
+                         <div className="absolute top-4 left-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-tighter border border-white/50 text-orange-600">{product.brand}</div>
+                         <button onClick={(e) => { e.stopPropagation(); toggleCompare(product); }} className={`absolute top-4 right-4 p-2.5 rounded-full backdrop-blur shadow-sm transition-all border ${compareList.find(p => p.id === product.id) ? 'bg-orange-500 text-white border-orange-500' : 'bg-white/80 dark:bg-gray-700/80 text-gray-400 border-white hover:text-orange-500'}`}><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" /></svg></button>
                     </div>
-
-                    {/* Info Area */}
                     <div className="px-2 pb-2">
-                        <h4 className="font-black text-gray-900 dark:text-white text-base line-clamp-2 leading-tight mb-2 group-hover:text-orange-500 transition-colors">
-                            {product.name}
-                        </h4>
-                        <div className="flex items-center gap-2 mb-4">
-                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-lg">
-                                {userRole === 'public' ? 'Distributor Stock' : product.supplier_name}
-                            </span>
-                        </div>
-                        
+                        <h4 className="font-black text-gray-900 dark:text-white text-base line-clamp-2 leading-tight mb-2 group-hover:text-orange-500 transition-colors">{product.name}</h4>
+                        <div className="flex items-center gap-2 mb-4"><span className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-lg">{userRole === 'public' ? 'Distributor Stock' : product.supplier_name}</span></div>
                         <div className="flex items-end justify-between gap-4 mt-6">
                             <div className="space-y-0.5">
-                                <div className="text-2xl font-black text-gray-900 dark:text-white leading-none">
-                                    R {formatPriceDisplay(calculatePriceWithDiscount(product.price_ex_vat).exVat)}
-                                </div>
+                                <div className="text-2xl font-black text-gray-900 dark:text-white leading-none">R {formatPriceDisplay(calculatePriceWithDiscount(product.price_ex_vat).exVat)}</div>
                                 <div className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Excluding VAT</div>
                             </div>
                             <div className="flex flex-col items-end gap-2">
-                                 <div className={`text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-tighter ${product.qty_on_hand > 0 ? 'bg-[#D8E698] text-[#4A5D16]' : 'bg-red-50 text-red-600'}`}>
-                                    {product.qty_on_hand > 0 ? `${product.qty_on_hand} Stock` : 'Out of Stock'}
-                                 </div>
-                                 <button 
-                                    onClick={(e) => { e.stopPropagation(); addToCart(product); }}
-                                    className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl active:scale-95 transition-all shadow-lg shadow-gray-200 dark:shadow-none"
-                                 >
-                                    + Quote
-                                 </button>
+                                 <div className={`text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-tighter ${product.qty_on_hand > 0 ? 'bg-[#D8E698] text-[#4A5D16]' : 'bg-red-50 text-red-600'}`}>{product.qty_on_hand > 0 ? `${product.qty_on_hand} Stock` : 'Out of Stock'}</div>
+                                 <button onClick={(e) => { e.stopPropagation(); addToCart(product); }} className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl active:scale-95 transition-all shadow-lg shadow-gray-200 dark:shadow-none">+ Quote</button>
                             </div>
                         </div>
                     </div>
                 </div>
               ))}
             </div>
-
-            {results.length < totalResults && (
-              <div className="mt-20 flex justify-center">
-                <button onClick={() => setPage(page + 1)} className="bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black text-xs uppercase tracking-widest px-12 py-4 rounded-2xl shadow-xl hover:scale-105 transition-transform active:scale-95 border border-gray-100 dark:border-gray-800">
-                  Load More Items
-                </button>
-              </div>
-            )}
           </div>
         )}
       </div>
@@ -479,7 +444,18 @@ export default function Home() {
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} items={cart} updateQuantity={updateCartQuantity} removeItem={removeCartItem} userRole={userRole} pricingSettings={pricingSettings} />
       <ProductDetailModal product={selectedProduct} isOpen={selectedProduct !== null} onClose={() => setSelectedProduct(null)} onAddToCart={addToCart} onToggleCompare={toggleCompare} isInCompare={!!selectedProduct && !!compareList.find(p => p.id === selectedProduct.id)} calculatePrice={(basePrice: string) => calculatePrice(basePrice, userRole, pricingSettings)} userRole={userRole} />
 
-      {/* Modern Authentication Modal */}
+      {/* Category Browser Modal - Full Overhaul */}
+      {showCategoryBrowser && (
+        <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-8">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-md" onClick={() => setShowCategoryBrowser(false)} />
+          <div className="relative bg-white dark:bg-gray-900 rounded-[3rem] shadow-2xl max-w-6xl w-full h-full max-h-[85vh] overflow-hidden border border-white/20">
+             <button onClick={() => setShowCategoryBrowser(false)} className="absolute top-8 right-8 z-[510] p-3 bg-gray-100 dark:bg-gray-800 rounded-2xl hover:bg-red-500 hover:text-white transition-all group shadow-sm"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg></button>
+             <CategoryBrowser selectedCategories={selectedCategories} onCategoriesChange={setSelectedCategories} onCategoryClick={(category) => { if (!selectedCategories.includes(category)) { setSelectedCategories([...selectedCategories, category]); } performSearch(); }} />
+          </div>
+        </div>
+      )}
+
+      {/* Role Passphrase Modal */}
       {showRoleModal && (
         <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-md" onClick={() => setShowRoleModal(false)} />
@@ -488,9 +464,7 @@ export default function Home() {
             <p className="text-gray-400 font-medium mb-8 text-sm uppercase tracking-widest">Verify your credentials</p>
             <input type="password" placeholder="Passphrase" value={passphrase} onChange={(e) => setPassphrase(e.target.value)} className="w-full p-4 bg-gray-50 dark:bg-gray-800 border-none rounded-2xl mb-4 focus:ring-2 focus:ring-orange-500/20 text-lg outline-none text-gray-900 dark:text-white font-bold" />
             {passphraseError && <p className="text-xs font-bold text-red-500 mb-4 ml-2 uppercase tracking-widest">{passphraseError}</p>}
-            <button onClick={verifyPassphrase} className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black py-4 rounded-2xl hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-2xl shadow-gray-400/20 active:scale-[0.98]">
-              {isAuthenticating ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Enter Portal'}
-            </button>
+            <button onClick={verifyPassphrase} className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black py-4 rounded-2xl hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-2xl shadow-gray-400/20 active:scale-[0.98]">{isAuthenticating ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Enter Portal'}</button>
           </div>
         </div>
       )}

@@ -10,108 +10,77 @@ const popularCategories = [
   { 
     name: 'Laptops', 
     searchTerms: ['laptop', 'notebook'],
+    color: 'bg-blue-500/10 text-blue-600',
     icon: '💻'
   },
   { 
-    name: 'Graphics Cards', 
+    name: 'Graphics', 
     searchTerms: ['graphics card', 'gpu', 'video card'],
+    color: 'bg-purple-500/10 text-purple-600',
     icon: '🎮'
   },
   { 
     name: 'Storage', 
     searchTerms: ['ssd', 'hard drive', 'storage'],
+    color: 'bg-emerald-500/10 text-emerald-600',
     icon: '💾'
   },
   { 
     name: 'Networking', 
     searchTerms: ['router', 'switch', 'access point'],
+    color: 'bg-[#D8E698] text-[#4A5D16]',
     icon: '🌐'
   },
   { 
-    name: 'Monitors', 
+    name: 'Displays', 
     searchTerms: ['monitor', 'display', 'screen'],
+    color: 'bg-amber-500/10 text-amber-600',
     icon: '🖥️'
-  },
-  { 
-    name: 'Memory', 
-    searchTerms: ['ram', 'memory', 'ddr4', 'ddr5'],
-    icon: '🧠'
   },
   { 
     name: 'Processors', 
     searchTerms: ['cpu', 'processor', 'intel', 'amd'],
+    color: 'bg-red-500/10 text-red-600',
     icon: '⚡'
-  },
-  { 
-    name: 'Servers', 
-    searchTerms: ['server', 'rack', 'enterprise'],
-    icon: '🏢'
-  },
-  { 
-    name: 'Printers', 
-    searchTerms: ['printer', 'print', 'scanner'],
-    icon: '🖨️'
-  },
-  { 
-    name: 'Cables', 
-    searchTerms: ['cable', 'connector', 'adapter'],
-    icon: '🔌'
   },
   { 
     name: 'Security', 
     searchTerms: ['camera', 'security', 'surveillance'],
+    color: 'bg-indigo-500/10 text-indigo-600',
     icon: '🔒'
   },
   { 
-    name: 'Components', 
-    searchTerms: ['component', 'part', 'accessory'],
-    icon: '🔧'
+    name: 'Cables', 
+    searchTerms: ['cable', 'connector', 'adapter'],
+    color: 'bg-orange-500/10 text-orange-600',
+    icon: '🔌'
   }
 ];
 
 export default function CategoryTiles({ onCategoryClick }: CategoryTilesProps) {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-
-  const handleCategoryClick = (category: typeof popularCategories[0]) => {
-    // Use the first search term for the search
-    onCategoryClick(category.searchTerms[0]);
-  };
-
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-      {popularCategories.map((category, index) => (
-        <div
+    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-4">
+      {popularCategories.map((category) => (
+        <button
           key={category.name}
-          onClick={() => handleCategoryClick(category)}
-          onMouseEnter={() => setHoveredIndex(index)}
-          onMouseLeave={() => setHoveredIndex(null)}
-          className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:border-orange-100 hover:-translate-y-1 transition-all duration-300 cursor-pointer p-4 text-center min-h-[100px] flex flex-col items-center justify-center relative overflow-hidden"
+          onClick={() => onCategoryClick(category.searchTerms[0])}
+          className="group bg-white dark:bg-gray-900 rounded-[2rem] border border-white dark:border-gray-800 shadow-xl shadow-gray-200/40 dark:shadow-none hover:-translate-y-1 transition-all duration-300 p-6 flex flex-col items-center justify-center gap-4 active:scale-95 text-center overflow-hidden relative"
         >
-          {/* Background gradient on hover */}
-          <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-orange-50 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className={`w-14 h-14 rounded-2xl ${category.color} flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform duration-500`}>
+             {category.icon}
+          </div>
           
-          {/* Content */}
-          <div className="relative z-10 flex flex-col items-center justify-center space-y-2">
-            <div className="text-2xl group-hover:scale-110 transition-transform">
-              {category.icon}
-            </div>
-            
-            <div className="space-y-1">
-              <span className="text-xs font-bold text-gray-900 group-hover:text-orange-600 transition-colors block leading-tight">
-                {category.name}
-              </span>
-              
-              {hoveredIndex === index && (
-                <div className="text-[10px] text-gray-500 animate-in fade-in duration-200">
-                  Click to search
-                </div>
-              )}
-            </div>
+          <div>
+            <span className="font-black text-gray-900 dark:text-white uppercase tracking-widest text-[10px] block">
+              {category.name}
+            </span>
           </div>
 
-          {/* Hover effect border */}
-          <div className="absolute inset-0 border-2 border-orange-500 rounded-2xl opacity-0 group-hover:opacity-20 transition-opacity" />
-        </div>
+          {/* Minimal visual flare like inspiration image */}
+          <div className="absolute bottom-4 right-4 w-6 h-6 rounded-full border border-gray-100 dark:border-gray-700 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <svg className="w-3 h-3 text-gray-400 rotate-[-45deg]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+          </div>
+        </button>
       ))}
     </div>
   );
