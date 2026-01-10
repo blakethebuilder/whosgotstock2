@@ -14,6 +14,7 @@ interface CategoryBrowserProps {
   onCategoryClick?: (category: string) => void;
 }
 
+// Define explicit types for the hierarchy to ensure robust indexing
 type SubCategoryMap = Record<string, string[]>;
 type CategoryHierarchy = Record<string, SubCategoryMap>;
 
@@ -99,14 +100,11 @@ export default function CategoryBrowser({
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'hierarchy' | 'flat'>('hierarchy');
 
-  // Effect to determine which groups must be expanded based on current selections
   useEffect(() => {
     if (selectedCategories.length > 0 && viewMode === 'hierarchy') {
       const requiredExpansions = new Set<string>();
-      
       (Object.entries(IT_CATEGORIES_HIERARCHY) as Array<[keyof CategoryHierarchy, SubCategoryMap]>).forEach(([groupName, subcategories]) => {
-        (Object.entries(subcategories) as Array<[keyof SubCategoryMap, string[]]>).forEach(([subcategoryName, keywords]) => {
-          
+        (Object.entries(subcategories) as Array<[string, string[]]>).forEach(([subcategoryName, keywords]) => {
           if (selectedCategories.some(selected => 
               subcategoryName.toLowerCase().includes(selected.toLowerCase()) ||
               keywords.some(term => selected.toLowerCase().includes(term.toLowerCase()))
@@ -116,8 +114,6 @@ export default function CategoryBrowser({
         });
       });
       setExpandedGroups(requiredExpansions);
-    } else {
-      setExpandedGroups(new Set());
     }
   }, [selectedCategories, viewMode]);
 
@@ -168,53 +164,41 @@ export default function CategoryBrowser({
   }, [searchQuery, categories]);
 
   const renderHierarchy = () => {
-    if (searchQuery !== '') {
-        return renderFlat(); 
-    }
+    if (searchQuery !== '') return renderFlat(); 
 
     return (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {(Object.keys(IT_CATEGORIES_HIERARCHY) as Array<keyof typeof IT_CATEGORIES_HIERARCHY>).map((groupName) => {
                 const subcategories = IT_CATEGORIES_HIERARCHY[groupName];
                 const isExpanded = expandedGroups.has(groupName);
                 
-                const groupHasSelectionOrMatch = selectedCategories.some(selected => {
+                const groupHasSelection = selectedCategories.some(selected => {
                     return Object.entries(subcategories).some(([, terms]) => 
                         terms.some(term => selected.toLowerCase().includes(term.toLowerCase())) || 
                         selected.toLowerCase().includes(groupName.toLowerCase())
                     );
                 });
 
-                if (!groupHasSelectionOrMatch && !isExpanded && searchQuery === '') {
-                   return null;
-                }
-
                 return (
-                    <div key={groupName} className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+                    <div key={groupName} className={`rounded-[2rem] transition-all border ${isExpanded ? 'bg-gray-50/50 dark:bg-gray-800/50 border-orange-500/20' : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 hover:border-orange-500/20 hover:bg-gray-50/30'}`}>
                         <button
                             onClick={() => toggleGroup(groupName)}
-                            className="w-full px-4 py-3 bg-gradient-to-r from-orange-50 to-orange-50 dark:from-gray-700 dark:to-gray-700 flex items-center justify-between hover:from-orange-100 hover:to-orange-100 dark:hover:from-gray-600 transition-colors"
+                            className="w-full p-6 flex items-center justify-between group"
                         >
-                            <span className="font-black text-gray-900 dark:text-gray-100">{groupName}</span>
-                            <svg
-                                className={`w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform ${
-                                    isExpanded ? 'rotate-180' : ''
-                                }`}
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
+                            <div className="flex items-center gap-4">
+                                <div className={`w-2 h-2 rounded-full ${groupHasSelection ? 'bg-orange-500 animate-pulse' : 'bg-gray-200 dark:bg-gray-700'}`} />
+                                <span className="font-black text-gray-900 dark:text-white tracking-tight">{groupName}</span>
+                            </div>
+                            <svg className={`w-5 h-5 text-gray-400 group-hover:text-orange-500 transition-all ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg>
                         </button>
 
                         {isExpanded && (
-                            <div className="p-4 space-y-2 bg-white dark:bg-gray-800">
+                            <div className="px-6 pb-6 pt-0 flex flex-wrap gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
                                 {Object.entries(subcategories).map(([subcategoryName]) => {
                                     const actualCategoryMatch = categories.find(c => 
                                         c.name.toLowerCase() === subcategoryName.toLowerCase() || 
                                         c.name.toLowerCase().includes(subcategoryName.toLowerCase()) ||
-                                        IT_CATEGORIES_HIERARCHY[groupName][subcategoryName as keyof typeof subcategories].some(term => c.name.toLowerCase().includes(term.toLowerCase()))
+                                        (IT_CATEGORIES_HIERARCHY[groupName][subcategoryName] as string[]).some(term => c.name.toLowerCase().includes(term.toLowerCase()))
                                     );
                                     
                                     const categoryName = actualCategoryMatch?.name || subcategoryName;
@@ -225,22 +209,13 @@ export default function CategoryBrowser({
                                         <button
                                             key={subcategoryName}
                                             onClick={() => toggleCategory(categoryName)}
-                                            className={`w-full px-4 py-2.5 rounded-lg flex items-center justify-between transition-all ${
+                                            className={`px-4 py-2 rounded-2xl text-xs font-black uppercase tracking-widest transition-all border ${
                                                 isSelected
-                                                ? 'bg-orange-600 text-white'
-                                                : 'bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-gray-700'
+                                                ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-transparent shadow-lg'
+                                                : 'bg-white dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700 hover:text-orange-500 hover:border-orange-500/20'
                                             }`}
                                         >
-                                            <span className="font-semibold">{categoryName}</span>
-                                            {count > 0 && (
-                                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                                                isSelected
-                                                ? 'bg-white/20 text-white'
-                                                : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
-                                            }`}>
-                                                {count}
-                                            </span>
-                                            )}
+                                            {subcategoryName} {count > 0 && <span className="opacity-50 ml-1">({count})</span>}
                                         </button>
                                     );
                                 })}
@@ -257,10 +232,10 @@ export default function CategoryBrowser({
     const displayCategories = searchQuery === '' ? categories : filteredCategories;
     
     return (
-        <div className="space-y-2">
+        <div className="flex flex-wrap gap-3">
             {displayCategories.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                    No categories found matching "{searchQuery}"
+                <div className="w-full text-center py-12 text-gray-400 font-black uppercase text-xs tracking-widest">
+                    No matching categories
                 </div>
             ) : (
                 displayCategories.map((category) => {
@@ -269,22 +244,13 @@ export default function CategoryBrowser({
                         <button
                             key={category.name}
                             onClick={() => toggleCategory(category.name)}
-                            className={`w-full px-4 py-3 rounded-xl flex items-center justify-between transition-all ${
+                            className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all border ${
                                 isSelected
-                                ? 'bg-orange-600 text-white'
-                                : 'bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-gray-700'
+                                ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-transparent shadow-lg'
+                                : 'bg-white dark:bg-gray-900 text-gray-500 border-gray-100 dark:border-gray-800 hover:text-orange-500 hover:border-orange-500/30'
                             }`}
                         >
-                            <span className="font-semibold">{category.name}</span>
-                            {category.count !== undefined && (
-                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                                isSelected
-                                ? 'bg-white/20 text-white'
-                                : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
-                            }`}>
-                                {category.count}
-                            </span>
-                            )}
+                            {category.name} {category.count !== undefined && <span className="opacity-50 ml-2">({category.count})</span>}
                         </button>
                     );
                 })
@@ -294,72 +260,50 @@ export default function CategoryBrowser({
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg">
-      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-black text-gray-900 dark:text-gray-100">
-            Browse Categories
-          </h3>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setViewMode('hierarchy')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                viewMode === 'hierarchy'
-                  ? 'bg-orange-600 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-              }`}
-            >
-              Hierarchy
-            </button>
-            <button
-              onClick={() => setViewMode('flat')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                viewMode === 'flat'
-                  ? 'bg-orange-600 text-white'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-              }`}
-            >
-              All Categories
-            </button>
+    <div className="flex flex-col h-full bg-white dark:bg-gray-900">
+      <div className="p-8 border-b border-gray-100 dark:border-gray-800 bg-gray-50/30">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <h3 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter">
+              Categorical <span className="text-orange-500">Drilldown.</span>
+            </h3>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Refine your live feed results</p>
+          </div>
+          <div className="flex bg-white dark:bg-gray-800 p-1.5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
+            <button onClick={() => setViewMode('hierarchy')} className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'hierarchy' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-lg' : 'text-gray-400 hover:text-gray-900'}`}>Structure</button>
+            <button onClick={() => setViewMode('flat')} className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'flat' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-lg' : 'text-gray-400 hover:text-gray-900'}`}>All Tags</button>
           </div>
         </div>
 
-        <div className="relative">
+        <div className="relative group">
           <input
             type="text"
-            placeholder="Search categories..."
+            placeholder="Search thousands of categories..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2.5 pl-10 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            className="w-full px-6 py-4 pl-14 rounded-2xl bg-white dark:bg-gray-800 border-none text-gray-900 dark:text-white font-bold text-lg focus:ring-2 focus:ring-orange-500/20 outline-none shadow-sm group-focus-within:shadow-xl transition-all"
           />
-          <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+          <svg className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400 group-focus-within:text-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
         </div>
 
         {selectedCategories.length > 0 && (
-          <div className="mt-4 flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-bold text-gray-500 uppercase">Selected:</span>
-            <span className="text-sm font-black text-orange-600">{selectedCategories.length}</span>
-            <button
-              onClick={() => onCategoriesChange([])}
-              className="text-xs text-red-600 hover:text-red-700 font-bold ml-auto"
-            >
-              Clear All
-            </button>
+          <div className="mt-6 flex items-center gap-3 animate-in fade-in slide-in-from-left-2">
+            <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">Active:</span>
+            <div className="flex flex-wrap gap-2">
+                {selectedCategories.map(cat => (
+                    <div key={cat} className="flex items-center gap-1.5 px-3 py-1 bg-gray-900 text-white rounded-full text-[10px] font-black">
+                        {cat}
+                        <button onClick={() => toggleCategory(cat)} className="hover:text-red-400 transition-colors">×</button>
+                    </div>
+                ))}
+            </div>
+            <button onClick={() => onCategoriesChange([])} className="text-[10px] font-black text-gray-400 hover:text-red-500 uppercase tracking-widest ml-auto">Clear All</button>
           </div>
         )}
       </div>
 
-      <div className="p-6 max-h-[600px] overflow-y-auto">
-        {searchQuery !== '' ? renderFlat() : (
-            viewMode === 'hierarchy' ? renderHierarchy() : renderFlat()
-        )}
+      <div className="flex-1 p-8 overflow-y-auto bg-white dark:bg-gray-900">
+        {viewMode === 'hierarchy' ? renderHierarchy() : renderFlat()}
       </div>
     </div>
   );
