@@ -52,7 +52,7 @@ export default function Navbar({
             className="flex items-center gap-2 group"
           >
             <div className="w-10 h-10 bg-gray-900 dark:bg-white rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95">
-                <span className="text-white dark:text-gray-900 font-black text-xl">W</span>
+                <span className="text-white dark:text-gray-900 font-black text-xl">?</span>
             </div>
             <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-white hidden md:block">
               stock.

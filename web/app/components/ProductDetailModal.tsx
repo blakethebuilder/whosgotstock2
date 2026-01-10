@@ -43,125 +43,113 @@ export default function ProductDetailModal({
         raw = product.raw_data || {};
     }
 
-    // Extract description - varies by supplier
     const rawAny = raw as any;
     const description = rawAny.description || rawAny.ProductSummary || rawAny.ProdName || 'No additional description provided.';
 
     return (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-            {/* Backdrop */}
+        <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
+            {/* Glass Backdrop */}
             <div
-                className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-200"
+                className="absolute inset-0 bg-gray-900/40 backdrop-blur-md animate-in fade-in duration-300"
                 onClick={onClose}
             />
 
-            {/* Modal Content */}
-            <div className="relative bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row animate-in zoom-in-95 duration-200">
-                {/* Close Button */}
+            {/* Bento-style Modal Content */}
+            <div className="relative bg-white dark:bg-gray-900 w-full max-w-5xl max-h-[90vh] rounded-[3rem] shadow-2xl overflow-hidden flex flex-col md:flex-row animate-in zoom-in-95 duration-300 border border-white/20">
+                
+                {/* Close Button - Floating Circle */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 p-2 bg-white/80 hover:bg-white rounded-full shadow-md z-10 transition-colors"
+                    className="absolute top-6 right-6 p-3 bg-gray-100 dark:bg-gray-800 hover:bg-red-500 hover:text-white rounded-2xl shadow-sm z-[700] transition-all active:scale-90 group"
                 >
-                    <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
 
-                {/* Left: Image Panel */}
-                <div className="w-full md:w-1/2 bg-gray-50 flex items-center justify-center p-8 relative">
+                {/* Left: Image Canvas (Bento Tile Style) */}
+                <div className="w-full md:w-1/2 bg-[#F8F9FA] dark:bg-gray-800 flex items-center justify-center p-12 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(249,115,22,0.05)_0%,transparent_100%)] pointer-events-none" />
+                    
                     {product.image_url ? (
                         <img
                             src={product.image_url}
                             alt={product.name}
-                            className="max-h-full max-w-full object-contain mix-blend-multiply transition-transform hover:scale-110 duration-500"
+                            className="max-h-full max-w-full object-contain mix-blend-multiply dark:mix-blend-normal transition-transform hover:scale-105 duration-700 relative z-10"
                         />
                     ) : (
-                        <div className="text-gray-300 flex flex-col items-center gap-2">
-                            <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                            <span>No Image Available</span>
+                        <div className="text-gray-200 flex flex-col items-center gap-4">
+                            <svg className="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            <span className="font-black uppercase tracking-widest text-xs opacity-50">No Visual Assets</span>
                         </div>
                     )}
-                    <div className="absolute top-6 left-6 flex flex-col gap-2">
-                        <span className="bg-white/80 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-blue-600 border border-blue-100 shadow-sm uppercase tracking-wider">{product.brand}</span>
+                    
+                    <div className="absolute bottom-8 left-8">
+                        <div className="px-4 py-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur rounded-2xl border border-white/20 shadow-xl">
+                            <span className="text-xs font-black text-orange-500 uppercase tracking-widest">{product.brand}</span>
+                        </div>
                     </div>
                 </div>
 
-                {/* Right: Details Panel */}
-                <div className="w-full md:w-1/2 p-8 overflow-y-auto flex flex-col">
-                    <div className="mb-6">
-                        <h3 className="text-2xl font-black text-gray-900 leading-tight mb-2">{product.name}</h3>
-                        <div className="flex items-center gap-3">
-                            <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-bold uppercase tracking-wider">
-                                {userRole === 'public' ? 'Verified Stock' : product.supplier_name}
+                {/* Right: Modern Details Grid */}
+                <div className="w-full md:w-1/2 p-10 overflow-y-auto flex flex-col bg-white dark:bg-gray-900">
+                    <div className="mb-8">
+                        <div className="flex items-center gap-2 mb-4">
+                             <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                                {userRole === 'public' ? 'Distributor Source' : product.supplier_name}
                             </span>
-                            <span className="text-gray-300">|</span>
-                            <span className="text-gray-500 text-sm font-medium">{product.brand}</span>
                         </div>
+                        <h3 className="text-4xl font-black text-gray-900 dark:text-white leading-[0.95] tracking-tighter mb-6">{product.name}</h3>
 
-                        <div className="flex items-center gap-4 py-4 border-y border-gray-100 mb-6 mt-4">
+                        <div className="grid grid-cols-2 gap-4 p-6 bg-gray-50 dark:bg-gray-800/50 rounded-[2rem] border border-gray-100 dark:border-gray-800">
                             <div>
-                                <p className="text-3xl font-black text-blue-600">R {formatPrice(prices.exVat)}</p>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Excluding VAT</p>
+                                <p className="text-3xl font-black text-gray-900 dark:text-white leading-none mb-1">R {formatPrice(prices.exVat)}</p>
+                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Excluding VAT</p>
                             </div>
-                            <div className="h-10 w-px bg-gray-100" />
-                            <div>
-                                <p className="text-lg font-bold text-gray-600">R {formatPrice(prices.incVat)}</p>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Including VAT</p>
+                            <div className="flex flex-col justify-center border-l border-gray-200 dark:border-gray-700 pl-4">
+                                <p className="text-lg font-bold text-gray-500 dark:text-gray-400 leading-none mb-1">R {formatPrice(prices.incVat)}</p>
+                                <p className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">Including VAT</p>
                             </div>
-                            {userRole === 'public' && (
-                                <div className="ml-auto bg-blue-50 text-blue-700 px-3 py-1 rounded-lg text-[10px] font-bold border border-blue-100">
-                                    Public Price
-                                </div>
-                            )}
                         </div>
                     </div>
 
-                    <div className="flex-1 space-y-6">
-                        {/* Stock Status */}
-                        <div className="flex items-center gap-3">
-                            <div className={`w-3 h-3 rounded-full ${product.qty_on_hand > 0 ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-red-500'}`} />
-                            <span className={`text-sm font-bold ${product.qty_on_hand > 0 ? 'text-green-700' : 'text-red-600'}`}>
-                                {product.qty_on_hand > 0 ? `${product.qty_on_hand} Units in Stock` : 'Currently Out of Stock'}
-                            </span>
+                    <div className="flex-1 space-y-8">
+                        {/* Status Bento Row */}
+                        <div className="flex items-center gap-4">
+                            <div className={`flex items-center gap-3 px-4 py-2 rounded-2xl font-black text-[10px] uppercase tracking-widest ${product.qty_on_hand > 0 ? 'bg-[#D8E698] text-[#4A5D16]' : 'bg-red-50 text-red-600'}`}>
+                                <div className={`w-2 h-2 rounded-full ${product.qty_on_hand > 0 ? 'bg-[#4A5D16] animate-pulse' : 'bg-red-500'}`} />
+                                {product.qty_on_hand > 0 ? `${product.qty_on_hand} Units In Stock` : 'Currently Unavailable'}
+                            </div>
+                            <div className="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-2xl text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                SKU: {(rawAny.sku || rawAny.ProductCode || rawAny.StockCode || 'N/A')}
+                            </div>
                         </div>
 
-                        {/* Description */}
-                        <div>
-                            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Product Description</h4>
+                        {/* Description - Card Style */}
+                        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-[2rem] p-6 shadow-sm">
+                            <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Structural Overview</h4>
                             <div
-                                className="text-sm text-gray-600 leading-relaxed max-h-48 overflow-y-auto pr-2 custom-scrollbar"
+                                className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed max-h-64 overflow-y-auto pr-2 custom-scrollbar font-medium"
                                 dangerouslySetInnerHTML={{ __html: description }}
                             />
                         </div>
-
-                        {/* Additional Meta */}
-                        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
-                            <div>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase">Supplier SKU</p>
-                                <p className="text-xs font-mono text-gray-700">{(rawAny.sku || rawAny.ProductCode || rawAny.StockCode || 'N/A')}</p>
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase">Category</p>
-                                <p className="text-xs font-medium text-gray-700">{product.category}</p>
-                            </div>
-                        </div>
                     </div>
 
-                    <div className="mt-8 pt-6 border-t border-gray-100 flex gap-4">
+                    {/* Modern Action Bar */}
+                    <div className="mt-10 pt-8 border-t border-gray-100 dark:border-gray-800 flex gap-4">
                         <button
                             onClick={() => { onAddToCart(product); onClose(); }}
-                            className="flex-[2] bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-200 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+                            className="flex-[2] bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black py-5 rounded-[1.5rem] shadow-2xl shadow-gray-200 dark:shadow-none transition-all active:scale-[0.98] hover:brightness-110 flex items-center justify-center gap-3 text-sm uppercase tracking-widest"
                         >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                            Add to Quote
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                            Generate Quote
                         </button>
                         <button
                             onClick={() => onToggleCompare(product)}
-                            className={`flex-1 font-bold py-4 rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-3 border ${isInCompare
-                                ? 'bg-blue-50 text-blue-600 border-blue-200 shadow-inner'
-                                : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-white hover:border-blue-100'
+                            className={`flex-1 font-black py-5 rounded-[1.5rem] transition-all active:scale-[0.98] flex items-center justify-center gap-3 border ${isInCompare
+                                ? 'bg-orange-500 text-white border-orange-500 shadow-xl shadow-orange-100'
+                                : 'bg-gray-50 dark:bg-gray-800 text-gray-500 border-transparent hover:bg-gray-100 dark:hover:bg-gray-700'
                                 }`}
                         >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" /></svg>
-                            {isInCompare ? 'In Compare' : 'Compare'}
+                            <svg className="w-6 h-6 transition-transform group-active:scale-125" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" /></svg>
                         </button>
                     </div>
                 </div>
