@@ -43,9 +43,10 @@ export default function ComparisonModal({
                 onClick={onClose}
             />
 
-            {/* Modal Content */}
+            {/* Modal Content - Reduced Max Height */}
             <div className="relative bg-white dark:bg-gray-900 w-full max-w-7xl max-h-[85vh] rounded-[3rem] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20">
-                {/* Header */}
+                
+                {/* Header Tile */}
                 <div className="p-8 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/30 dark:bg-gray-800/30">
                     <div className="flex items-center gap-4">
                         <div className="w-14 h-14 bg-gray-900 dark:bg-white rounded-2xl flex items-center justify-center text-white dark:text-gray-900 shadow-lg shadow-gray-200/50">
@@ -78,7 +79,7 @@ export default function ComparisonModal({
                         </div>
                     ) : (
                         <div className="p-6">
-                            {/* Product Headers */}
+                            {/* Product Headers - Bento Style */}
                             <div className="grid gap-4 mb-8" style={{ gridTemplateColumns: `220px repeat(${products.length}, 1fr)` }}>
                                 <div></div> {/* Empty space for labels column */}
                                 {products.map(product => {
@@ -93,7 +94,7 @@ export default function ComparisonModal({
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
                                             </button>
 
-                                            {/* Product Image & Quick Actions */}
+                                            {/* Product Image */}
                                             <div className="h-32 mb-4 flex items-center justify-center bg-gray-50 dark:bg-gray-700 rounded-2xl p-4 relative overflow-hidden">
                                                 {product.image_url ? (
                                                     <img src={product.image_url} alt={product.name} className="max-h-full max-w-full object-contain mix-blend-multiply dark:mix-blend-normal" />
@@ -103,7 +104,7 @@ export default function ComparisonModal({
                                             </div>
 
                                             <div className="text-center">
-                                                <p className="text-lg font-black text-gray-900 dark:text-white leading-tight line-clamp-2 mb-1">{product.name}</p>
+                                                <p className="text-base font-black text-gray-900 dark:text-white leading-tight line-clamp-2 mb-1">{product.name}</p>
                                                 <p className="text-sm font-bold text-gray-500">{product.brand}</p>
                                             </div>
 

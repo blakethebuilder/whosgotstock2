@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import CategoryTiles from './components/CategoryTiles';
 import CategoryBrowser from './components/CategoryBrowser';
 import CartDrawer from './components/CartDrawer';
@@ -413,6 +413,7 @@ export default function Home() {
             {showFilters && (
               <div className="mb-10 p-8 bg-white dark:bg-gray-900 rounded-[2.5rem] border border-white dark:border-gray-800 shadow-2xl shadow-gray-200/40 dark:shadow-none animate-in slide-in-from-top-4 duration-500">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {/* Price Range */}
                   <div className="space-y-3">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Price Boundary</label>
                     <div className="flex items-center gap-2">
@@ -422,11 +423,13 @@ export default function Home() {
                     </div>
                   </div>
 
+                  {/* Brand Filter */}
                   <div className="space-y-3">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Brand Filter</label>
                     <input type="text" placeholder="e.g. Cisco, HP, Dell" value={selectedBrand} onChange={e => setSelectedBrand(e.target.value)} className="w-full p-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm border-none focus:ring-2 focus:ring-orange-500/20 font-bold" />
                   </div>
 
+                  {/* Category Selection */}
                   <div className="space-y-3">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Categories</label>
                     <button onClick={() => setShowCategoryBrowser(true)} className="w-full p-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all flex justify-between items-center">
@@ -441,6 +444,7 @@ export default function Home() {
                     )}
                   </div>
 
+                  {/* Sort Selection */}
                   <div className="space-y-3">
                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Priority Order</label>
                     <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="w-full p-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm border-none focus:ring-2 focus:ring-orange-500/20 font-bold appearance-none cursor-pointer">
@@ -554,7 +558,6 @@ export default function Home() {
         )}
       </div>
 
-      {/* FIXED: Re-added ComparisonModal and CartDrawer functionality */}
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} items={cart} updateQuantity={updateCartQuantity} removeItem={removeCartItem} userRole={userRole} pricingSettings={pricingSettings} />
       <ProductDetailModal product={selectedProduct} isOpen={selectedProduct !== null} onClose={() => setSelectedProduct(null)} onAddToCart={addToCart} onToggleCompare={toggleCompare} isInCompare={!!selectedProduct && !!compareList.find(p => p.id === selectedProduct.id)} calculatePrice={(basePrice: string) => calculatePrice(basePrice, userRole, pricingSettings)} userRole={userRole} />
       <ComparisonModal products={compareList} isOpen={isCompareModalOpen} onClose={() => setIsCompareModalOpen(false)} onRemove={(id) => setCompareList(prev => prev.filter(p => p.id !== id))} onAddToCart={addToCart} formatPrice={formatPriceDisplay} calculatePrice={(base) => calculatePrice(base, userRole, pricingSettings)} userRole={userRole} />
@@ -563,7 +566,7 @@ export default function Home() {
       {compareList.length > 0 && !isCompareModalOpen && (
         <button 
             onClick={() => setIsCompareModalOpen(true)}
-            className="fixed bottom-8 right-8 z-[400] flex items-center gap-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-6 py-4 rounded-[2rem] shadow-2xl hover:scale-105 transition-all animate-in slide-in-from-bottom-4 active:scale-95 group border border-white/20"
+            className="fixed bottom-8 right-8 z-[400] flex items-center gap-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-6 py-4 rounded-[2rem] shadow-2xl hover:scale-105 transition-all active:scale-95 group border border-white/20"
         >
             <div className="relative">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" /></svg>
