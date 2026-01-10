@@ -105,7 +105,8 @@ export default function CategoryBrowser({
         const subcategories = IT_CATEGORIES_HIERARCHY[groupName];
         Object.keys(subcategories).forEach(subcategoryName => {
           // Check if any selected category matches this subcategory name/keyword
-          const subcategoryKeywords = subcategories[subcategoryName as keyof typeof subcategories];
+          // Type assertion applied here to satisfy TypeScript
+          const subcategoryKeywords = subcategories[subcategoryName as keyof typeof subcategories] as string[];
           if (selectedCategories.some(selected => 
               subcategoryName.toLowerCase().includes(selected.toLowerCase()) ||
               subcategoryKeywords.some(term => selected.toLowerCase().includes(term.toLowerCase()))
