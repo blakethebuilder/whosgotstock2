@@ -14,7 +14,11 @@ interface CategoryBrowserProps {
   onCategoryClick?: (category: string) => void;
 }
 
-const IT_CATEGORIES_HIERARCHY = {
+// Define explicit types for the hierarchy to ensure robust indexing
+type SubCategoryMap = Record<string, string[]>;
+type CategoryHierarchy = Record<string, SubCategoryMap>;
+
+const IT_CATEGORIES_HIERARCHY: CategoryHierarchy = {
   'Computers & Workstations': {
     'Laptops': ['laptop', 'notebook', 'mobile workstation'],
     'Desktops': ['desktop', 'pc', 'workstation', 'tower'],
@@ -92,7 +96,6 @@ export default function CategoryBrowser({
 }: CategoryBrowserProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  // Initialize groups collapsed by default. We will conditionally expand if needed based on selection.
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'hierarchy' | 'flat'>('hierarchy');
@@ -102,18 +105,11 @@ export default function CategoryBrowser({
     if (selectedCategories.length > 0 && viewMode === 'hierarchy') {
       const requiredExpansions = new Set<string>();
       
-      // Explicitly typing keys for group names
-      (Object.keys(IT_CATEGORIES_HIERARCHY) as Array<keyof typeof IT_CATEGORIES_HIERARCHY>).forEach((groupName) => {
-        const subcategories = IT_CATEGORIES_HIERARCHY[groupName];
-        
-        // Explicitly typing keys for subcategory names
-        (Object.keys(subcategories) as Array<keyof typeof subcategories>).forEach(subcategoryName => {
-          // TypeScript now knows subcategoryKeywords is string[] due to the cast on the outer loop's result
-          const subcategoryKeywords = subcategories[subcategoryName] as string[];
-
+      Object.entries(IT_CATEGORIES_HIERARCHY).forEach(([groupName, subcategories]) => {
+        Object.entries(subcategories).forEach(([subcategoryName, keywords]) => {
           if (selectedCategories.some(selected => 
               subcategoryName.toLowerCase().includes(selected.toLowerCase()) ||
-              subcategoryKeywords.some(term => selected.toLowerCase().includes(term.toLowerCase()))
+              keywords.some(term => selected.toLowerCase().includes(term.toLowerCase()))
           )) {
             requiredExpansions.add(groupName);
           }
@@ -121,7 +117,6 @@ export default function CategoryBrowser({
       });
       setExpandedGroups(requiredExpansions);
     } else {
-      // If search is active or no categories selected, keep collapsed by default
       setExpandedGroups(new Set());
     }
   }, [selectedCategories, viewMode]);
@@ -165,13 +160,6 @@ export default function CategoryBrowser({
     });
   };
 
-  const getCategoryCount = (categoryName: string): number => {
-    const category = categories.find(c => 
-      c.name.toLowerCase() === categoryName.toLowerCase()
-    );
-    return category?.count || 0;
-  };
-
   const filteredCategories = useMemo(() => {
     if (searchQuery === '') return categories;
     return categories.filter(cat =>
@@ -179,36 +167,29 @@ export default function CategoryBrowser({
     );
   }, [searchQuery, categories]);
 
-  // Simplified rendering for hierarchy based on search mode
   const renderHierarchy = () => {
     if (searchQuery !== '') {
-        // If searching, switch to flat mode showing only top-level matches for simplicity
         return renderFlat(); 
     }
 
     return (
         <div className="space-y-4">
-            {(Object.keys(IT_CATEGORIES_HIERARCHY) as Array<keyof typeof IT_CATEGORIES_HIERARCHY>).map((groupName) => {
-                const subcategories = IT_CATEGORIES_HIERARCHY[groupName];
+            {Object.entries(IT_CATEGORIES_HIERARCHY).map(([groupName, subcategories]) => {
                 const isExpanded = expandedGroups.has(groupName);
                 
-                // Calculate if the group or any of its subcategories have selected items or match the search term
                 const groupHasSelectionOrMatch = selectedCategories.some(selected => {
-                    // Check if selected category is within this group's subcategory names/keywords
-                    return Object.entries(subcategories).some(([, terms]) => 
-                        terms.some(term => selected.toLowerCase().includes(term.toLowerCase())) || 
+                    return Object.values(subcategories).some((keywords) => 
+                        keywords.some(term => selected.toLowerCase().includes(term.toLowerCase())) || 
                         selected.toLowerCase().includes(groupName.toLowerCase())
                     );
                 });
 
-                // Only render group if it has selected items or is expanded
                 if (!groupHasSelectionOrMatch && !isExpanded && searchQuery === '') {
                    return null;
                 }
 
                 return (
                     <div key={groupName} className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-                        {/* Group Header */}
                         <button
                             onClick={() => toggleGroup(groupName)}
                             className="w-full px-4 py-3 bg-gradient-to-r from-orange-50 to-orange-50 dark:from-gray-700 dark:to-gray-700 flex items-center justify-between hover:from-orange-100 hover:to-orange-100 dark:hover:from-gray-600 transition-colors"
@@ -226,15 +207,13 @@ export default function CategoryBrowser({
                             </svg>
                         </button>
 
-                        {/* Subcategories - Render only if expanded */}
                         {isExpanded && (
                             <div className="p-4 space-y-2 bg-white dark:bg-gray-800">
-                                {Object.entries(subcategories).map(([subcategoryName]) => {
-                                    // Find the actual category name from the DB results that maps to this subcategory structure
+                                {Object.entries(subcategories).map(([subcategoryName, keywords]) => {
                                     const actualCategoryMatch = categories.find(c => 
                                         c.name.toLowerCase() === subcategoryName.toLowerCase() || 
                                         c.name.toLowerCase().includes(subcategoryName.toLowerCase()) ||
-                                        IT_CATEGORIES_HIERARCHY[groupName][subcategoryName as keyof typeof subcategories].some(term => c.name.toLowerCase().includes(term.toLowerCase()))
+                                        keywords.some(term => c.name.toLowerCase().includes(term.toLowerCase()))
                                     );
                                     
                                     const categoryName = actualCategoryMatch?.name || subcategoryName;
@@ -315,7 +294,6 @@ export default function CategoryBrowser({
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg">
-      {/* Header */}
       <div className="p-6 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-black text-gray-900 dark:text-gray-100">
@@ -345,7 +323,6 @@ export default function CategoryBrowser({
           </div>
         </div>
 
-        {/* Search */}
         <div className="relative">
           <input
             type="text"
@@ -364,7 +341,6 @@ export default function CategoryBrowser({
           </svg>
         </div>
 
-        {/* Selected Categories Count */}
         {selectedCategories.length > 0 && (
           <div className="mt-4 flex items-center gap-2 flex-wrap">
             <span className="text-xs font-bold text-gray-500 uppercase">Selected:</span>
@@ -379,7 +355,6 @@ export default function CategoryBrowser({
         )}
       </div>
 
-      {/* Content */}
       <div className="p-6 max-h-[600px] overflow-y-auto">
         {searchQuery !== '' ? renderFlat() : (
             viewMode === 'hierarchy' ? renderHierarchy() : renderFlat()
