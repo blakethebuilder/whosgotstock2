@@ -128,10 +128,11 @@ export default function Home() {
 
   const removeCartItem = (id: number) => { setCart(prev => prev.filter(item => item.id !== id)); };
 
-  const performSearch = async (searchQuery?: string) => {
+  const performSearch = async (searchQuery?: string, isLoadMore = false) => {
     const currentQuery = searchQuery !== undefined ? searchQuery : query;
-    setLoading(true);
-    setHasSearched(true);
+    if (isLoadMore) setLoadingMore(true); else setLoading(true);
+    if (!isLoadMore) setHasSearched(true);
+
     try {
       const params = new URLSearchParams();
       if (currentQuery) params.append('q', currentQuery);
@@ -143,19 +144,31 @@ export default function Home() {
       if (inStockOnly) params.append('in_stock', 'true');
       if (searchInDescription) params.append('search_description', 'true');
       if (sortBy) params.append('sort', sortBy);
+      
+      const currentPage = isLoadMore ? page + 1 : 1;
+      params.append('page', currentPage.toString());
 
       const res = await fetch(`/api/search?${params.toString()}`);
       const data = await res.json();
-      setResults(data.results || []);
-      setTotalResults(data.total || 0);
-      setPage(1);
+      
+      if (isLoadMore) {
+        setResults(prev => [...prev, ...(data.results || [])]);
+        setPage(currentPage);
+      } else {
+        setResults(data.results || []);
+        setTotalResults(data.total || 0);
+        setPage(1);
+      }
 
-      if (userRole === 'public') {
+      if (userRole === 'public' && !isLoadMore) {
         const newSearchCount = usageStats.searchesThisMonth + 1;
         setUsageStats(prev => ({ ...prev, searchesThisMonth: newSearchCount, isLimitReached: newSearchCount >= prev.searchLimit }));
         fetch('/api/user/track-usage', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'search' }) }).catch(console.error);
       }
-    } catch (err) { console.error(err); } finally { setLoading(false); }
+    } catch (err) { console.error(err); } finally { 
+      setLoading(false);
+      setLoadingMore(false);
+    }
   };
 
   const debouncedSearch = useCallback(
@@ -184,6 +197,7 @@ export default function Home() {
     setShowFilters(false);
     setShowCategoryBrowser(false);
     setSortBy('relevance');
+    setPage(1);
   };
 
   const calculatePriceWithDiscount = (basePrice: string) => {
@@ -269,7 +283,6 @@ export default function Home() {
                     </div>
                 </div>
 
-                {/* VISUAL ELEMENT */}
                 <div className="absolute right-[-5%] top-1/2 -translate-y-1/2 w-1/2 hidden md:block select-none group-hover:scale-110 transition-transform duration-1000 ease-out pointer-events-none">
                      <div className="relative">
                         <div className="absolute top-0 left-0 w-64 h-64 bg-orange-500/20 blur-[120px] rounded-full" />
@@ -282,7 +295,6 @@ export default function Home() {
                 </div>
             </div>
 
-            {/* SIDE TILE 1: SUPPLIERS */}
             <div className="md:col-span-4 flex flex-col gap-6">
                 <div className="flex-1 bg-[#D8E698] rounded-[2.5rem] p-8 flex flex-col justify-between group cursor-pointer hover:scale-[0.98] transition-all border border-transparent hover:border-[#4A5D16]/20">
                     <div className="flex justify-between items-start">
@@ -323,7 +335,6 @@ export default function Home() {
                 </div>
             </div>
 
-            {/* BOTTOM TILES: COMPREHENSIVE CATEGORIES */}
             <div 
                 onClick={() => { setQuery("Networking"); performSearch("Networking"); }}
                 className="md:col-span-3 bg-[#E8E8E8] dark:bg-gray-900 rounded-[2.5rem] p-8 min-h-[220px] flex flex-col justify-between group cursor-pointer hover:bg-white transition-colors border border-transparent hover:border-gray-200"
@@ -376,7 +387,6 @@ export default function Home() {
 
           </div>
         ) : (
-          /* SEARCH RESULTS VIEW (UNCHANGED LOGIC, UPDATED STYLING) */
           <div className="animate-in fade-in duration-500">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10 pb-6 border-b border-gray-200 dark:border-gray-800">
               <div>
@@ -437,6 +447,19 @@ export default function Home() {
                 </div>
               ))}
             </div>
+
+            {results.length < totalResults && (
+              <div className="mt-20 flex justify-center">
+                <button 
+                  onClick={() => performSearch(undefined, true)} 
+                  disabled={loadingMore}
+                  className="bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black text-xs uppercase tracking-widest px-12 py-4 rounded-2xl shadow-xl hover:scale-105 transition-transform active:scale-95 border border-gray-100 dark:border-gray-800 flex items-center gap-3 disabled:opacity-50"
+                >
+                  {loadingMore && <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />}
+                  {loadingMore ? 'Fetching More...' : `Load More Items (${totalResults - results.length} remaining)`}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -444,7 +467,6 @@ export default function Home() {
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} items={cart} updateQuantity={updateCartQuantity} removeItem={removeCartItem} userRole={userRole} pricingSettings={pricingSettings} />
       <ProductDetailModal product={selectedProduct} isOpen={selectedProduct !== null} onClose={() => setSelectedProduct(null)} onAddToCart={addToCart} onToggleCompare={toggleCompare} isInCompare={!!selectedProduct && !!compareList.find(p => p.id === selectedProduct.id)} calculatePrice={(basePrice: string) => calculatePrice(basePrice, userRole, pricingSettings)} userRole={userRole} />
 
-      {/* Category Browser Modal - Full Overhaul */}
       {showCategoryBrowser && (
         <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-8">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-md" onClick={() => setShowCategoryBrowser(false)} />
@@ -455,7 +477,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* Role Passphrase Modal */}
       {showRoleModal && (
         <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-md" onClick={() => setShowRoleModal(false)} />
