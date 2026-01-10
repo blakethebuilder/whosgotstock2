@@ -138,27 +138,7 @@ export default function SmartFilter({
                   ))}
                 </div>
                 
-                {options.length > maxVisible && (
-                  <div className="border-t border-gray-100 p-2">
-                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
-                      All {label} ({options.length})
-                    </div>
-                    {options.slice(maxVisible).map(option => (
-                      <label
-                        key={option}
-                        className="flex items-center p-2 hover:bg-gray-50 cursor-pointer rounded"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selected.includes(option)}
-                          onChange={() => toggleOption(option)}
-                          className="mr-3 rounded text-blue-600 focus:ring-blue-500"
-                        />
-                        <span className="text-sm text-gray-900 flex-1">{option}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
+                {/* Removed: The section showing ALL options when not searching */}
               </>
             )}
 

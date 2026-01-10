@@ -87,42 +87,6 @@ export async function GET(request: Request) {
       JOIN suppliers s ON p.supplier_name = s.name
       WHERE s.enabled = true
       
-      UNION ALL
-      
-      -- EvenFlow products
-      SELECT 
-        e.id + 100000 as id, e.ef_code as supplier_sku, e.product_name as name, 
-        '' as brand, e.standard_price as price_ex_vat, 
-        CASE WHEN e.standard_price > 0 THEN 999 ELSE 0 END as qty_on_hand, 
-        '' as image_url, 'Even Flow' as supplier_name, 'evenflow' as supplier_slug,
-        e.last_updated, e.category, COALESCE(e.description, '') as description
-      FROM evenflow_products e
-      WHERE e.standard_price > 0
-      
-      UNION ALL
-      
-      -- Linkqage products
-      SELECT 
-        l.id + 200000 as id, COALESCE(l.product_code, '') as supplier_sku, l.product_name as name,
-        '' as brand, l.price as price_ex_vat,
-        CASE WHEN l.in_stock THEN 999 ELSE 0 END as qty_on_hand,
-        COALESCE(l.image_url, '') as image_url, 'Linkqage' as supplier_name, 'linkqage' as supplier_slug,
-        l.last_updated, l.category, COALESCE(l.description, '') as description
-      FROM linkqage_products l
-      WHERE l.price > 0
-      
-      UNION ALL
-      
-      -- Manual supplier products (other suppliers)
-      SELECT 
-        m.id + 300000 as id, COALESCE(m.product_code, '') as supplier_sku, m.product_name as name,
-        '' as brand, m.price as price_ex_vat,
-        CASE WHEN m.in_stock THEN 999 ELSE 0 END as qty_on_hand,
-        COALESCE(m.image_url, '') as image_url, m.supplier_name, 
-        LOWER(REPLACE(REPLACE(m.supplier_name, ' ', '-'), '.', '')) as supplier_slug,
-        m.last_updated, m.category, COALESCE(m.description, '') as description
-      FROM manual_supplier_products m
-      WHERE m.price > 0
     ) p
     WHERE 1=1
   `;
@@ -158,14 +122,8 @@ export async function GET(request: Request) {
   if (suppliers.length > 0) {
     const supplierConditions: string[] = [];
     suppliers.forEach(supplier => {
-      if (supplier === 'evenflow' || supplier === 'even-flow' || supplier === 'even flow') {
-        supplierConditions.push(`p.supplier_slug = 'evenflow'`);
-      } else if (supplier === 'linkqage') {
-        supplierConditions.push(`p.supplier_slug = 'linkqage'`);
-      } else {
         params.push(supplier);
         supplierConditions.push(`p.supplier_slug = $${params.length}`);
-      }
     });
     if (supplierConditions.length > 0) {
       whereConditions.push(`(${supplierConditions.join(' OR ')})`);
@@ -216,6 +174,8 @@ export async function GET(request: Request) {
 
   // Count Query
   const countSql = `SELECT COUNT(*) FROM (${sql}) as total`;
+  // Parameters for count query exclude LIMIT/OFFSET, which are added later
+  const countParams = [...params]; 
 
   // Enhanced sorting options
   if (sort === 'price_asc') {
@@ -260,7 +220,7 @@ export async function GET(request: Request) {
     
     // Use Promise.all for concurrent queries
     const [countRes, dataRes] = await Promise.all([
-      client.query(countSql, params.slice(0, -2)), // Count query without pagination
+      client.query(countSql, countParams), // Count query without pagination
       client.query(sql, params) // Main query with pagination
     ]);
 

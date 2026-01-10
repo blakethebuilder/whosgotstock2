@@ -366,6 +366,7 @@ export default function Home() {
     setSearchInDescription(false);
     setShowFilters(false);
     setShowCategoryBrowser(false);
+    setSortBy('relevance');
   };
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans selection:bg-orange-100 dark:selection:bg-orange-900 selection:text-orange-900 dark:selection:text-orange-100 transition-colors duration-300">
@@ -448,41 +449,39 @@ export default function Home() {
                     <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">
                       Suppliers {selectedSuppliers.length > 0 && `(${selectedSuppliers.length})`}
                     </label>
-                    <div className="space-y-2">
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        {suppliers.map(s => {
-                          const isSelected = selectedSuppliers.includes(s.slug);
-                          return (
-                            <button
-                              key={s.slug}
-                              type="button"
-                              onClick={() => {
-                                if (isSelected) {
-                                  setSelectedSuppliers(selectedSuppliers.filter(slug => slug !== s.slug));
-                                } else {
-                                  setSelectedSuppliers([...selectedSuppliers, s.slug]);
-                                }
-                              }}
-                              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                                isSelected
-                                  ? 'bg-orange-600 text-white'
-                                  : 'bg-white text-gray-700 hover:bg-orange-50 border border-gray-200'
-                              }`}
-                            >
-                              {s.name}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      {selectedSuppliers.length > 0 && (
-                        <button
-                          onClick={() => setSelectedSuppliers([])}
-                          className="text-xs text-red-600 hover:text-red-700 font-medium"
-                        >
-                          Clear Suppliers
-                        </button>
-                      )}
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {suppliers.map(s => {
+                        const isSelected = selectedSuppliers.includes(s.slug);
+                        return (
+                          <button
+                            key={s.slug}
+                            type="button"
+                            onClick={() => {
+                              if (isSelected) {
+                                setSelectedSuppliers(selectedSuppliers.filter(slug => slug !== s.slug));
+                              } else {
+                                setSelectedSuppliers([...selectedSuppliers, s.slug]);
+                              }
+                            }}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                              isSelected
+                                ? 'bg-orange-600 text-white'
+                                : 'bg-white text-gray-700 hover:bg-orange-50 border border-gray-200'
+                            }`}
+                          >
+                            {s.name}
+                          </button>
+                        );
+                      })}
                     </div>
+                    {selectedSuppliers.length > 0 && (
+                      <button
+                        onClick={() => setSelectedSuppliers([])}
+                        className="text-xs text-red-600 hover:text-red-700 font-medium"
+                      >
+                        Clear Suppliers
+                      </button>
+                    )}
                   </div>
 
                   {/* Categories Browser Button */}
@@ -493,12 +492,16 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={() => setShowCategoryBrowser(!showCategoryBrowser)}
-                      className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-orange-50 hover:border-orange-300 transition-all text-sm font-semibold flex items-center justify-between"
+                      className="w-full px-4 py-2.5 rounded-lg border transition-all text-sm font-semibold flex items-center justify-between 
+                        ${selectedCategories.length > 0 
+                          ? 'bg-orange-50 border-orange-300 text-orange-700 hover:bg-orange-100'
+                          : 'bg-white border-gray-200 text-gray-700 hover:bg-orange-50 hover:border-orange-300'
+                        }"
                     >
                       <span>
                         {selectedCategories.length > 0
                           ? `${selectedCategories.length} category${selectedCategories.length > 1 ? 'ies' : 'y'} selected`
-                          : 'Browse Categories'}
+                          : 'Filter by Category'}
                       </span>
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -677,46 +680,18 @@ export default function Home() {
               <div className="inline-block px-4 py-2 bg-gradient-to-r from-orange-50 to-orange-50 text-orange-600 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-6 border border-orange-100">
                 Powered by AI Technology
               </div>
-              <h3 className="text-4xl md:text-5xl font-black text-gray-900 leading-[1.1] tracking-tight mb-6">
-                Stop Juggling Supplier Websites. <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-orange-600 to-orange-700">
-                  Source Smarter.
-                </span>
-              </h3>
-              <div className="text-gray-500 text-lg font-medium leading-relaxed max-w-2xl mx-auto mb-10">
-                <p className="mb-4">
-                  Built specifically for IT companies and MSPs who need to compare pricing and stock levels across 
-                  Scoop, Esquire, Pinnacle, Mustek, and Miro. One search, all suppliers, instant results.
-                </p>
-                <p className="text-base">
-                  Generate professional quotes in seconds. Connect with Smart Integrate for procurement, 
-                  or use staff/manager portals for direct supplier orders.
-                </p>
-              </div>
-              <div className="flex flex-wrap justify-center gap-4 mb-12">
-                <div className="bg-gradient-to-br from-orange-50 to-orange-50 px-6 py-4 rounded-2xl border border-orange-100 shadow-sm">
-                  <p className="text-2xl font-black text-orange-600">15,000+</p>
-                  <p className="text-xs font-bold text-orange-500 uppercase tracking-widest">Live Products</p>
-                </div>
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 px-6 py-4 rounded-2xl border border-green-100 shadow-sm">
-                  <p className="text-2xl font-black text-green-600">Real-Time</p>
-                  <p className="text-xs font-bold text-green-500 uppercase tracking-widest">Stock Updates</p>
-                </div>
-                <div className="bg-gradient-to-br from-orange-50 to-orange-50 px-6 py-4 rounded-2xl border border-orange-100 shadow-sm">
-                  <p className="text-2xl font-black text-orange-600">5+</p>
-                  <p className="text-xs font-bold text-orange-500 uppercase tracking-widest">Major Suppliers</p>
-                </div>
-                <div className="bg-gradient-to-br from-orange-50 to-amber-50 px-6 py-4 rounded-2xl border border-orange-100 shadow-sm">
-                  <p className="text-2xl font-black text-orange-600">Instant</p>
-                  <p className="text-xs font-bold text-orange-500 uppercase tracking-widest">Price Quotes</p>
-                </div>
-              </div>
+              <h2 className="text-5xl sm:text-6xl md:text-7xl font-black text-gray-900 leading-[0.95] tracking-tight">
+                Stop Juggling Supplier Websites. <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-orange-600">Source Smarter.</span>
+              </h2>
+              <p className="text-gray-500 text-xl sm:text-2xl font-medium max-w-3xl mx-auto leading-relaxed">
+                Built specifically for IT companies and MSPs. Compare pricing and stock levels across Scoop, Esquire, Pinnacle, Mustek, and Miro. One search, all suppliers, instant results.
+              </p>
             </div>
 
-            {/* Popular Categories */}
+            {/* Category Tiles */}
             <div className="mb-20">
               <div className="text-center mb-10">
-                <div className="inline-block px-4 py-2 bg-orange-50 text-orange-600 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-4">
+                <div className="inline-block px-4 py-2 bg-orange-50 text-orange-600 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-4 border border-orange-100">
                   Popular Categories
                 </div>
                 <h3 className="text-2xl md:text-3xl font-black text-gray-900 mb-3">
@@ -1014,171 +989,59 @@ export default function Home() {
         <div className="fixed inset-0 z-[600] flex items-center justify-center p-4 overflow-y-auto">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setShowRoleModal(false)} />
           <div className="relative bg-white rounded-3xl shadow-2xl p-4 sm:p-8 max-w-2xl w-full animate-in zoom-in-95 duration-200 my-8 max-h-[90vh] overflow-y-auto">
-            <div className="text-center mb-6 sm:mb-8">
-              <h3 className="text-xl sm:text-2xl font-black text-gray-900 mb-2">Internal Access Levels</h3>
-              <p className="text-sm text-gray-500">Enter your access code to unlock internal pricing</p>
+            <div className="flex justify-between items-center border-b pb-3 mb-4">
+              <h3 className="text-xl font-bold">Select User Role</h3>
+              <button onClick={() => setShowRoleModal(false)} className="p-2 rounded-full hover:bg-gray-100">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            
+            <p className="text-sm text-gray-600 mb-4">Enter the passphrase to unlock a specific user role and view its corresponding pricing structure.</p>
+
+            <div className="space-y-4">
+              <input
+                type="password"
+                placeholder="Enter Passphrase"
+                value={passphrase}
+                onChange={(e) => setPassphrase(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-orange-500 focus:border-orange-500 text-base"
+                disabled={isAuthenticating}
+              />
+              {passphraseError && <p className="text-sm text-red-500">{passphraseError}</p>}
+              
+              <button
+                onClick={verifyPassphrase}
+                disabled={!passphrase || isAuthenticating}
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-lg transition-all active:scale-[0.98] disabled:bg-orange-300 flex items-center justify-center gap-2"
+              >
+                {isAuthenticating ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Authenticating...
+                  </>
+                ) : (
+                  <>
+                    Access Portal
+                  </>
+                )}
+              </button>
+            </div>
+            
+            <div className="mt-6 pt-4 border-t border-gray-100 text-center">
+              <p className="text-xs text-gray-500">Current Role: <span className="font-bold text-sm text-orange-600">{userRole.toUpperCase()}</span></p>
+              {userRole !== 'public' && (
+                <button 
+                  onClick={() => {setUserRole('public'); setShowRoleModal(false);}}
+                  className="text-xs text-gray-400 mt-2 hover:text-gray-600"
+                >
+                  Switch back to Public Pricing
+                </button>
+              )}
             </div>
 
-            {/* Internal Access Tiers */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 sm:mb-8">
-              {/* Team */}
-              <div className="border-2 border-orange-200 rounded-2xl p-4 sm:p-6 bg-orange-50/50">
-                <div className="text-center mb-3 sm:mb-4">
-                  <h4 className="text-base sm:text-lg font-bold text-orange-900">Team</h4>
-                  <p className="text-sm text-orange-700">Internal team members</p>
-                </div>
-                <ul className="text-xs text-orange-800 space-y-1 sm:space-y-2 mb-4">
-                  <li>✓ Unlimited searches</li>
-                  <li>✓ Supplier contact info</li>
-                  <li>✓ Professional quotes</li>
-                  <li>✓ Team support</li>
-                </ul>
-              </div>
-
-              {/* Management */}
-              <div className="border-2 border-orange-200 rounded-2xl p-4 sm:p-6 bg-orange-50/50 relative">
-                <div className="text-center mb-3 sm:mb-4">
-                  <h4 className="text-base sm:text-lg font-bold text-orange-900">Management</h4>
-                  <p className="text-sm text-orange-700">Management level access</p>
-                </div>
-                <ul className="text-xs text-orange-800 space-y-1 sm:space-y-2 mb-4">
-                  <li>✓ Everything in Team</li>
-                  <li>✓ Priority support</li>
-                  <li>✓ Advanced reporting</li>
-                  <li>✓ Full system access</li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Public Tier Info */}
-            <div className="mb-6 border-2 border-gray-200 rounded-2xl p-4 sm:p-6 bg-gray-50/50">
-              <div className="text-center mb-3 sm:mb-4">
-                <h4 className="text-base sm:text-lg font-bold text-gray-900">Public Access</h4>
-                <p className="text-sm text-gray-700">25 searches • Basic access</p>
-              </div>
-              <ul className="text-xs text-gray-800 space-y-1 sm:space-y-2 mb-4">
-                <li>✓ 25 searches per month</li>
-                <li>✓ Basic product information</li>
-                <li>✓ Standard quotes</li>
-                <li>✓ Community support</li>
-              </ul>
-            </div>
-
-            {/* Access Code Entry - Always Visible */}
-            <div className="border-t pt-4 sm:pt-6 bg-white sticky bottom-0">
-              <p className="text-sm text-gray-600 mb-4 text-center font-medium">
-                Enter your access code:
-              </p>
-              <div className="space-y-4">
-                <input
-                  type="password"
-                  value={passphrase}
-                  onChange={e => setPassphrase(e.target.value)}
-                  placeholder="Enter access code"
-                  className="w-full px-4 py-4 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all font-mono text-center text-base bg-white shadow-sm"
-                  onKeyDown={e => e.key === 'Enter' && verifyPassphrase()}
-                  autoComplete="off"
-                  autoCapitalize="off"
-                  autoCorrect="off"
-                  spellCheck="false"
-                  inputMode="text"
-                />
-                {passphraseError && <p className="text-xs font-bold text-red-500 text-center bg-red-50 py-2 px-3 rounded-lg">{passphraseError}</p>}
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setShowRoleModal(false)}
-                    className="flex-1 bg-gray-100 text-gray-700 font-bold py-4 rounded-xl hover:bg-gray-200 transition-colors text-sm"
-                  >
-                    Continue Public Access
-                  </button>
-                  <button
-                    onClick={verifyPassphrase}
-                    disabled={isAuthenticating}
-                    className="flex-1 bg-orange-600 text-white font-bold py-4 rounded-xl hover:bg-orange-700 disabled:bg-orange-400 transition-colors text-sm shadow-lg flex items-center justify-center gap-2"
-                  >
-                    {isAuthenticating ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Verifying...
-                      </>
-                    ) : (
-                      'Verify Access'
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       )}
-
-      {/* Floating Compare Bar */}
-      {compareList.length > 0 && (
-        <div className="fixed bottom-6 sm:bottom-8 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 z-[150] animate-in slide-in-from-bottom-10 duration-500 max-w-lg sm:mx-auto">
-          <div className="bg-white/80 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] sm:rounded-[2.5rem] p-2 sm:p-3 flex items-center justify-between gap-2 sm:gap-6 sm:pr-6">
-            <div className="flex -space-x-4 pl-1 sm:pl-3 overflow-hidden">
-              {compareList.map(p => (
-                <div key={p.id} className="w-12 h-12 sm:w-14 sm:h-14 bg-white rounded-xl sm:rounded-2xl border-2 border-gray-50 shadow-sm flex items-center justify-center p-2 relative group flex-shrink-0">
-                  {p.image_url ? (
-                    <img src={p.image_url} alt={p.name} className="max-h-full max-w-full object-contain mix-blend-multiply" />
-                  ) : (
-                    <div className="w-4 h-4 bg-gray-100 rounded-full" />
-                  )}
-                  <button
-                    onClick={() => removeFromCompare(p.id)}
-                    className="absolute inset-0 bg-red-600/90 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl sm:rounded-2xl"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
-                  </button>
-                </div>
-              ))}
-              {compareList.length < 4 && Array.from({ length: 4 - compareList.length }).map((_, i) => (
-                <div key={i} className="w-12 h-12 sm:w-14 sm:h-14 border-2 border-dashed border-gray-100 rounded-xl sm:rounded-2xl flex items-center justify-center text-gray-100 flex-shrink-0">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                </div>
-              ))}
-            </div>
-
-            <div className="hidden sm:block h-10 w-px bg-gray-100" />
-
-            <div className="flex flex-col flex-1 sm:flex-none">
-              <p className="text-[10px] sm:text-xs font-black text-gray-900 uppercase tracking-widest">{compareList.length} Selected</p>
-              <p className="text-[9px] sm:text-[10px] font-bold text-gray-400">Comparison</p>
-            </div>
-
-            <button
-              onClick={() => setIsCompareModalOpen(true)}
-              disabled={compareList.length < 2}
-              className="bg-orange-500 hover:bg-orange-600 disabled:bg-gray-200 text-white px-4 sm:px-8 py-3 rounded-xl sm:rounded-[1.5rem] font-black text-[10px] sm:text-xs uppercase tracking-widest transition-all shadow-xl shadow-orange-100 active:scale-95 flex items-center gap-2"
-            >
-              <span className="hidden sm:inline">Compare</span>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-            </button>
-          </div>
-        </div>
-      )}
-
-      <ComparisonModal
-        products={compareList}
-        isOpen={isCompareModalOpen}
-        onClose={() => setIsCompareModalOpen(false)}
-        onRemove={removeFromCompare}
-        onAddToCart={addToCart}
-        formatPrice={formatPrice}
-        calculatePrice={(basePrice: string) => calculatePrice(basePrice, userRole, pricingSettings)}
-        userRole={userRole}
-      />
-
-      <style jsx global>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </main>
   );
 }

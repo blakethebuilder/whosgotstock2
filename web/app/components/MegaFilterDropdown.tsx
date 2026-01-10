@@ -37,7 +37,7 @@ export default function MegaFilterDropdown({ label, options, selected, onChange,
     };
 
     const selectAll = () => {
-        // If search is active, select visible only? Or all? Let's do visible.
+        // Select visible filtered options
         const unique = Array.from(new Set([...selected, ...filteredOptions]));
         onChange(unique);
     };
@@ -88,12 +88,12 @@ export default function MegaFilterDropdown({ label, options, selected, onChange,
                     <div className="p-3 max-h-80 overflow-y-auto">
                         {filteredOptions.length > 0 ? (
                             <div className="space-y-4">
-                                {/* Top Picks (only show if not searching or if items exist) */}
-                                {search === '' && filteredOptions.length > 12 && (
+                                {/* Top Picks (only show if not searching) */}
+                                {search === '' && filteredOptions.length > 5 && (
                                     <div>
                                         <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Top Picks</h4>
                                         <div className="flex flex-wrap gap-2">
-                                            {filteredOptions.slice(0, 12).map(opt => (
+                                            {filteredOptions.slice(0, 5).map(opt => (
                                                 <div
                                                     key={opt}
                                                     onClick={() => toggleOption(opt)}
@@ -109,25 +109,29 @@ export default function MegaFilterDropdown({ label, options, selected, onChange,
                                     </div>
                                 )}
 
-                                {/* All / Remaining Options */}
+                                {/* All / Remaining Options (Only show if searching OR if the result set is small) */}
                                 <div>
-                                    {search === '' && filteredOptions.length > 12 && (
-                                        <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">All {label}s</h4>
-                                    )}
-                                    <div className="flex flex-wrap gap-2">
-                                        {(search !== '' ? filteredOptions : filteredOptions.slice(filteredOptions.length > 12 ? 12 : 0)).map(opt => (
-                                            <div
-                                                key={opt}
-                                                onClick={() => toggleOption(opt)}
-                                                className={`px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer transition-all active:scale-95 select-none ${selected.includes(opt)
-                                                        ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-600'
-                                                        : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                                                    }`}
-                                            >
-                                                {opt}
+                                    {(search !== '' || filteredOptions.length <= 5) && (
+                                        <>
+                                            {search === '' && filteredOptions.length > 5 && (
+                                                <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Remaining ({filteredOptions.length - 5})</h4>
+                                            )}
+                                            <div className="flex flex-wrap gap-2">
+                                                {(search !== '' ? filteredOptions : filteredOptions.slice(5)).map(opt => (
+                                                    <div
+                                                        key={opt}
+                                                        onClick={() => toggleOption(opt)}
+                                                        className={`px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer transition-all active:scale-95 select-none ${selected.includes(opt)
+                                                                ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-600'
+                                                                : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                                            }`}
+                                                    >
+                                                        {opt}
+                                                    </div>
+                                                ))}
                                             </div>
-                                        ))}
-                                    </div>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         ) : (
@@ -137,7 +141,7 @@ export default function MegaFilterDropdown({ label, options, selected, onChange,
 
                     {/* Footer status */}
                     <div className="bg-gray-50 p-2 text-xs text-center text-gray-400 border-t border-gray-100">
-                        {selected.length} items select
+                        {selected.length} items selected
                     </div>
                 </div>
             )}

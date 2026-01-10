@@ -44,26 +44,6 @@ CREATE TABLE IF NOT EXISTS manual_products (
     UNIQUE(supplier_name, supplier_sku)
 );
 
--- Seed Initial Data with new tier structure
-INSERT INTO settings (key, value) VALUES 
-('update_interval_minutes', COALESCE(NULLIF($1, ''), '60')),
-('free_markup', COALESCE(NULLIF($2, ''), '15')),
-('professional_markup', COALESCE(NULLIF($3, ''), '5')),
-('enterprise_markup', COALESCE(NULLIF($4, ''), '0')),
-('staff_markup', COALESCE(NULLIF($5, ''), '10')),
-('partner_markup', COALESCE(NULLIF($6, ''), '0'))
-ON CONFLICT (key) DO NOTHING;
-
--- Insert suppliers with environment variables
-INSERT INTO suppliers (name, slug, url, type, enabled) VALUES 
-('Scoop', 'scoop', 'https://scoop.co.za/scoop_pricelist.xml', 'xml', true),
-('Esquire', 'esquire', 
-    'https://api.esquire.co.za/api/DataFeed?u=' || 
-    COALESCE(NULLIF($7, ''), 'blake@smartintegrate.co.za') || 
-    '&p=' || COALESCE(NULLIF($8, ''), 'Smart@1991') || 
-    '&t=xml&m=10&o=ascending&r=RoundNone&rm=10&min=0', 'xml', true)
-ON CONFLICT (slug) DO NOTHING;
-
 CREATE INDEX idx_products_name ON products(name);
 CREATE INDEX idx_products_brand ON products(brand);
 CREATE INDEX idx_products_master_sku ON products(master_sku);

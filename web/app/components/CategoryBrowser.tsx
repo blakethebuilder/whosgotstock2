@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 interface Category {
   name: string;
@@ -92,9 +92,33 @@ export default function CategoryBrowser({
 }: CategoryBrowserProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  // Initialize groups collapsed by default. We will conditionally expand if needed based on selection.
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'hierarchy' | 'flat'>('hierarchy');
+
+  // Effect to determine which groups must be expanded based on current selections
+  useEffect(() => {
+    if (selectedCategories.length > 0 && viewMode === 'hierarchy') {
+      const requiredExpansions = new Set<string>();
+      Object.entries(IT_CATEGORIES_HIERARCHY).forEach(([groupName, subcategories]) => {
+        Object.keys(subcategories).forEach(subcategoryName => {
+          // Check if any selected category matches this subcategory name/keyword
+          const subcategoryKeywords = IT_CATEGORIES_HIERARCHY[groupName][subcategoryName];
+          if (selectedCategories.some(selected => 
+              subcategoryName.toLowerCase().includes(selected.toLowerCase()) ||
+              subcategoryKeywords.some(term => selected.toLowerCase().includes(term.toLowerCase()))
+          )) {
+            requiredExpansions.add(groupName);
+          }
+        });
+      });
+      setExpandedGroups(requiredExpansions);
+    } else {
+      // If search is active or no categories selected, keep collapsed by default
+      setExpandedGroups(new Set());
+    }
+  }, [selectedCategories, viewMode]);
 
   useEffect(() => {
     fetchCategories();
@@ -124,13 +148,15 @@ export default function CategoryBrowser({
   };
 
   const toggleGroup = (groupName: string) => {
-    const newExpanded = new Set(expandedGroups);
-    if (newExpanded.has(groupName)) {
-      newExpanded.delete(groupName);
-    } else {
-      newExpanded.add(groupName);
-    }
-    setExpandedGroups(newExpanded);
+    setExpandedGroups(prev => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(groupName)) {
+        newExpanded.delete(groupName);
+      } else {
+        newExpanded.add(groupName);
+      }
+      return newExpanded;
+    });
   };
 
   const getCategoryCount = (categoryName: string): number => {
@@ -140,33 +166,143 @@ export default function CategoryBrowser({
     return category?.count || 0;
   };
 
-  const filteredCategories = categories.filter(cat =>
-    cat.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredCategories = useMemo(() => {
+    if (searchQuery === '') return categories;
+    return categories.filter(cat =>
+      cat.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery, categories]);
 
-  const getHierarchyMatches = () => {
-    const matches: Array<{ group: string; subcategory: string; searchTerms: string[] }> = [];
-    
-    Object.entries(IT_CATEGORIES_HIERARCHY).forEach(([group, subcategories]) => {
-      Object.entries(subcategories).forEach(([subcategory, terms]) => {
-        if (
-          group.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          subcategory.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          terms.some(term => term.toLowerCase().includes(searchQuery.toLowerCase()))
-        ) {
-          matches.push({ group, subcategory, searchTerms: terms });
-        }
-      });
-    });
-    
-    return matches;
-  };
+  // Simplified rendering for hierarchy based on search mode
+  const renderHierarchy = () => {
+    if (searchQuery !== '') {
+        // If searching, switch to flat mode showing only top-level matches for simplicity
+        return renderFlat(); 
+    }
 
-  if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="w-8 h-8 border-2 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
+        <div className="space-y-4">
+            {Object.entries(IT_CATEGORIES_HIERARCHY).map(([groupName, subcategories]) => {
+                const isExpanded = expandedGroups.has(groupName);
+                
+                // Calculate if the group or any of its subcategories have selected items or match the search term
+                const groupHasSelectionOrMatch = selectedCategories.some(selected => {
+                    // Check if selected category is within this group's subcategory names/keywords
+                    return Object.entries(subcategories).some(([, terms]) => 
+                        terms.some(term => selected.toLowerCase().includes(term.toLowerCase())) || 
+                        selected.toLowerCase().includes(groupName.toLowerCase())
+                    );
+                });
+
+                // Only render group if it has selected items or is expanded
+                if (!groupHasSelectionOrMatch && !isExpanded && searchQuery === '') {
+                   return null;
+                }
+
+                return (
+                    <div key={groupName} className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+                        {/* Group Header */}
+                        <button
+                            onClick={() => toggleGroup(groupName)}
+                            className="w-full px-4 py-3 bg-gradient-to-r from-orange-50 to-orange-50 dark:from-gray-700 dark:to-gray-700 flex items-center justify-between hover:from-orange-100 hover:to-orange-100 dark:hover:from-gray-600 transition-colors"
+                        >
+                            <span className="font-black text-gray-900 dark:text-gray-100">{groupName}</span>
+                            <svg
+                                className={`w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform ${
+                                    isExpanded ? 'rotate-180' : ''
+                                }`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        {/* Subcategories - Render only if expanded */}
+                        {isExpanded && (
+                            <div className="p-4 space-y-2 bg-white dark:bg-gray-800">
+                                {Object.entries(subcategories).map(([subcategoryName]) => {
+                                    // Find the actual category name from the DB results that maps to this subcategory structure
+                                    const actualCategoryMatch = categories.find(c => 
+                                        c.name.toLowerCase() === subcategoryName.toLowerCase() || 
+                                        c.name.toLowerCase().includes(subcategoryName.toLowerCase()) ||
+                                        IT_CATEGORIES_HIERARCHY[groupName][subcategoryName].some(term => c.name.toLowerCase().includes(term.toLowerCase()))
+                                    );
+                                    
+                                    const categoryName = actualCategoryMatch?.name || subcategoryName;
+                                    const count = actualCategoryMatch?.count || 0;
+                                    const isSelected = selectedCategories.includes(categoryName);
+
+                                    return (
+                                        <button
+                                            key={subcategoryName}
+                                            onClick={() => toggleCategory(categoryName)}
+                                            className={`w-full px-4 py-2.5 rounded-lg flex items-center justify-between transition-all ${
+                                                isSelected
+                                                ? 'bg-orange-600 text-white'
+                                                : 'bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-gray-700'
+                                            }`}
+                                        >
+                                            <span className="font-semibold">{categoryName}</span>
+                                            {count > 0 && (
+                                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                                                isSelected
+                                                ? 'bg-white/20 text-white'
+                                                : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
+                                            }`}>
+                                                {count}
+                                            </span>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                );
+            })}
+        </div>
+    );
+  }
+
+  const renderFlat = () => {
+    const displayCategories = searchQuery === '' ? categories : filteredCategories;
+    
+    return (
+        <div className="space-y-2">
+            {displayCategories.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                    No categories found matching "{searchQuery}"
+                </div>
+            ) : (
+                displayCategories.map((category) => {
+                    const isSelected = selectedCategories.includes(category.name);
+                    return (
+                        <button
+                            key={category.name}
+                            onClick={() => toggleCategory(category.name)}
+                            className={`w-full px-4 py-3 rounded-xl flex items-center justify-between transition-all ${
+                                isSelected
+                                ? 'bg-orange-600 text-white'
+                                : 'bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-gray-700'
+                            }`}
+                        >
+                            <span className="font-semibold">{category.name}</span>
+                            {category.count !== undefined && (
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                                isSelected
+                                ? 'bg-white/20 text-white'
+                                : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
+                            }`}>
+                                {category.count}
+                            </span>
+                            )}
+                        </button>
+                    );
+                })
+            )}
+        </div>
     );
   }
 
@@ -238,121 +374,8 @@ export default function CategoryBrowser({
 
       {/* Content */}
       <div className="p-6 max-h-[600px] overflow-y-auto">
-        {viewMode === 'hierarchy' ? (
-          <div className="space-y-4">
-            {Object.entries(IT_CATEGORIES_HIERARCHY).map(([groupName, subcategories]) => {
-              const isExpanded = expandedGroups.has(groupName);
-              const groupMatches = searchQuery === '' || 
-                groupName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                Object.keys(subcategories).some(sub => 
-                  sub.toLowerCase().includes(searchQuery.toLowerCase())
-                );
-
-              if (!groupMatches) return null;
-
-              return (
-                <div key={groupName} className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-                  {/* Group Header */}
-                  <button
-                    onClick={() => toggleGroup(groupName)}
-                    className="w-full px-4 py-3 bg-gradient-to-r from-orange-50 to-orange-50 dark:from-gray-700 dark:to-gray-700 flex items-center justify-between hover:from-orange-100 hover:to-orange-100 dark:hover:from-gray-600 transition-colors"
-                  >
-                    <span className="font-black text-gray-900 dark:text-gray-100">{groupName}</span>
-                    <svg
-                      className={`w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform ${
-                        isExpanded ? 'rotate-180' : ''
-                      }`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-
-                  {/* Subcategories */}
-                  {isExpanded && (
-                    <div className="p-4 space-y-2 bg-white dark:bg-gray-800">
-                      {Object.entries(subcategories).map(([subcategoryName, searchTerms]) => {
-                        const categoryMatch = categories.find(c => 
-                          c.name.toLowerCase().includes(subcategoryName.toLowerCase()) ||
-                          searchTerms.some(term => c.name.toLowerCase().includes(term.toLowerCase()))
-                        );
-                        const count = categoryMatch?.count || 0;
-                        const isSelected = selectedCategories.some(c => 
-                          c.toLowerCase() === categoryMatch?.name.toLowerCase()
-                        );
-
-                        return (
-                          <button
-                            key={subcategoryName}
-                            onClick={() => {
-                              if (categoryMatch) {
-                                toggleCategory(categoryMatch.name);
-                              } else {
-                                // Use first search term if category not found
-                                onCategoryClick?.(searchTerms[0]);
-                              }
-                            }}
-                            className={`w-full px-4 py-2.5 rounded-lg flex items-center justify-between transition-all ${
-                              isSelected
-                                ? 'bg-orange-600 text-white'
-                                : 'bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-gray-700'
-                            }`}
-                          >
-                            <span className="font-semibold text-sm">{subcategoryName}</span>
-                            {count > 0 && (
-                              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                                isSelected
-                                  ? 'bg-white/20 text-white'
-                                  : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
-                              }`}>
-                                {count}
-                              </span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {filteredCategories.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                No categories found matching "{searchQuery}"
-              </div>
-            ) : (
-              filteredCategories.map((category) => {
-                const isSelected = selectedCategories.includes(category.name);
-                return (
-                  <button
-                    key={category.name}
-                    onClick={() => toggleCategory(category.name)}
-                    className={`w-full px-4 py-3 rounded-xl flex items-center justify-between transition-all ${
-                      isSelected
-                        ? 'bg-orange-600 text-white'
-                        : 'bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    <span className="font-semibold">{category.name}</span>
-                    {category.count !== undefined && (
-                      <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                        isSelected
-                          ? 'bg-white/20 text-white'
-                          : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
-                      }`}>
-                        {category.count}
-                      </span>
-                    )}
-                  </button>
-                );
-              })
-            )}
-          </div>
+        {searchQuery !== '' ? renderFlat() : (
+            viewMode === 'hierarchy' ? renderHierarchy() : renderFlat()
         )}
       </div>
     </div>
