@@ -2,79 +2,79 @@ import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { getCached, setCache } from '@/lib/cache';
 
-// IT Product Categories Hierarchy
-export const IT_CATEGORIES = {
-  'Computers & Workstations': {
-    'Laptops': ['laptop', 'notebook', 'mobile workstation'],
-    'Desktops': ['desktop', 'pc', 'workstation', 'tower'],
-    'All-in-One': ['all-in-one', 'aio', 'all in one'],
-    'Mini PCs': ['mini pc', 'nuc', 'mini computer'],
-    'Thin Clients': ['thin client', 'zero client']
-  },
-  'Components': {
-    'Processors': ['cpu', 'processor', 'intel', 'amd'],
-    'Graphics Cards': ['graphics card', 'gpu', 'video card'],
-    'Memory': ['ram', 'memory', 'ddr4', 'ddr5', 'dimm'],
-    'Storage': ['ssd', 'hdd', 'hard drive', 'nvme', 'm.2'],
-    'Motherboards': ['motherboard', 'mainboard', 'mobo'],
-    'Power Supplies': ['psu', 'power supply', 'ups'],
-    'Cooling': ['cpu cooler', 'fan', 'heatsink', 'thermal paste']
-  },
-  'Networking': {
-    'Routers': ['router', 'wireless router', 'gateway'],
-    'Switches': ['switch', 'network switch', 'ethernet switch'],
-    'Access Points': ['access point', 'ap', 'wifi ap'],
-    'Firewalls': ['firewall', 'utm', 'security appliance'],
-    'Network Cards': ['network card', 'nic', 'ethernet card'],
-    'Cables & Connectors': ['ethernet cable', 'network cable', 'patch cable', 'cat5', 'cat6']
-  },
-  'Peripherals': {
-    'Monitors': ['monitor', 'display', 'screen', 'lcd', 'led'],
-    'Keyboards': ['keyboard', 'mechanical keyboard'],
-    'Mice': ['mouse', 'trackball', 'pointing device'],
-    'Webcams': ['webcam', 'camera', 'usb camera'],
-    'Speakers': ['speaker', 'audio', 'sound system'],
-    'Headsets': ['headset', 'headphone', 'microphone']
-  },
-  'Storage & Backup': {
-    'External Drives': ['external drive', 'portable drive', 'usb drive'],
-    'NAS': ['nas', 'network attached storage', 'storage server'],
-    'Backup Solutions': ['backup', 'tape drive', 'backup system'],
-    'Storage Enclosures': ['storage enclosure', 'disk enclosure']
-  },
-  'Servers & Enterprise': {
-    'Rack Servers': ['rack server', 'server', '1u server', '2u server'],
-    'Tower Servers': ['tower server', 'server'],
-    'Server Components': ['server cpu', 'server memory', 'server storage'],
-    'Rack Accessories': ['rack', 'rack mount', 'pdu', 'kvm']
-  },
-  'Printers & Scanners': {
-    'Printers': ['printer', 'inkjet', 'laser printer'],
-    'Scanners': ['scanner', 'document scanner'],
-    'Multifunction': ['multifunction', 'mfp', 'all-in-one printer'],
-    'Printer Supplies': ['toner', 'ink', 'printer cartridge']
-  },
-  'Security & Surveillance': {
-    'IP Cameras': ['ip camera', 'security camera', 'cctv'],
-    'DVR/NVR': ['dvr', 'nvr', 'video recorder'],
-    'Access Control': ['access control', 'card reader', 'biometric'],
-    'Security Software': ['antivirus', 'security software', 'endpoint protection']
-  },
-  'Software & Licensing': {
-    'Operating Systems': ['windows', 'linux', 'operating system', 'os'],
-    'Office Software': ['office', 'microsoft office', 'productivity'],
-    'Security Software': ['antivirus', 'security', 'endpoint protection'],
-    'Virtualization': ['vmware', 'hyper-v', 'virtualization']
-  },
-  'Cables & Accessories': {
-    'Cables': ['cable', 'hdmi', 'usb', 'displayport', 'vga', 'dvi'],
-    'Adapters': ['adapter', 'converter', 'dongle'],
-    'Mounts & Stands': ['mount', 'stand', 'bracket'],
-    'Bags & Cases': ['bag', 'case', 'laptop bag', 'carrying case']
-  }
-};
-
 export async function GET(request: Request) {
+  // IT Product Categories Hierarchy definition moved inside the function body
+  const IT_CATEGORIES = {
+    'Computers & Workstations': {
+      'Laptops': ['laptop', 'notebook', 'mobile workstation'],
+      'Desktops': ['desktop', 'pc', 'workstation', 'tower'],
+      'All-in-One': ['all-in-one', 'aio', 'all in one'],
+      'Mini PCs': ['mini pc', 'nuc', 'mini computer'],
+      'Thin Clients': ['thin client', 'zero client']
+    },
+    'Components': {
+      'Processors': ['cpu', 'processor', 'intel', 'amd'],
+      'Graphics Cards': ['graphics card', 'gpu', 'video card'],
+      'Memory': ['ram', 'memory', 'ddr4', 'ddr5', 'dimm'],
+      'Storage': ['ssd', 'hdd', 'hard drive', 'nvme', 'm.2'],
+      'Motherboards': ['motherboard', 'mainboard', 'mobo'],
+      'Power Supplies': ['psu', 'power supply', 'ups'],
+      'Cooling': ['cpu cooler', 'fan', 'heatsink', 'thermal paste']
+    },
+    'Networking': {
+      'Routers': ['router', 'wireless router', 'gateway'],
+      'Switches': ['switch', 'network switch', 'ethernet switch'],
+      'Access Points': ['access point', 'ap', 'wifi ap'],
+      'Firewalls': ['firewall', 'utm', 'security appliance'],
+      'Network Cards': ['network card', 'nic', 'ethernet card'],
+      'Cables & Connectors': ['ethernet cable', 'network cable', 'patch cable', 'cat5', 'cat6']
+    },
+    'Peripherals': {
+      'Monitors': ['monitor', 'display', 'screen', 'lcd', 'led'],
+      'Keyboards': ['keyboard', 'mechanical keyboard'],
+      'Mice': ['mouse', 'trackball', 'pointing device'],
+      'Webcams': ['webcam', 'camera', 'usb camera'],
+      'Speakers': ['speaker', 'audio', 'sound system'],
+      'Headsets': ['headset', 'headphone', 'microphone']
+    },
+    'Storage & Backup': {
+      'External Drives': ['external drive', 'portable drive', 'usb drive'],
+      'NAS': ['nas', 'network attached storage', 'storage server'],
+      'Backup Solutions': ['backup', 'tape drive', 'backup system'],
+      'Storage Enclosures': ['storage enclosure', 'disk enclosure']
+    },
+    'Servers & Enterprise': {
+      'Rack Servers': ['rack server', 'server', '1u server', '2u server'],
+      'Tower Servers': ['tower server', 'server'],
+      'Server Components': ['server cpu', 'server memory', 'server storage'],
+      'Rack Accessories': ['rack', 'rack mount', 'pdu', 'kvm']
+    },
+    'Printers & Scanners': {
+      'Printers': ['printer', 'inkjet', 'laser printer'],
+      'Scanners': ['scanner', 'document scanner'],
+      'Multifunction': ['multifunction', 'mfp', 'all-in-one printer'],
+      'Printer Supplies': ['toner', 'ink', 'printer cartridge']
+    },
+    'Security & Surveillance': {
+      'IP Cameras': ['ip camera', 'security camera', 'cctv'],
+      'DVR/NVR': ['dvr', 'nvr', 'video recorder'],
+      'Access Control': ['access control', 'card reader', 'biometric'],
+      'Security Software': ['antivirus', 'security software', 'endpoint protection']
+    },
+    'Software & Licensing': {
+      'Operating Systems': ['windows', 'linux', 'operating system', 'os'],
+      'Office Software': ['office', 'microsoft office', 'productivity'],
+      'Security Software': ['antivirus', 'security', 'endpoint protection'],
+      'Virtualization': ['vmware', 'hyper-v', 'virtualization']
+    },
+    'Cables & Accessories': {
+      'Cables': ['cable', 'hdmi', 'usb', 'displayport', 'vga', 'dvi'],
+      'Adapters': ['adapter', 'converter', 'dongle'],
+      'Mounts & Stands': ['mount', 'stand', 'bracket'],
+      'Bags & Cases': ['bag', 'case', 'laptop bag', 'carrying case']
+    }
+  };
+
   try {
     const { searchParams } = new URL(request.url);
     const supplier = searchParams.get('supplier');
@@ -108,19 +108,7 @@ export async function GET(request: Request) {
             
             UNION ALL
             
-            SELECT category, 'Even Flow' as supplier_name
-            FROM evenflow_products
-            WHERE category IS NOT NULL AND category != ''
-            ${supplier ? `AND 'evenflow' = $1` : ''}
-            
-            UNION ALL
-            
-            SELECT category, 'Linkqage' as supplier_name
-            FROM linkqage_products
-            WHERE category IS NOT NULL AND category != ''
-            ${supplier ? `AND 'linkqage' = $1` : ''}
-            
-            UNION ALL
+            -- *** Removed EvenFlow, Linkqage, Manual products as per user instruction ***
             
             SELECT category, supplier_name
             FROM manual_supplier_products
@@ -159,10 +147,6 @@ export async function GET(request: Request) {
           FROM (
             SELECT category FROM products WHERE category IS NOT NULL AND category != ''
             UNION
-            SELECT category FROM evenflow_products WHERE category IS NOT NULL AND category != ''
-            UNION
-            SELECT category FROM linkqage_products WHERE category IS NOT NULL AND category != ''
-            UNION
             SELECT category FROM manual_supplier_products WHERE category IS NOT NULL AND category != ''
           ) combined
           ORDER BY category
@@ -176,7 +160,7 @@ export async function GET(request: Request) {
 
       const response = {
         categories,
-        hierarchy: IT_CATEGORIES,
+        hierarchy: IT_CATEGORIES, // Now defined inside, not exported globally
         total: categories.length
       };
 
@@ -193,7 +177,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ 
       error: 'Failed to fetch categories',
       categories: [],
-      hierarchy: IT_CATEGORIES
+      hierarchy: IT_CATEGORIES // IT_CATEGORIES is defined here, so it's available
     }, { status: 500 });
   }
 }
