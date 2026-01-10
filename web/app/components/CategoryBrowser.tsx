@@ -14,7 +14,6 @@ interface CategoryBrowserProps {
   onCategoryClick?: (category: string) => void;
 }
 
-// Define explicit types for the hierarchy to ensure robust indexing
 type SubCategoryMap = Record<string, string[]>;
 type CategoryHierarchy = Record<string, SubCategoryMap>;
 
@@ -96,7 +95,6 @@ export default function CategoryBrowser({
 }: CategoryBrowserProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  // Initialize groups collapsed by default. We will conditionally expand if needed based on selection.
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'hierarchy' | 'flat'>('hierarchy');
@@ -106,7 +104,6 @@ export default function CategoryBrowser({
     if (selectedCategories.length > 0 && viewMode === 'hierarchy') {
       const requiredExpansions = new Set<string>();
       
-      // Use Object.entries with explicit typing for robust iteration
       (Object.entries(IT_CATEGORIES_HIERARCHY) as Array<[keyof CategoryHierarchy, SubCategoryMap]>).forEach(([groupName, subcategories]) => {
         (Object.entries(subcategories) as Array<[keyof SubCategoryMap, string[]]>).forEach(([subcategoryName, keywords]) => {
           
