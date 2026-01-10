@@ -15,6 +15,8 @@ interface NavbarProps {
   onClearSearch: () => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  compareCount: number;
+  onCompareOpen: () => void;
 }
 
 export default function Navbar({ 
@@ -25,7 +27,9 @@ export default function Navbar({
   onRoleSwitch, 
   onClearSearch,
   searchQuery,
-  onSearchChange
+  onSearchChange,
+  compareCount,
+  onCompareOpen
 }: NavbarProps) {
   const { user, logout } = useAuth();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -87,6 +91,7 @@ export default function Navbar({
               <button
                 onClick={onCartOpen}
                 className="p-2 text-gray-600 dark:text-gray-400 hover:text-orange-500 hover:bg-white dark:hover:bg-gray-700 rounded-xl transition-all relative"
+                title="Quote Cart"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
                 {cartItemCount > 0 && (
@@ -97,9 +102,16 @@ export default function Navbar({
               </button>
               
               <button
-                className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-500 hover:bg-white dark:hover:bg-gray-700 rounded-xl transition-all"
+                onClick={onCompareOpen}
+                className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-500 hover:bg-white dark:hover:bg-gray-700 rounded-xl transition-all relative"
+                title="Compare Products"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" /></svg>
+                {compareCount > 0 && (
+                  <span className="absolute top-1 right-1 bg-red-600 text-white text-[9px] font-black w-3.5 h-3.5 flex items-center justify-center rounded-full">
+                    {compareCount}
+                  </span>
+                )}
               </button>
           </div>
 
