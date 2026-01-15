@@ -238,6 +238,10 @@ export default function Home() {
     });
   };
 
+  const addToCartAction = (product: Product) => {
+    addToCart(product);
+  };
+
   const formatPriceDisplay = (amount: string) => parseFloat(amount).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   const hasActiveFilters = selectedSuppliers.length > 0 || selectedCategories.length > 0 || minPrice || maxPrice || inStockOnly || selectedBrand || searchInDescription;
@@ -508,13 +512,17 @@ export default function Home() {
             {loading && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                 {[...Array(8)].map((_, i) => (
-                  <div key={i} className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-4 border border-white dark:border-gray-800 shadow-sm animate-pulse">
-                    <div className="aspect-square bg-gray-100 dark:bg-gray-800 rounded-[2rem] mb-4" />
-                    <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded-full w-3/4 mb-4" />
-                    <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded-full w-1/2 mb-8" />
+                  <div key={i} className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-4 border border-white dark:border-gray-800 shadow-sm relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
+                    <div className="aspect-square bg-gray-50 dark:bg-gray-800/50 rounded-[2rem] mb-4" />
+                    <div className="h-4 bg-gray-50 dark:bg-gray-800/50 rounded-full w-3/4 mb-4" />
+                    <div className="h-3 bg-gray-50 dark:bg-gray-800/50 rounded-full w-1/2 mb-8" />
                     <div className="flex justify-between items-end">
-                      <div className="h-6 bg-gray-100 dark:bg-gray-800 rounded-full w-24" />
-                      <div className="h-8 bg-gray-100 dark:bg-gray-800 rounded-xl w-16" />
+                      <div className="space-y-2">
+                        <div className="h-6 bg-gray-50 dark:bg-gray-800/50 rounded-full w-24" />
+                        <div className="h-2 bg-gray-50 dark:bg-gray-800/50 rounded-full w-12" />
+                      </div>
+                      <div className="h-10 bg-gray-50 dark:bg-gray-800/50 rounded-xl w-16" />
                     </div>
                   </div>
                 ))}
@@ -522,10 +530,24 @@ export default function Home() {
             )}
 
             {!loading && results.length === 0 && (
-              <div className="text-center py-32 bg-white dark:bg-gray-900 rounded-[3rem] border border-dashed border-gray-300 dark:border-gray-700">
-                <div className="text-5xl mb-4">🔍</div>
-                <h4 className="text-xl font-black text-gray-900 dark:text-white">No matches found</h4>
-                <p className="text-gray-400 mt-2">Try adjusting your filters or expanding your search terms.</p>
+              <div className="text-center py-24 bg-white dark:bg-gray-900 rounded-[3rem] border border-dashed border-gray-300 dark:border-gray-700 animate-in fade-in zoom-in duration-500">
+                <div className="text-6xl mb-6">🔍</div>
+                <h4 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">No matches found</h4>
+                <p className="text-gray-400 mt-2 mb-10 max-w-sm mx-auto font-medium">We couldn't find exactly what you're looking for. Try a broader search or explore our top categories.</p>
+                
+                <div className="max-w-4xl mx-auto px-6">
+                    <div className="flex items-center justify-center gap-2 mb-6">
+                        <div className="h-[1px] bg-gray-100 dark:bg-gray-800 flex-1" />
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Try these instead</span>
+                        <div className="h-[1px] bg-gray-100 dark:bg-gray-800 flex-1" />
+                    </div>
+                    <CategoryTiles 
+                        onCategoryClick={(searchTerm) => {
+                            setQuery(searchTerm);
+                            performSearch(searchTerm);
+                        }}
+                    />
+                </div>
               </div>
             )}
 
@@ -555,9 +577,9 @@ export default function Home() {
                                 <div className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Excluding VAT</div>
                             </div>
                             <div className="flex flex-col items-end gap-2">
-                                 <div className={`text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-tighter ${product.qty_on_hand > 0 ? 'bg-[#D8E698] text-[#4A5D16]' : 'bg-red-50 text-red-600'}`}>{product.qty_on_hand > 0 ? `${product.qty_on_hand} Stock` : 'Out of Stock'}</div>
-                                 <button onClick={(e) => { e.stopPropagation(); addToCart(product); }} className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl active:scale-95 transition-all shadow-lg shadow-gray-200 dark:shadow-none">+ Quote</button>
-                            </div>
+                                  <div className={`text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-tighter ${product.qty_on_hand > 0 ? 'bg-[#D8E698] text-[#4A5D16]' : 'bg-red-50 text-red-600'}`}>{product.qty_on_hand > 0 ? `${product.qty_on_hand} Stock` : 'Out of Stock'}</div>
+                                 <button onClick={(e) => { e.stopPropagation(); addToCartAction(product); }} className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl active:scale-95 transition-all shadow-lg shadow-gray-200 dark:shadow-none">+ Quote</button>
+                             </div>
                         </div>
                     </div>
                 </div>
