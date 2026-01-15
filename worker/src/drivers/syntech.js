@@ -13,9 +13,11 @@ async function syntechDriver(supplier, feedData, helpers) {
     if (!Array.isArray(raw)) raw = raw ? [raw] : [];
 
     return raw.map(p => {
-        const stock = (parseInt(p.cptstock || p.cpt_stock || 0)) +
-                    (parseInt(p.jhbstock || p.jhb_stock || 0)) +
-                    (parseInt(p.dbnstock || p.dbn_stock || 0));
+        const jhb = parseInt(p.jhbstock || p.jhb_stock || 0);
+        const cpt = parseInt(p.cptstock || p.cpt_stock || 0);
+        const dbn = parseInt(p.dbnstock || p.dbn_stock || 0);
+        const total = jhb + cpt + dbn;
+        
         return {
             supplier_sku: p.sku ? String(p.sku) : 'UNKNOWN',
             supplier_name: supplier.name,
@@ -23,7 +25,9 @@ async function syntechDriver(supplier, feedData, helpers) {
             description: String(p.description || ''),
             brand: String(p.attributes?.brand || p.brand || 'Syntech'),
             price_ex_vat: parseFloat(p.price || 0),
-            qty_on_hand: stock,
+            qty_on_hand: total,
+            stock_jhb: jhb,
+            stock_cpt: cpt,
             image_url: String(p.featured_image || p.image_url || ''),
             category: helpers.normalizeCategory(p.categories || p.category, 'syntech'),
             master_sku: `${supplier.id}-${p.sku}`,

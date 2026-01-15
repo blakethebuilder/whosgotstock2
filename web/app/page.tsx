@@ -645,9 +645,17 @@ export default function Home() {
                             </span>
                           </td>
                           <td className="px-6 py-4">
-                            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${product.qty_on_hand > 0 ? 'bg-[#D8E698] text-[#4A5D16]' : 'bg-red-50 text-red-600'}`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${product.qty_on_hand > 0 ? 'bg-[#4A5D16]' : 'bg-red-500'}`} />
-                              {product.qty_on_hand > 0 ? `${product.qty_on_hand} Stock` : 'Out'}
+                            <div className="flex flex-col gap-1">
+                                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${product.qty_on_hand > 0 ? 'bg-[#D8E698] text-[#4A5D16]' : 'bg-red-50 text-red-600'}`}>
+                                  <span className={`w-1.5 h-1.5 rounded-full ${product.qty_on_hand > 0 ? 'bg-[#4A5D16]' : 'bg-red-500'}`} />
+                                  {product.qty_on_hand > 0 ? `${product.qty_on_hand} Total` : 'Out'}
+                                </div>
+                                {(product.stock_jhb > 0 || product.stock_cpt > 0) && (
+                                    <div className="flex gap-2 ml-1">
+                                        {product.stock_jhb > 0 && <span className="text-[8px] font-black text-gray-400 uppercase tracking-tighter">JHB: {product.stock_jhb}</span>}
+                                        {product.stock_cpt > 0 && <span className="text-[8px] font-black text-gray-400 uppercase tracking-tighter">CPT: {product.stock_cpt}</span>}
+                                    </div>
+                                )}
                             </div>
                           </td>
                           <td className="px-6 py-4 text-right">

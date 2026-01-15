@@ -98,13 +98,13 @@ async function ingestData(client) {
                     let paramIdx = 1;
 
                     chunk.forEach(p => {
-                        valueParams.push(`($${paramIdx}, $${paramIdx + 1}, $${paramIdx + 2}, $${paramIdx + 3}, $${paramIdx + 4}, $${paramIdx + 5}, $${paramIdx + 6}, $${paramIdx + 7}, $${paramIdx + 8}, $${paramIdx + 9}, $${paramIdx + 10}, CURRENT_TIMESTAMP)`);
-                        values.push(p.master_sku, p.supplier_sku, p.supplier_name, p.name, p.description, p.brand, p.price_ex_vat, p.qty_on_hand, p.raw_data, p.image_url, p.category);
-                        paramIdx += 11;
+                        valueParams.push(`($${paramIdx}, $${paramIdx + 1}, $${paramIdx + 2}, $${paramIdx + 3}, $${paramIdx + 4}, $${paramIdx + 5}, $${paramIdx + 6}, $${paramIdx + 7}, $${paramIdx + 8}, $${paramIdx + 9}, $${paramIdx + 10}, $${paramIdx + 11}, $${paramIdx + 12}, CURRENT_TIMESTAMP)`);
+                        values.push(p.master_sku, p.supplier_sku, p.supplier_name, p.name, p.description, p.brand, p.price_ex_vat, p.qty_on_hand, p.raw_data, p.image_url, p.category, p.stock_jhb || 0, p.stock_cpt || 0);
+                        paramIdx += 13;
                     });
 
                     const query = `
-                        INSERT INTO products (master_sku, supplier_sku, supplier_name, name, description, brand, price_ex_vat, qty_on_hand, raw_data, image_url, category, last_updated)
+                        INSERT INTO products (master_sku, supplier_sku, supplier_name, name, description, brand, price_ex_vat, qty_on_hand, raw_data, image_url, category, stock_jhb, stock_cpt, last_updated)
                         VALUES ${valueParams.join(',')}
                         ON CONFLICT (supplier_name, supplier_sku) 
                         DO UPDATE SET 
@@ -116,6 +116,8 @@ async function ingestData(client) {
                             raw_data = EXCLUDED.raw_data,
                             image_url = EXCLUDED.image_url,
                             category = EXCLUDED.category,
+                            stock_jhb = EXCLUDED.stock_jhb,
+                            stock_cpt = EXCLUDED.stock_cpt,
                             last_updated = CURRENT_TIMESTAMP;
                     `;
                     await client.query(query, values);

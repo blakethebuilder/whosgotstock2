@@ -12,6 +12,8 @@ export interface Product {
     category: string;
     description?: string;
     raw_data: any;
+    stock_jhb?: number;
+    stock_cpt?: number;
 }
 
 export interface Supplier {

@@ -19,6 +19,8 @@ async function pinnacleDriver(supplier, feedData, helpers) {
         brand: String(p.Brand || 'Pinnacle'),
         price_ex_vat: parseFloat(p.ProdPriceExclVAT || 0),
         qty_on_hand: parseInt(p.ProdQty || 0),
+        stock_jhb: parseInt(p.QtyJHB || p.ProdQtyJHB || 0),
+        stock_cpt: parseInt(p.QtyCPT || p.ProdQtyCPT || 0),
         image_url: String(p.ProdImg || ''),
         category: helpers.normalizeCategory(p.TopCat || p.category_tree, 'pinnacle'),
         master_sku: `${supplier.id}-${p.StockCode}`,

@@ -14,6 +14,8 @@ async function mustekDriver(supplier, feedData, helpers) {
             brand: (p.ProductLine || 'Mustek').substring(0, 100),
             price_ex_vat: parseFloat(p.Price || 0),
             qty_on_hand: parseInt(p.QtyAvailable || 0),
+            stock_jhb: parseInt(p.QtyJhb || 0),
+            stock_cpt: parseInt(p.QtyCpt || 0),
             image_url: p['Primary Image'] || p.Thumbnail || '',
             category: helpers.normalizeCategory(p.ProductLine, supplier.id),
             master_sku: `${supplier.id}-${p.ItemId}`.substring(0, 255),

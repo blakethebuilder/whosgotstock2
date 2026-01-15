@@ -68,13 +68,13 @@ export async function GET(request: Request) {
   let sql = `
     SELECT 
       p.id, p.supplier_sku, p.name, p.brand, p.price_ex_vat, 
-      p.qty_on_hand, p.image_url, p.supplier_name, p.supplier_slug,
+      p.qty_on_hand, p.stock_jhb, p.stock_cpt, p.image_url, p.supplier_name, p.supplier_slug,
       p.last_updated, p.category, p.description
     FROM (
       -- Main products table
       SELECT 
         p.id::text, p.supplier_sku, p.name, p.brand, p.price_ex_vat, 
-        p.qty_on_hand, p.image_url, s.name as supplier_name, s.slug as supplier_slug,
+        p.qty_on_hand, p.stock_jhb, p.stock_cpt, p.image_url, s.name as supplier_name, s.slug as supplier_slug,
         p.last_updated, p.category, COALESCE(p.description, '') as description
       FROM products p
       JOIN suppliers s ON p.supplier_name = s.name
@@ -82,19 +82,10 @@ export async function GET(request: Request) {
 
       UNION ALL
 
-      -- Evenflow products
-      SELECT 
-        'ef-' || e.id::text as id, e.ef_code as supplier_sku, e.product_name as name, 'Even Flow' as brand, e.standard_price as price_ex_vat, 
-        100 as qty_on_hand, NULL as image_url, 'Even Flow' as supplier_name, 'evenflow' as supplier_slug,
-        e.last_updated, e.category, COALESCE(e.description, '') as description
-      FROM evenflow_products e
-
-      UNION ALL
-
       -- Linkqage products
       SELECT 
         'lq-' || l.id::text as id, l.product_code as supplier_sku, l.product_name as name, 'Linkqage' as brand, l.price as price_ex_vat, 
-        CASE WHEN l.in_stock THEN 100 ELSE 0 END as qty_on_hand, l.image_url, 'Linkqage' as supplier_name, 'linkqage' as supplier_slug,
+        CASE WHEN l.in_stock THEN 100 ELSE 0 END as qty_on_hand, 0 as stock_jhb, 0 as stock_cpt, l.image_url, 'Linkqage' as supplier_name, 'linkqage' as supplier_slug,
         l.last_updated, l.category, COALESCE(l.description, '') as description
       FROM linkqage_products l
 
@@ -103,7 +94,7 @@ export async function GET(request: Request) {
       -- Other manual suppliers
       SELECT 
         'ms-' || m.id::text as id, m.product_code as supplier_sku, m.product_name as name, m.supplier_name as brand, m.price as price_ex_vat, 
-        CASE WHEN m.in_stock THEN 100 ELSE 0 END as qty_on_hand, m.image_url, m.supplier_name, LOWER(REPLACE(m.supplier_name, ' ', '-')) as supplier_slug,
+        CASE WHEN m.in_stock THEN 100 ELSE 0 END as qty_on_hand, 0 as stock_jhb, 0 as stock_cpt, m.image_url, m.supplier_name, LOWER(REPLACE(m.supplier_name, ' ', '-')) as supplier_slug,
         m.last_updated, m.category, COALESCE(m.description, '') as description
       FROM manual_supplier_products m
     ) p
