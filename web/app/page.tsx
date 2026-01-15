@@ -478,8 +478,8 @@ export default function Home() {
                     ) : (
                         <div>
                              <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 block">Supplier Network</label>
-                             <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700">
-                                 <p className="text-[10px] font-bold text-gray-400 uppercase italic">Supplier information is restricted to internal tiers.</p>
+                              <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700">
+                                 <p className="text-[10px] font-bold text-gray-400 uppercase italic">Supplier information is restricted to Premium Tiers.</p>
                              </div>
                         </div>
                     )}

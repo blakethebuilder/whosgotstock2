@@ -44,6 +44,17 @@ export const searchSynonyms: Record<string, string[]> = {
   'desktop': ['pc', 'computer', 'workstation', 'tower'],
   'monitor': ['display', 'screen', 'lcd', 'led', 'panel'],
   
+  // Mobile devices
+  'cellphone': ['smart phone', 'smartphone', 'mobile phone', 'mobile', 'phone', 'cellular'],
+  'smartphone': ['smart phone', 'cellphone', 'mobile phone', 'mobile', 'phone', 'iphone', 'samsung galaxy', 'huawei'],
+  'iphone': ['apple phone', 'ios device', 'smartphone', 'cellphone'],
+  'samsung': ['galaxy', 'android phone', 'smartphone', 'cellphone'],
+
+  // Storage units/capacity matching
+  '8gig': ['8gb', '8 gb', '8 gig', '8-gig'],
+  '16gig': ['16gb', '16 gb', '16 gig', '16-gig'],
+  '32gig': ['32gb', '32 gb', '32 gig', '32-gig'],
+  
   // Brands
   'ubiquiti': ['ubnt', 'unifi', 'uap', 'usw'],
   'mikrotik': ['routerboard', 'rb', 'ccr', 'crs'],
