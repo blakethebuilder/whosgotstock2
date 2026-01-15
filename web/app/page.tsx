@@ -650,10 +650,10 @@ export default function Home() {
                                   <span className={`w-1.5 h-1.5 rounded-full ${product.qty_on_hand > 0 ? 'bg-[#4A5D16]' : 'bg-red-500'}`} />
                                   {product.qty_on_hand > 0 ? `${product.qty_on_hand} Total` : 'Out'}
                                 </div>
-                                {(product.stock_jhb > 0 || product.stock_cpt > 0) && (
+                                {((product.stock_jhb || 0) > 0 || (product.stock_cpt || 0) > 0) && (
                                     <div className="flex gap-2 ml-1">
-                                        {product.stock_jhb > 0 && <span className="text-[8px] font-black text-gray-400 uppercase tracking-tighter">JHB: {product.stock_jhb}</span>}
-                                        {product.stock_cpt > 0 && <span className="text-[8px] font-black text-gray-400 uppercase tracking-tighter">CPT: {product.stock_cpt}</span>}
+                                        {(product.stock_jhb || 0) > 0 && <span className="text-[8px] font-black text-gray-400 uppercase tracking-tighter">JHB: {product.stock_jhb}</span>}
+                                        {(product.stock_cpt || 0) > 0 && <span className="text-[8px] font-black text-gray-400 uppercase tracking-tighter">CPT: {product.stock_cpt}</span>}
                                     </div>
                                 )}
                             </div>
