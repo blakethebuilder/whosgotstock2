@@ -74,8 +74,16 @@ export default function Navbar({
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full bg-gray-100/50 dark:bg-gray-800/50 border-none rounded-2xl py-2 sm:py-2.5 pl-9 sm:pl-12 pr-4 text-xs sm:text-sm font-medium focus:ring-2 focus:ring-orange-500/20 focus:bg-white dark:focus:bg-gray-800 transition-all outline-none text-gray-900 dark:text-white"
+              className="w-full bg-gray-100/50 dark:bg-gray-800/50 border-none rounded-2xl py-2 sm:py-2.5 pl-9 sm:pl-12 pr-10 sm:pr-12 text-xs sm:text-sm font-medium focus:ring-2 focus:ring-orange-500/20 focus:bg-white dark:focus:bg-gray-800 transition-all outline-none text-gray-900 dark:text-white"
             />
+            {searchQuery && (
+              <button 
+                onClick={() => onSearchChange('')}
+                className="absolute inset-y-0 right-10 sm:right-12 px-2 flex items-center text-gray-400 hover:text-orange-500 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            )}
             {/* Quick Filter Icon (Visual Only like image) */}
             <div className="absolute inset-y-0 right-0 pr-2 sm:pr-3 flex items-center">
                 <div className="w-6 h-6 sm:w-7 sm:h-7 bg-gray-900 dark:bg-gray-700 rounded-lg flex items-center justify-center text-white cursor-pointer hover:bg-orange-500 transition-colors">
