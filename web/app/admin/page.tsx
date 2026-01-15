@@ -293,6 +293,29 @@ export default function AdminPage() {
                             </div>
                         </div>
 
+                        {/* Database Maintenance */}
+                        <div className="bg-white rounded-lg shadow-sm p-6 border-2 border-red-50">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-2">Maintenance</h2>
+                            <p className="text-xs text-gray-500 mb-4">Run database migrations and schema fixes.</p>
+                            <button
+                                onClick={async () => {
+                                    if(!confirm("Initialize or fix database schema? This will ensure all columns exist.")) return;
+                                    try {
+                                        const res = await fetch('/api/admin/setup-db', { method: 'POST' });
+                                        const data = await res.json();
+                                        if (data.success) alert("Database setup/fix complete!");
+                                        else alert("Error: " + data.error);
+                                    } catch (e) {
+                                        alert("Connection failed");
+                                    }
+                                }}
+                                className="w-full bg-gray-900 hover:bg-black text-white py-3 px-4 rounded-md text-sm font-bold flex items-center justify-center gap-2"
+                            >
+                                <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" /></svg>
+                                Setup Database
+                            </button>
+                        </div>
+
                         {/* Internal Access Levels */}
                         <div className="bg-white rounded-lg shadow-sm p-6">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Internal Access Levels</h2>
