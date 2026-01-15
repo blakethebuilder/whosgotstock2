@@ -65,21 +65,21 @@ export default function Navbar({
         </div>
 
         {/* Centered Search - Integrated into Navbar like inspiration */}
-        <div className="flex-1 max-w-xl hidden sm:flex relative group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-orange-500 transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+        <div className="flex-1 max-w-xl flex relative group mx-1 sm:mx-0">
+            <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-orange-500 transition-colors">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </div>
             <input 
               type="text"
-              placeholder="Search products..."
+              placeholder="Search..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full bg-gray-100/50 dark:bg-gray-800/50 border-none rounded-2xl py-2.5 pl-12 pr-4 text-sm font-medium focus:ring-2 focus:ring-orange-500/20 focus:bg-white dark:focus:bg-gray-800 transition-all outline-none text-gray-900 dark:text-white"
+              className="w-full bg-gray-100/50 dark:bg-gray-800/50 border-none rounded-2xl py-2 sm:py-2.5 pl-9 sm:pl-12 pr-4 text-xs sm:text-sm font-medium focus:ring-2 focus:ring-orange-500/20 focus:bg-white dark:focus:bg-gray-800 transition-all outline-none text-gray-900 dark:text-white"
             />
             {/* Quick Filter Icon (Visual Only like image) */}
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                <div className="w-7 h-7 bg-gray-900 dark:bg-gray-700 rounded-lg flex items-center justify-center text-white cursor-pointer hover:bg-orange-500 transition-colors">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+            <div className="absolute inset-y-0 right-0 pr-2 sm:pr-3 flex items-center">
+                <div className="w-6 h-6 sm:w-7 sm:h-7 bg-gray-900 dark:bg-gray-700 rounded-lg flex items-center justify-center text-white cursor-pointer hover:bg-orange-500 transition-colors">
+                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
                 </div>
             </div>
         </div>

@@ -8,9 +8,10 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/whosgotstock
-      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/whosgotstock}
+      - NODE_ENV=${NODE_ENV:-production}
       - NEXT_TELEMETRY_DISABLED=1
+      - NEXT_PUBLIC_ESQUIRE_EMAIL=${ESQUIRE_EMAIL}
     depends_on:
       - postgres
     restart: always
@@ -20,8 +21,17 @@ services:
       context: ./worker
       dockerfile: Dockerfile
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/whosgotstock
-      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/whosgotstock}
+      - NODE_ENV=${NODE_ENV:-production}
+      - ESQUIRE_EMAIL=${ESQUIRE_EMAIL}
+      - ESQUIRE_PASSWORD=${ESQUIRE_PASSWORD}
+      - MUSTEK_CUSTOMER_TOKEN=${MUSTEK_CUSTOMER_TOKEN}
+      - SYNTECH_API_KEY=${SYNTECH_API_KEY}
+      - PINNACLE_UID=${PINNACLE_UID}
+      - PINNACLE_API_KEY=${PINNACLE_API_KEY}
+      - EVENFLOW_API_URL=${EVENFLOW_API_URL}
+      - EVENFLOW_API_KEY=${EVENFLOW_API_KEY}
+      - UPDATE_INTERVAL_MINUTES=${UPDATE_INTERVAL_MINUTES:-60}
     depends_on:
       - postgres
     restart: always
@@ -29,9 +39,9 @@ services:
   postgres:
     image: postgres:15-alpine
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=whosgotstock
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-whosgotstock}
     ports:
       - "5432:5432"
     volumes:

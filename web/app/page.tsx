@@ -291,8 +291,8 @@ export default function Home() {
                      <div className="relative">
                         <div className="absolute top-0 left-0 w-64 h-64 bg-orange-500/20 blur-[120px] rounded-full" />
                         <img 
-                            src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1000&auto=format&fit=crop" 
-                            alt="Stock Hero" 
+                            src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?q=80&w=1000&auto=format&fit=crop" 
+                            alt="Laptop Stock" 
                             className="w-full h-auto object-contain rounded-[2rem] shadow-2xl rotate-[15deg] mix-blend-darken dark:mix-blend-normal"
                         />
                      </div>
@@ -339,24 +339,7 @@ export default function Home() {
                 </div>
             </div>
 
-            <div 
-                onClick={() => { setQuery("Networking"); performSearch("Networking"); }}
-                className="md:col-span-3 bg-[#E8E8E8] dark:bg-gray-900 rounded-[2.5rem] p-8 min-h-[220px] flex flex-col justify-between group cursor-pointer hover:bg-white transition-colors border border-transparent hover:border-gray-200"
-            >
-                <div className="flex justify-between items-start">
-                    <h3 className="text-xl font-black text-gray-900 dark:text-white">Networking</h3>
-                    <div className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center rotate-[-45deg] group-hover:rotate-0 transition-all">
-                        <svg className="w-4 h-4 text-gray-900 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                    </div>
-                </div>
-                <div className="flex gap-2 mt-4 overflow-hidden">
-                    <div className="w-16 h-16 bg-white dark:bg-gray-800 rounded-2xl p-2 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071a10 10 0 0114.142 0M2.83 6.829a15 15 0 0121.34 0" /></svg>
-                    </div>
-                </div>
-            </div>
-
-            <div className="md:col-span-9 bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 border border-white/40 dark:border-gray-800/40 shadow-xl shadow-gray-200/40 min-h-[220px]">
+            <div className="md:col-span-12 bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 border border-white/40 dark:border-gray-800/40 shadow-xl shadow-gray-200/40 min-h-[220px]">
                 <div className="flex items-center justify-between mb-8">
                     <h3 className="text-xl font-black text-gray-900 dark:text-white">Popular Quick-Tags</h3>
                     <button onClick={() => setShowCategoryBrowser(true)} className="text-[10px] font-black uppercase tracking-widest text-orange-500 hover:text-orange-600">Explore More</button>
@@ -526,7 +509,7 @@ export default function Home() {
                     </div>
                     <div className="px-2 pb-2">
                         <h4 className="font-black text-gray-900 dark:text-white text-base line-clamp-2 leading-tight mb-2 group-hover:text-orange-500 transition-colors">{product.name}</h4>
-                        <div className="flex items-center gap-2 mb-4"><span className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-lg">{userRole === 'public' ? 'Distributor Stock' : product.supplier_name}</span></div>
+                        <div className="flex items-center gap-2 mb-4"><span className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-lg">{(userRole === 'public' || userRole === 'team') ? 'Distributor Stock' : product.supplier_name}</span></div>
                         <div className="flex items-end justify-between gap-4 mt-6">
                             <div className="space-y-0.5">
                                 <div className="text-2xl font-black text-gray-900 dark:text-white leading-none">R {formatPriceDisplay(calculatePriceWithDiscount(product.price_ex_vat).exVat)}</div>

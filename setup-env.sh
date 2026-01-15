@@ -28,6 +28,10 @@ SYNTECH_API_KEY=668EFF7-494A-43B9-90A8-E72B79648CFC
 PINNACLE_UID=942709f3-9b39-4e93-9a5e-cdd883453178
 PINNACLE_API_KEY=942709f3-9b39-4e93-9a5e-cdd883453178
 
+# Evenflow API (Preparing for new keys)
+EVENFLOW_API_URL=https://api.evenflow.co.za/placeholder
+EVENFLOW_API_KEY=your-evenflow-api-key
+
 # Application Settings
 NODE_ENV=development
 NEXT_TELEMETRY_DISABLED=1

@@ -172,7 +172,7 @@ export default function ComparisonModal({
                                                     );
                                                     break;
                                                 case 'supplier_name':
-                                                    content = <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg text-[9px] font-black uppercase text-gray-500">{userRole === 'public' ? 'Verified Stock' : product.supplier_name}</span>;
+                                                    content = <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg text-[9px] font-black uppercase text-gray-500">{(userRole === 'public' || userRole === 'team') ? 'Verified Stock' : product.supplier_name}</span>;
                                                     break;
                                                 default:
                                                     content = <p className="text-sm font-bold text-gray-700 dark:text-gray-300">{(product as any)[attr.key] || '—'}</p>;
