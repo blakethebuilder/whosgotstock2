@@ -16,6 +16,8 @@ export async function POST() {
                 brand VARCHAR(255),
                 price_ex_vat DECIMAL(10, 2) NOT NULL,
                 qty_on_hand INTEGER DEFAULT 0,
+                stock_jhb INTEGER DEFAULT 0,
+                stock_cpt INTEGER DEFAULT 0,
                 last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 raw_data JSONB,
                 image_url TEXT,
@@ -24,6 +26,10 @@ export async function POST() {
                 UNIQUE(supplier_name, supplier_sku)
             );
         `);
+
+        // Migration: Add columns if they don't exist
+        await client.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS stock_jhb INTEGER DEFAULT 0;`);
+        await client.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS stock_cpt INTEGER DEFAULT 0;`);
 
         await client.query(`
             CREATE TABLE IF NOT EXISTS suppliers (
