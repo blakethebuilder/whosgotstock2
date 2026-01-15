@@ -284,16 +284,26 @@ export default function Home() {
                             View All Products
                             <svg className="w-5 h-5 rotate-[-45deg]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                         </button>
+                        
+                        {userRole === 'admin' && (
+                          <a 
+                              href="/admin"
+                              className="bg-emerald-500 text-white px-8 py-4 rounded-2xl font-black text-sm hover:scale-105 transition-transform flex items-center gap-3 active:scale-95 shadow-xl shadow-emerald-200/50"
+                          >
+                              Admin Portal
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                          </a>
+                        )}
                     </div>
                 </div>
 
-                <div className="absolute right-[-5%] top-1/2 -translate-y-1/2 w-1/2 hidden md:block select-none group-hover:scale-110 transition-transform duration-1000 ease-out pointer-events-none">
+                <div className="absolute right-8 top-1/2 -translate-y-1/2 w-2/5 hidden md:block select-none group-hover:scale-105 transition-transform duration-1000 ease-out pointer-events-none">
                      <div className="relative">
-                        <div className="absolute top-0 left-0 w-64 h-64 bg-orange-500/20 blur-[120px] rounded-full" />
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-orange-500/20 blur-[100px] rounded-full" />
                         <img 
-                            src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?q=80&w=1000&auto=format&fit=crop" 
-                            alt="Laptop Stock" 
-                            className="w-full h-auto object-contain rounded-[2rem] shadow-2xl rotate-[15deg] mix-blend-darken dark:mix-blend-normal"
+                            src="https://images.unsplash.com/photo-1517336710212-d0358c30690d?q=80&w=1000&auto=format&fit=crop" 
+                            alt="Laptop" 
+                            className="w-full h-auto object-contain rounded-3xl shadow-2xl relative z-10"
                         />
                      </div>
                 </div>
@@ -311,8 +321,14 @@ export default function Home() {
                         {suppliers.map(s => (
                             <button 
                                 key={s.slug} 
-                                onClick={(e) => { e.stopPropagation(); setSelectedSuppliers([s.slug]); performSearch(""); }}
-                                className="px-3 py-1.5 bg-white/40 hover:bg-white rounded-xl text-xs font-black text-gray-800 border border-white/20 uppercase tracking-tighter transition-all"
+                                onClick={(e) => { 
+                                  e.stopPropagation(); 
+                                  if (userRole === 'management' || userRole === 'admin') {
+                                    setSelectedSuppliers([s.slug]); 
+                                    performSearch(""); 
+                                  }
+                                }}
+                                className={`px-3 py-1.5 bg-white/40 hover:bg-white rounded-xl text-xs font-black text-gray-800 border border-white/20 uppercase tracking-tighter transition-all ${(userRole === 'public' || userRole === 'team') ? 'blur-[4px] cursor-default' : ''}`}
                             >
                                 {s.name}
                             </button>
@@ -441,23 +457,32 @@ export default function Home() {
                 </div>
 
                 <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8 pt-8 border-t border-gray-50 dark:border-gray-800">
-                    <div>
-                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 block">Supplier Network</label>
-                        <div className="flex flex-wrap gap-2">
-                            {suppliers.map(s => {
-                                const active = selectedSuppliers.includes(s.slug);
-                                return (
-                                    <button 
-                                        key={s.slug} 
-                                        onClick={() => active ? setSelectedSuppliers(selectedSuppliers.filter(x => x !== s.slug)) : setSelectedSuppliers([...selectedSuppliers, s.slug])}
-                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all ${active ? 'bg-orange-500 text-white shadow-lg shadow-orange-200' : 'bg-gray-50 dark:bg-gray-800 text-gray-500 hover:bg-gray-100'}`}
-                                    >
-                                        {s.name}
-                                    </button>
-                                );
-                            })}
+                    {(userRole === 'management' || userRole === 'admin') ? (
+                        <div>
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 block">Supplier Network</label>
+                            <div className="flex flex-wrap gap-2">
+                                {suppliers.map(s => {
+                                    const active = selectedSuppliers.includes(s.slug);
+                                    return (
+                                        <button 
+                                            key={s.slug} 
+                                            onClick={() => active ? setSelectedSuppliers(selectedSuppliers.filter(x => x !== s.slug)) : setSelectedSuppliers([...selectedSuppliers, s.slug])}
+                                            className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all ${active ? 'bg-orange-500 text-white shadow-lg shadow-orange-200' : 'bg-gray-50 dark:bg-gray-800 text-gray-500 hover:bg-gray-100'}`}
+                                        >
+                                            {s.name}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div>
+                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 block">Supplier Network</label>
+                             <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700">
+                                 <p className="text-[10px] font-bold text-gray-400 uppercase italic">Supplier information is restricted to internal tiers.</p>
+                             </div>
+                        </div>
+                    )}
                     <div className="flex flex-col justify-end gap-3">
                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Search Intensity</label>
                         <div className="flex gap-4">
@@ -509,7 +534,7 @@ export default function Home() {
                     </div>
                     <div className="px-2 pb-2">
                         <h4 className="font-black text-gray-900 dark:text-white text-base line-clamp-2 leading-tight mb-2 group-hover:text-orange-500 transition-colors">{product.name}</h4>
-                        <div className="flex items-center gap-2 mb-4"><span className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-lg">{(userRole === 'public' || userRole === 'team') ? 'Distributor Stock' : product.supplier_name}</span></div>
+                        <div className="flex items-center gap-2 mb-4"><span className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-lg">{(userRole === 'public' || userRole === 'team') ? 'Smart Integrate' : product.supplier_name}</span></div>
                         <div className="flex items-end justify-between gap-4 mt-6">
                             <div className="space-y-0.5">
                                 <div className="text-2xl font-black text-gray-900 dark:text-white leading-none">R {formatPriceDisplay(calculatePriceWithDiscount(product.price_ex_vat).exVat)}</div>

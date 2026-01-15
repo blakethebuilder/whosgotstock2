@@ -94,7 +94,7 @@ export default function ProductDetailModal({
                     <div className="mb-8">
                         <div className="flex items-center gap-2 mb-4">
                               <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-lg text-[10px] font-black uppercase tracking-widest">
-                                {(userRole === 'public' || userRole === 'team') ? 'Distributor Source' : product.supplier_name}
+                                {(userRole === 'public' || userRole === 'team') ? 'Smart Integrate' : product.supplier_name}
                             </span>
                         </div>
                         <h3 className="text-4xl font-black text-gray-900 dark:text-white leading-[0.95] tracking-tighter mb-6">{product.name}</h3>
