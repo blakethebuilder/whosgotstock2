@@ -4,61 +4,69 @@ import pool from '@/lib/db';
 export async function POST() {
   try {
     const client = await pool.connect();
-    
-    // Check for existing EvenFlow products in main products table
+
+    // Check for existing EvenFlow products in evenflow_products table
     const existingProductsResult = await client.query(`
-      SELECT * FROM products 
-      WHERE supplier_name ILIKE '%even flow%' 
-         OR supplier_name ILIKE '%manual upload%'
-         OR brand ILIKE '%even flow%'
+      SELECT * FROM evenflow_products
+      ORDER BY last_updated DESC
     `);
-    
+
     let migratedCount = 0;
-    
+
     if (existingProductsResult.rows.length > 0) {
       await client.query('BEGIN');
-      
+
       for (const product of existingProductsResult.rows) {
         try {
-          // Insert into evenflow_products table
+          // Insert into main products table
           await client.query(`
-            INSERT INTO evenflow_products (
-              ef_code, product_name, standard_price, 
-              category, sheet_name, raw_data, last_updated
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-            ON CONFLICT (ef_code) DO NOTHING
+            INSERT INTO products (
+              master_sku, supplier_sku, supplier_name, name, description, brand,
+              price_ex_vat, qty_on_hand, stock_jhb, stock_cpt, image_url, category, raw_data, last_updated
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+            ON CONFLICT (supplier_name, supplier_sku) DO UPDATE SET
+              name = EXCLUDED.name,
+              description = EXCLUDED.description,
+              brand = EXCLUDED.brand,
+              price_ex_vat = EXCLUDED.price_ex_vat,
+              qty_on_hand = EXCLUDED.qty_on_hand,
+              stock_jhb = EXCLUDED.stock_jhb,
+              stock_cpt = EXCLUDED.stock_cpt,
+              image_url = EXCLUDED.image_url,
+              category = EXCLUDED.category,
+              raw_data = EXCLUDED.raw_data,
+              last_updated = EXCLUDED.last_updated
           `, [
-            product.supplier_sku,
-            product.name,
-            product.price_ex_vat,
-            product.category || 'Uncategorized',
-            product.category || 'Migrated',
+            `evenflow-${product.ef_code}`,
+            product.ef_code,
+            'Even Flow',
+            product.product_name,
+            product.description || product.product_name,
+            'Evenflow',
+            product.standard_price || product.selling_price || 0,
+            (product.standard_price || product.selling_price || 0) > 0 ? 100 : 0,
+            0,
+            0,
+            '',
+            product.category,
             product.raw_data || {},
             product.last_updated
           ]);
-          
+
           migratedCount++;
         } catch (err) {
-          console.error('Error migrating product:', product.supplier_sku, err);
+          console.error('Error migrating product:', product.ef_code, err);
         }
       }
-      
+
       await client.query('COMMIT');
-      
-      // Optionally remove from main products table
-      await client.query(`
-        DELETE FROM products 
-        WHERE supplier_name ILIKE '%even flow%' 
-           OR supplier_name ILIKE '%manual upload%'
-           OR brand ILIKE '%even flow%'
-      `);
     }
     
     client.release();
     
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
-      message: `Migrated ${migratedCount} EvenFlow products to evenflow_products table`,
+      message: `Migrated ${migratedCount} EvenFlow products from evenflow_products to main products table`,
       foundProducts: existingProductsResult.rows.length,
       migratedCount
     });
