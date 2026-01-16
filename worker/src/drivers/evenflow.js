@@ -52,7 +52,7 @@ async function evenflowDriver(supplier, feedData, helpers) {
 
             try {
                 const response = await axios({
-                    method: 'GET',
+                    method: 'POST',
                     url: baseUrl,
                     data: {
                         PageNumber: pageNumber,

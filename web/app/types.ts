@@ -1,6 +1,10 @@
+/**
+ * Global Type Definitions for WhosGotStock
+ */
+
 export type UserRole = 'public' | 'team' | 'management' | 'admin';
 
-export interface Product {
+export type Product = {
     id: number;
     name: string;
     brand: string;
@@ -15,38 +19,38 @@ export interface Product {
     stock_jhb?: number;
     stock_cpt?: number;
     price_on_request?: boolean;
-}
+};
 
-export interface Supplier {
+export type Supplier = {
     name: string;
     slug: string;
     url: string;
     type: string;
     enabled: boolean;
-}
+};
 
-export interface Project {
+export type Project = {
     id: string;
     name: string;
     description?: string;
     createdAt: number;
-}
+};
 
-export interface CartItem extends Product {
+export type CartItem = Product & {
     quantity: number;
-    projectId?: string; // Optional reference to a project
-}
+    projectId?: string;
+};
 
-export interface UsageStats {
+export type UsageStats = {
     searchesThisMonth: number;
     searchLimit: number;
     quotesGenerated: number;
     isLimitReached: boolean;
     totalProducts?: number;
     totalSuppliers?: number;
-}
+};
 
-export interface TierFeatures {
+export type TierFeatures = {
     name: string;
     price: string;
     searches: string;
@@ -54,4 +58,4 @@ export interface TierFeatures {
     features: string[];
     cta: string;
     popular?: boolean;
-}
+};
