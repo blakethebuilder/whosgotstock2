@@ -44,7 +44,7 @@ async function evenflowDriver(supplier, feedData, helpers) {
         // Now fetch products with pagination
         const allProducts = [];
         let pageNumber = 1;
-        const pageSize = 100;
+        const pageSize = 500;
         let hasMorePages = true;
 
         while (hasMorePages) {
@@ -56,19 +56,24 @@ async function evenflowDriver(supplier, feedData, helpers) {
                     'Content-Type': 'application/json',
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36'
                 },
-                data: {
+                params: {
                     PageNumber: pageNumber,
                     PageSize: pageSize
                 }
             });
 
             const data = response.data;
-            const products = data.Data || [];
+            // Evenflow sometimes returns Data (capitalized) in the response object
+            const products = data.Data || data.data || (data.Result && data.Result.Data) || [];
 
-            if (products.length === 0) {
+            if (!Array.isArray(products) || products.length === 0) {
+                if (pageNumber === 1) {
+                    console.log(`Evenflow: Page 1 returned no products. Response keys: ${Object.keys(data).join(', ')}`);
+                }
                 hasMorePages = false;
             } else {
                 allProducts.push(...products);
+                console.log(`Evenflow: Harvested ${products.length} items from page ${pageNumber}`);
                 pageNumber++;
 
                 // Safety check to prevent excessive fetching in dev

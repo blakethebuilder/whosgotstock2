@@ -87,9 +87,14 @@ async function ingestData(client) {
     for (const supplier of suppliers) {
         console.log(`\n>>> Ingesting ${supplier.name} via Driver Plugin...`);
         try {
-            // Determine driver (slug or type override)
-            const driverKey = (['xml', 'json'].includes(supplier.type?.toLowerCase())) ? supplier.id : supplier.type;
-            const driverPath = path.join(__dirname, 'drivers', `${driverKey}.js`);
+            // Determine driver: Prioritize specific supplier driver, fallback to generic type driver
+            let driverKey = supplier.id;
+            let driverPath = path.join(__dirname, 'drivers', `${driverKey}.js`);
+
+            if (!fs.existsSync(driverPath)) {
+                driverKey = supplier.type?.toLowerCase();
+                driverPath = path.join(__dirname, 'drivers', `${driverKey}.js`);
+            }
 
             if (!fs.existsSync(driverPath)) {
                 console.error(`Driver missing: ${driverKey} at ${driverPath}`);
@@ -109,9 +114,35 @@ async function ingestData(client) {
             }
 
             if (products && products.length > 0) {
+                // Deduplication and Normalization Step
+                const uniqueProducts = new Map();
+                products.forEach(p => {
+                    if (!p || !p.supplier_sku) return;
+
+                    // Normalize SKU for robust matching
+                    const normalizedSku = String(p.supplier_sku).trim().toUpperCase();
+                    p.supplier_sku = normalizedSku;
+
+                    // Ensure master_sku is also normalized
+                    if (p.master_sku) {
+                        p.master_sku = String(p.master_sku).trim().toUpperCase();
+                    }
+
+                    // Keep the first one found
+                    if (!uniqueProducts.has(normalizedSku)) {
+                        uniqueProducts.set(normalizedSku, p);
+                    }
+                });
+
+                const finalProducts = Array.from(uniqueProducts.values());
+                const duplicateCount = products.length - finalProducts.length;
+                if (duplicateCount > 0) {
+                    console.log(`Deduplication: Removed ${duplicateCount} duplicate SKUs from ${supplier.name} feed.`);
+                }
+
                 const chunkSize = 300;
-                for (let i = 0; i < products.length; i += chunkSize) {
-                    const chunk = products.slice(i, i + chunkSize);
+                for (let i = 0; i < finalProducts.length; i += chunkSize) {
+                    const chunk = finalProducts.slice(i, i + chunkSize);
                     const values = [];
                     const valueParams = [];
                     let paramIdx = 1;
@@ -141,7 +172,9 @@ async function ingestData(client) {
                     `;
                     await client.query(query, values);
                 }
-                console.log(`Success: Ingested ${products.length} products for ${supplier.name}.`);
+                console.log(`Success: Ingested ${finalProducts.length} products for ${supplier.name}.`);
+            } else {
+                console.log(`Warning: 0 products found for ${supplier.name}. Check driver or feed status.`);
             }
         } catch (err) {
             console.error(`Driver Error for ${supplier.name}:`, err.message);
