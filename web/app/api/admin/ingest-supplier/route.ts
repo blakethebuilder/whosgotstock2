@@ -1,66 +1,7 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
-// Import the ingestion logic
-// Note: This is a simplified version for manual triggering
-async function runManualIngestion(client: any, supplier: any) {
-  console.log(`Starting manual ingestion for ${supplier.name}`);
 
-  try {
-    // For JSON APIs like Evenflow, we need to handle them differently
-    if (supplier.type === 'json') {
-      // Import and run the Evenflow driver directly
-      // For deployed version, we need to use a different approach
-      console.log('Loading Evenflow driver...');
-
-      // Dynamic import to avoid build issues
-      let evenflowDriver;
-      try {
-        evenflowDriver = require('../../../../worker/src/drivers/evenflow.js');
-        console.log('Evenflow driver loaded successfully');
-      } catch (e) {
-        console.error('Failed to load Evenflow driver:', e.message);
-        return { success: false, error: 'Evenflow driver not available: ' + e.message };
-      }
-
-      console.log('Running Evenflow driver...');
-      const products = await evenflowDriver(supplier, null, {
-        normalizeCategory: (category: string, supplierId: string) => {
-          if (!category) return 'Miscellaneous';
-          const normalized = category.toLowerCase().trim();
-          if (normalized.includes('network') || supplierId === 'scoop') return 'Networking & Connectivity';
-          if (normalized.includes('storage') || normalized.includes('hdd') || normalized.includes('ssd') || normalized.includes('drive')) return 'Storage';
-          if (normalized.includes('memory') || normalized.includes('ram') || normalized.includes('ddr')) return 'Memory';
-          if (normalized.includes('processor') || normalized.includes('cpu')) return 'Processors';
-          if (normalized.includes('graphics') || normalized.includes('gpu') || normalized.includes('video card')) return 'Graphics Cards';
-          if (normalized.includes('laptop') || normalized.includes('notebook')) return 'Laptops';
-          if (normalized.includes('desktop') || normalized.includes('workstation')) return 'Desktops';
-          if (normalized.includes('monitor') || normalized.includes('display')) return 'Displays';
-          if (normalized.includes('printer') || normalized.includes('ink') || normalized.includes('toner')) return 'Printers & Supplies';
-          if (normalized.includes('cable') || normalized.includes('connector')) return 'Cables & Connectivity';
-          if (normalized.includes('ups') || normalized.includes('power') || normalized.includes('battery')) return 'Power Solutions';
-          if (normalized.includes('security') || normalized.includes('camera') || normalized.includes('cctv')) return 'Security';
-          return category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
-        },
-        parseCSV: (csvText: string) => {
-          const lines = csvText.trim().split('\n');
-          if (lines.length === 0) return [];
-          const headers = lines[0].split(',').map(h => h.trim());
-          const results = [];
-          for (let i = 1; i < lines.length; i++) {
-            const line = lines[i];
-            if (!line.trim()) continue;
-            const values = [];
-            let current = '';
-            let inQuotes = false;
-            for (let j = 0; j < line.length; j++) {
-              const char = line[j];
-              if (char === '"') inQuotes = !inQuotes;
-              else if (char === ',' && !inQuotes) {
-                values.push(current.trim());
-                current = '';
-              } else current += char;
-            }
             values.push(current.trim());
             const obj: any = {};
             headers.forEach((header, idx) => { obj[header] = values[idx] || ''; });
@@ -143,6 +84,46 @@ export async function POST(request: Request) {
     if (!supplierSlug) {
       return NextResponse.json({ error: 'Supplier slug required' }, { status: 400 });
     }
+
+    // Get supplier details
+    const client = await pool.connect();
+    try {
+      const supplierResult = await client.query(
+        'SELECT * FROM suppliers WHERE slug = $1 AND enabled = true',
+        [supplierSlug]
+      );
+
+      if (supplierResult.rows.length === 0) {
+        return NextResponse.json({ error: 'Supplier not found or disabled' }, { status: 404 });
+      }
+
+      const supplier = supplierResult.rows[0];
+
+      console.log(`Manual ingestion request logged for ${supplier.name} (${supplier.slug})`);
+
+      // Just log the request - the worker will handle actual ingestion
+      // In production, this could send a message to trigger the worker
+
+      return NextResponse.json({
+        success: true,
+        message: `Ingestion request logged for ${supplier.name}. Worker will process on next cycle.`,
+        supplier: supplier.name,
+        type: supplier.type,
+        note: 'Check worker logs in ~8 hours for actual ingestion results.'
+      });
+
+    } finally {
+      client.release();
+    }
+
+  } catch (error: any) {
+    console.error('Manual ingestion API error:', error);
+    return NextResponse.json({
+      error: error.message,
+      stack: error.stack
+    }, { status: 500 });
+  }
+}
 
     // Get supplier details
     const client = await pool.connect();
