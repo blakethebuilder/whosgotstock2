@@ -66,7 +66,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             ];
             break;
 
-          // Evenflow manual imports removed - now uses official JSON API
+
 
           default:
             // Use generic manual_supplier_products table

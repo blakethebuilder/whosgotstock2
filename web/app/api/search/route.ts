@@ -133,23 +133,6 @@ export async function GET(request: Request) {
     ${sqlBase}
   `;
 
-  // If Evenflow is requested, also include products from evenflow_products table
-  if (suppliers.includes('evenflow')) {
-    sql += `
-      UNION
-
-      -- Include Evenflow products from evenflow_products table (temporary until migration completes)
-      SELECT
-        CONCAT('ef-', ep.id)::text as id, ep.ef_code as supplier_sku, ep.product_name as name, 'Evenflow' as brand,
-        COALESCE(ep.standard_price, ep.selling_price, 0) as price_ex_vat,
-        CASE WHEN COALESCE(ep.standard_price, ep.selling_price, 0) > 0 THEN 100 ELSE 0 END as qty_on_hand,
-        0 as stock_jhb, 0 as stock_cpt, '' as image_url, 'Even Flow' as supplier_name, 'evenflow' as supplier_slug,
-        ep.last_updated, ep.category, COALESCE(ep.description, ep.product_name) as description
-      FROM evenflow_products ep
-      WHERE ep.ef_code IS NOT NULL
-    `;
-  }
-
   // Sorting
   if (sort === 'price_asc') sql += ` ORDER BY p.price_ex_vat ASC`;
   else if (sort === 'price_desc') sql += ` ORDER BY p.price_ex_vat DESC`;
