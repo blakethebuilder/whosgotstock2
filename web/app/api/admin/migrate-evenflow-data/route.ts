@@ -6,18 +6,23 @@ export async function POST() {
     const client = await pool.connect();
 
     // Check for existing EvenFlow products in evenflow_products table
+    console.log('Starting Evenflow migration...');
     const existingProductsResult = await client.query(`
       SELECT * FROM evenflow_products
       ORDER BY last_updated DESC
     `);
 
+    console.log('Found', existingProductsResult.rows.length, 'products in evenflow_products table');
+
     let migratedCount = 0;
 
     if (existingProductsResult.rows.length > 0) {
+      console.log('Starting migration transaction...');
       await client.query('BEGIN');
 
       for (const product of existingProductsResult.rows) {
         try {
+          console.log('Migrating product:', product.ef_code, product.product_name);
           // Insert into main products table
           await client.query(`
             INSERT INTO products (
@@ -54,6 +59,7 @@ export async function POST() {
           ]);
 
           migratedCount++;
+          console.log('Successfully migrated product:', product.ef_code);
         } catch (err) {
           console.error('Error migrating product:', product.ef_code, err);
         }
