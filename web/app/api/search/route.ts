@@ -126,9 +126,9 @@ export async function GET(request: Request) {
 
   // Final SQL with Columns
   let sql = `
-    SELECT 
-      p.id::text, p.supplier_sku, p.name, p.brand, p.price_ex_vat, 
-      p.qty_on_hand, p.stock_jhb, p.stock_cpt, p.image_url, p.supplier_name, s.slug as supplier_slug,
+    SELECT
+      p.id::text, p.supplier_sku, p.name, p.brand, p.price_ex_vat,
+      p.qty_on_hand, COALESCE(p.stock_jhb, 0) as stock_jhb, COALESCE(p.stock_cpt, 0) as stock_cpt, p.image_url, p.supplier_name, s.slug as supplier_slug,
       p.last_updated, p.category, COALESCE(p.description, '') as description
     ${sqlBase}
   `;
