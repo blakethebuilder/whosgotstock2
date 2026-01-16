@@ -67,19 +67,12 @@ export async function GET(request: Request) {
 
     let sql = `
       SELECT 
-        p.id, p.supplier_sku, p.name, p.brand, p.price_ex_vat, 
-        p.qty_on_hand, p.stock_jhb, p.stock_cpt, p.image_url, p.supplier_name, p.supplier_slug,
-        p.last_updated, p.category, p.description
-      FROM (
-        SELECT 
-          p.id::text, p.supplier_sku, p.name, p.brand, p.price_ex_vat, 
-          p.qty_on_hand, p.stock_jhb, p.stock_cpt, p.image_url, s.name as supplier_name, s.slug as supplier_slug,
-          p.last_updated, p.category, COALESCE(p.description, '') as description
-        FROM products p
-        JOIN suppliers s ON p.supplier_name = s.name
-        WHERE s.enabled = true
-      ) p
-      WHERE 1=1
+        p.id::text, p.supplier_sku, p.name, p.brand, p.price_ex_vat, 
+        p.qty_on_hand, p.stock_jhb, p.stock_cpt, p.image_url, p.supplier_name, s.slug as supplier_slug,
+        p.last_updated, p.category, COALESCE(p.description, '') as description
+      FROM products p
+      JOIN suppliers s ON p.supplier_name = s.name
+      WHERE s.enabled = true
     `;
 
   // DEEP SEARCH LOGIC: Match components of query with AND logic
