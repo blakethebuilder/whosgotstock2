@@ -306,7 +306,8 @@ export default function Home() {
             </div>
 
             <div className="md:col-span-4 flex flex-col gap-6">
-                <div className="flex-1 bg-[#D8E698] rounded-[2.5rem] p-8 flex flex-col justify-between group cursor-pointer hover:scale-[0.98] transition-all border border-transparent hover:border-[#4A5D16]/20">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-[#D8E698] rounded-[2.5rem] p-8 flex flex-col justify-between group cursor-pointer hover:scale-[0.98] transition-all border border-transparent hover:border-[#4A5D16]/20">
                     <div className="flex justify-between items-start">
                         <h3 className="text-2xl font-black text-gray-900 leading-none">Integrated <br/>Suppliers</h3>
                         <div className="w-10 h-10 bg-white/50 rounded-full flex items-center justify-center rotate-[-45deg] group-hover:rotate-0 transition-transform">
@@ -332,7 +333,7 @@ export default function Home() {
                     </div>
                 </div>
 
-                <div className="flex-1 bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 border border-white/40 dark:border-gray-800/40 shadow-xl shadow-gray-200/40 flex flex-col justify-between overflow-hidden relative">
+                <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 border border-white/40 dark:border-gray-800/40 shadow-xl shadow-gray-200/40 flex flex-col justify-between overflow-hidden relative">
                     <div>
                         <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">Usage Monitor</h3>
                         <p className="text-xs font-medium text-gray-400">Search activity for current cycle</p>
@@ -490,9 +491,10 @@ export default function Home() {
                     ) : (
                         <div>
                              <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 block">Supplier Network</label>
-                              <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700">
-                                 <p className="text-[10px] font-bold text-gray-400 uppercase italic">Supplier information is restricted to Premium Tiers.</p>
-                             </div>
+                               <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700">
+                                  <p className="text-[10px] font-bold text-gray-400 uppercase italic mb-2">Supplier information is restricted to Premium Tiers.</p>
+                                  <p className="text-[10px] font-bold text-orange-500 uppercase">6 Suppliers Integrated</p>
+                              </div>
                         </div>
                     )}
                     <div className="flex flex-col justify-end gap-3">
@@ -588,9 +590,10 @@ export default function Home() {
                               <div className="flex flex-col items-end gap-2">
                                    <div className={`text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-tighter ${product.qty_on_hand > 0 ? 'bg-[#D8E698] text-[#4A5D16]' : 'bg-red-50 text-red-600'}`}>{product.qty_on_hand > 0 ? `${product.qty_on_hand} Stock` : 'Out of Stock'}</div>
                                    <button onClick={(e) => { e.stopPropagation(); addToCartAction(product); }} className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl active:scale-95 transition-all shadow-lg shadow-gray-200 dark:shadow-none">+ Quote</button>
-                              </div>
-                          </div>
-                      </div>
+                    </div>
+                </div>
+                </div>
+            </div>
                   </div>
                 ))}
               </div>
