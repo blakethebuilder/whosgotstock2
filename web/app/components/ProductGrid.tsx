@@ -9,7 +9,7 @@ interface ProductGridProps {
   onToggleCompare: (product: Product) => void;
   onAddToCart: (product: Product) => void;
   compareList: Product[];
-  displayPrice: (product: Product) => string;
+  displayPrice: (product: Product) => { exVat: string; incVat: string; isPOR: boolean };
 }
 
 export default function ProductGrid({
@@ -60,13 +60,27 @@ export default function ProductGrid({
               </span>
             </div>
             <div className="flex items-end justify-between gap-4 mt-6">
-              <div className="space-y-0.5">
-                <div className="text-2xl font-black text-gray-900 dark:text-white leading-none">
-                  {displayPrice(product)}
-                </div>
-                <div className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">
-                  Excluding VAT
-                </div>
+              <div className="space-y-1">
+                {displayPrice(product).isPOR ? (
+                  <div className="text-xl font-black text-gray-900 dark:text-white leading-none">
+                    Price on Request
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-2xl font-black text-gray-900 dark:text-white leading-none">
+                      R {displayPrice(product).exVat}
+                    </div>
+                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
+                      Excl. VAT
+                    </div>
+                    <div className="text-sm font-bold text-orange-500 leading-none mt-1">
+                      R {displayPrice(product).incVat}
+                    </div>
+                    <div className="text-[9px] font-bold text-gray-400/60 uppercase tracking-tighter">
+                      Incl. VAT
+                    </div>
+                  </>
+                )}
               </div>
               <div className="flex flex-col items-end gap-2">
                 <div className={`text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-tighter ${product.qty_on_hand > 0 ? 'bg-[#D8E698] text-[#4A5D16]' : 'bg-red-50 text-red-600'}`}>

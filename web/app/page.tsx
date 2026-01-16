@@ -234,8 +234,13 @@ export default function Home() {
   const formatPriceDisplay = (amount: string) => parseFloat(amount).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   const displayPrice = (product: Product) => {
-    if (product.price_on_request) return "Price on Request";
-    return `R ${formatPriceDisplay(calculatePriceWithDiscount(product.price_ex_vat).exVat)}`;
+    if (product.price_on_request) return { exVat: '0.00', incVat: '0.00', isPOR: true };
+    const pricing = calculatePriceWithDiscount(product.price_ex_vat);
+    return {
+      exVat: formatPriceDisplay(pricing.exVat),
+      incVat: formatPriceDisplay(pricing.incVat),
+      isPOR: false
+    };
   };
 
   const hasActiveFilters = selectedSuppliers.length > 0 || selectedCategories.length > 0 || minPrice || maxPrice || inStockOnly || selectedBrand || searchInDescription;

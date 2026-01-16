@@ -9,7 +9,7 @@ interface ProductTableProps {
   onToggleCompare: (product: Product) => void;
   onAddToCart: (product: Product) => void;
   compareList: Product[];
-  displayPrice: (product: Product) => string;
+  displayPrice: (product: Product) => { exVat: string; incVat: string; isPOR: boolean };
 }
 
 export default function ProductTable({
@@ -81,9 +81,20 @@ export default function ProductTable({
                   </div>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <span className="font-black text-gray-900 dark:text-white text-base">
-                    {displayPrice(product)}
-                  </span>
+                  <div className="flex flex-col items-end">
+                    {displayPrice(product).isPOR ? (
+                      <span className="font-black text-gray-900 dark:text-white text-sm">POR</span>
+                    ) : (
+                      <>
+                        <span className="font-black text-gray-900 dark:text-white text-sm">
+                          R {displayPrice(product).exVat}
+                        </span>
+                        <span className="text-[10px] font-bold text-orange-500">
+                          R {displayPrice(product).incVat} <span className="text-[8px] text-gray-400 font-medium">Inc.</span>
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-2">

@@ -56,7 +56,7 @@ export default function ProductDetailModal({
 
             {/* Bento-style Modal Content */}
             <div className="relative bg-white dark:bg-gray-900 w-full max-w-5xl max-h-[90vh] rounded-[3rem] shadow-2xl overflow-hidden flex flex-col md:flex-row animate-in zoom-in-95 duration-300 border border-white/20">
-                
+
                 {/* Close Button - Floating Circle */}
                 <button
                     onClick={onClose}
@@ -68,7 +68,7 @@ export default function ProductDetailModal({
                 {/* Left: Image Canvas (Bento Tile Style) */}
                 <div className="w-full md:w-1/2 bg-[#F8F9FA] dark:bg-gray-800 flex items-center justify-center p-12 relative overflow-hidden">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(249,115,22,0.05)_0%,transparent_100%)] pointer-events-none" />
-                    
+
                     {product.image_url ? (
                         <img
                             src={product.image_url}
@@ -81,7 +81,7 @@ export default function ProductDetailModal({
                             <span className="font-black uppercase tracking-widest text-xs opacity-50">No Visual Assets</span>
                         </div>
                     )}
-                    
+
                     <div className="absolute bottom-8 left-8">
                         <div className="px-4 py-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur rounded-2xl border border-white/20 shadow-xl">
                             <span className="text-xs font-black text-orange-500 uppercase tracking-widest">{product.brand}</span>
@@ -93,21 +93,30 @@ export default function ProductDetailModal({
                 <div className="w-full md:w-1/2 p-10 overflow-y-auto flex flex-col bg-white dark:bg-gray-900">
                     <div className="mb-8">
                         <div className="flex items-center gap-2 mb-4">
-                              <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                            <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-lg text-[10px] font-black uppercase tracking-widest">
                                 {(userRole === 'public' || userRole === 'team') ? 'Smart Integrate' : product.supplier_name}
                             </span>
                         </div>
                         <h3 className="text-4xl font-black text-gray-900 dark:text-white leading-[0.95] tracking-tighter mb-6">{product.name}</h3>
 
                         <div className="grid grid-cols-2 gap-4 p-6 bg-gray-50 dark:bg-gray-800/50 rounded-[2rem] border border-gray-100 dark:border-gray-800">
-                            <div>
-                                <p className="text-3xl font-black text-gray-900 dark:text-white leading-none mb-1">R {formatPrice(prices.exVat)}</p>
-                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Excluding VAT</p>
-                            </div>
-                            <div className="flex flex-col justify-center border-l border-gray-200 dark:border-gray-700 pl-4">
-                                <p className="text-lg font-bold text-gray-500 dark:text-gray-400 leading-none mb-1">R {formatPrice(prices.incVat)}</p>
-                                <p className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">Including VAT</p>
-                            </div>
+                            {product.price_on_request ? (
+                                <div className="col-span-2">
+                                    <p className="text-3xl font-black text-orange-500 tracking-tighter uppercase italic">Price on Request</p>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">Contact for official quotation</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div>
+                                        <p className="text-3xl font-black text-gray-900 dark:text-white leading-none mb-1">R {formatPrice(prices.exVat)}</p>
+                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Excluding VAT</p>
+                                    </div>
+                                    <div className="flex flex-col justify-center border-l border-gray-200 dark:border-gray-700 pl-4">
+                                        <p className="text-lg font-bold text-gray-500 dark:text-gray-400 leading-none mb-1">R {formatPrice(prices.incVat)}</p>
+                                        <p className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">Including VAT</p>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
 

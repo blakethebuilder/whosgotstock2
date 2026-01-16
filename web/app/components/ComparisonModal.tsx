@@ -8,7 +8,7 @@ interface ComparisonModalProps {
     onRemove: (id: number) => void;
     onAddToCart: (product: Product) => void;
     formatPrice: (amount: string) => string;
-    displayPrice: (product: Product) => string;
+    displayPrice: (product: Product) => { exVat: string; incVat: string; isPOR: boolean };
     calculatePrice: (base: string) => { exVat: string; incVat: string };
     userRole: UserRole;
 }
@@ -47,7 +47,7 @@ export default function ComparisonModal({
 
             {/* Modal Content - Reduced Max Height */}
             <div className="relative bg-white dark:bg-gray-900 w-full max-w-7xl max-h-[85vh] rounded-[3rem] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 border border-white/20">
-                
+
                 {/* Header Tile */}
                 <div className="p-8 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/30 dark:bg-gray-800/30">
                     <div className="flex items-center gap-4">
@@ -142,9 +142,12 @@ export default function ComparisonModal({
                                                     content = <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{product[attr.key as keyof Product] || '—'}</p>;
                                                     break;
                                                 case 'pricing_ex':
+                                                    const priceData = displayPrice(product);
                                                     content = (
                                                         <div className="text-left">
-                                                            <p className="text-lg font-black text-gray-900 dark:text-white">{displayPrice(product)}</p>
+                                                            <p className="text-lg font-black text-gray-900 dark:text-white">
+                                                                {priceData.isPOR ? 'POR' : `R ${priceData.exVat}`}
+                                                            </p>
                                                             <p className="text-xs text-gray-400">Ex VAT</p>
                                                         </div>
                                                     );
@@ -181,8 +184,8 @@ export default function ComparisonModal({
                                             }
 
                                             return (
-                                                <div 
-                                                    key={`${product.id}-${attr.key}`} 
+                                                <div
+                                                    key={`${product.id}-${attr.key}`}
                                                     className={`p-6 bg-white dark:bg-gray-900 rounded-[2rem] border border-gray-100 dark:border-gray-800 flex items-center min-h-[100px] shadow-sm`}
                                                 >
                                                     {content}

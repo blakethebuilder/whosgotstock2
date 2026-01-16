@@ -36,18 +36,18 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
                         Live Stock Aggregator
                     </div>
                     <h1 className="text-6xl md:text-7xl font-black text-gray-900 dark:text-white leading-[0.95] tracking-tighter">
-                        Find Stock, <br />
-                        <span className="text-orange-500 italic">Instantly.</span>
+                        Search All Major <br />
+                        <span className="text-orange-500 italic">Suppliers in 1 Box.</span>
                     </h1>
-                    <p className="text-lg font-medium text-gray-500 leading-relaxed">
-                        Built for IT Professionals. Compare pricing across all major SA suppliers in one powerful dashboard.
+                    <p className="text-lg font-medium text-gray-500 leading-relaxed max-w-xl mx-auto">
+                        Built for SA Tech Suppliers, by a tech supplier. Sick of managing 20 tabs and waiting on emails? Find stock instantly across the entire network.
                     </p>
                     <div className="pt-4 flex items-center gap-4 justify-center">
                         <button
                             onClick={onViewAllProducts}
                             className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-8 py-4 rounded-2xl font-black text-sm hover:scale-105 transition-transform flex items-center gap-3 active:scale-95 shadow-xl shadow-gray-200 dark:shadow-none"
                         >
-                            View All Products
+                            Start Searching
                             <svg className="w-5 h-5 rotate-[-45deg]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                             </svg>
@@ -91,7 +91,7 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
                                             performSearch("");
                                         }
                                     }}
-                                    className={`px-3 py-1.5 bg-white/40 hover:bg-white rounded-xl text-xs font-black text-gray-800 border border-white/20 uppercase tracking-tighter transition-all ${(userRole === 'public' || userRole === 'team') ? 'blur-[4px] cursor-default' : ''}`}
+                                    className="px-3 py-1.5 bg-white/40 hover:bg-white rounded-xl text-xs font-black text-gray-800 border border-white/20 uppercase tracking-tighter transition-all"
                                 >
                                     {s.name}
                                 </button>
@@ -101,12 +101,12 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
 
                     <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 border border-white/40 dark:border-gray-800/40 shadow-xl shadow-gray-200/40 flex flex-col justify-between overflow-hidden relative">
                         <div>
-                            <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">Usage Monitor</h3>
-                            <p className="text-xs font-medium text-gray-400">Search activity for current cycle</p>
+                            <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">Network Status</h3>
+                            <p className="text-xs font-medium text-gray-400">Live stock checks across providers</p>
                         </div>
                         <div className="mt-6">
                             <div className="text-4xl font-black text-orange-500 mb-2">
-                                {usageStats.searchesThisMonth} <span className="text-sm text-gray-300 font-bold uppercase">Searches</span>
+                                {usageStats.searchesThisMonth} <span className="text-sm text-gray-300 font-bold uppercase">Aggregated Searches</span>
                             </div>
                             <div className="w-full h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                                 <div
@@ -140,8 +140,8 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
                         </svg>
                     </div>
                     <div>
-                        <h3 className="text-2xl font-black text-white leading-tight">Advanced Categorical Drilldown</h3>
-                        <p className="text-red-100 text-sm font-medium mt-1 uppercase tracking-widest">Open the structural hierarchy explorer</p>
+                        <h3 className="text-2xl font-black text-white leading-tight">"Where is the stock?"</h3>
+                        <p className="text-red-100 text-sm font-medium mt-1 uppercase tracking-widest">Stop the guessing game. Access the hierarchical category tree.</p>
                     </div>
                 </div>
                 <div className="hidden sm:flex items-center gap-4 relative z-10">

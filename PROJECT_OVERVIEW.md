@@ -44,16 +44,20 @@ WhosGotStock is a comprehensive IT sourcing platform built specifically for IT c
 ```
 web/
 ├── app/
-│   ├── page.tsx              # Main search interface
-│   ├── admin/page.tsx        # Admin portal
+│   ├── page.tsx              # Main search interface (Refactored)
 │   ├── components/           # Reusable UI components
+│   │   ├── BentoDashboard.tsx    # Hero & Landing UI
+│   │   ├── FilterPanel.tsx       # Search filter logic
+│   │   ├── AccessPortalModal.tsx # Role verification
+│   │   ├── ProductGrid.tsx       # Search result cards
+│   │   ├── ProductTable.tsx      # Table view
+│   │   └── ResultsSkeleton.tsx   # Loading states
 │   ├── api/                  # API routes
 │   └── types.ts              # TypeScript definitions
 ├── lib/
 │   ├── db.ts                 # Database connection
 │   ├── pricing.ts            # Centralized pricing logic
-│   ├── api-response.ts       # Standardized API responses
-│   └── search-utils.ts       # Search enhancement utilities
+│   └── debounce.ts           # Search optimization
 └── globals.css               # Tailwind component classes
 ```
 
