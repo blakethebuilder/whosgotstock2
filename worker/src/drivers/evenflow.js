@@ -57,15 +57,17 @@ async function evenflowDriver(supplier, feedData, helpers) {
         let hasMorePages = true;
 
         while (hasMorePages) {
-            // Send pagination as query parameters instead of body for GET request
-            const paginatedUrl = `${baseUrl}?PageNumber=${pageNumber}&PageSize=${pageSize}`;
-
-            const response = await fetch(paginatedUrl, {
-                method: 'GET',
+            const response = await fetch(baseUrl, {
+                method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                }
+                },
+                body: JSON.stringify({
+                    PageNumber: pageNumber,
+                    PageSize: pageSize
+                })
             });
 
             if (!response.ok) {
