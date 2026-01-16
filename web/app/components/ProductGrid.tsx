@@ -1,18 +1,6 @@
 'use client';
 
-interface Product {
-  id: number;
-  name: string;
-  brand: string;
-  supplier_name: string;
-  qty_on_hand: number;
-  stock_jhb?: number;
-  stock_cpt?: number;
-  price_ex_vat: number;
-  price_on_request: boolean;
-  image_url: string;
-  category: string;
-}
+import { Product } from '../types';
 
 interface ProductGridProps {
   products: Product[];

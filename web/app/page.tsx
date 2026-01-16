@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import CategoryTiles from './components/CategoryTiles';
+import { useState, useEffect, useCallback } from 'react';
 import CategoryBrowser from './components/CategoryBrowser';
 import CartDrawer from './components/CartDrawer';
 import ProductDetailModal from './components/ProductDetailModal';
@@ -9,6 +8,11 @@ import ComparisonModal from './components/ComparisonModal';
 import ProductGrid from './components/ProductGrid';
 import ProductTable from './components/ProductTable';
 import Navbar from './components/Navbar';
+import BentoDashboard from './components/BentoDashboard';
+import FilterPanel from './components/FilterPanel';
+import ResultsSkeleton from './components/ResultsSkeleton';
+import EmptySearchResults from './components/EmptySearchResults';
+import AccessPortalModal from './components/AccessPortalModal';
 import { Product, Supplier, CartItem, UserRole, UsageStats } from './types';
 import { debounce } from '@/lib/debounce';
 import { calculatePrice, formatPrice } from '@/lib/pricing';
@@ -20,20 +24,6 @@ export default function Home() {
   const [passphraseError, setPassphraseError] = useState('');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
-  // Mobile input focus fix
-  useEffect(() => {
-    if (showRoleModal) {
-      const timer = setTimeout(() => {
-        const input = document.querySelector('input[type="password"]') as HTMLInputElement;
-        if (input) {
-          input.focus();
-          input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [showRoleModal]);
-  
   const [usageStats, setUsageStats] = useState<UsageStats>({
     searchesThisMonth: 0,
     searchLimit: 25,
@@ -147,13 +137,13 @@ export default function Home() {
       if (inStockOnly) params.append('in_stock', 'true');
       if (searchInDescription) params.append('search_description', 'true');
       if (sortBy) params.append('sort', sortBy);
-      
+
       const currentPage = isLoadMore ? page + 1 : 1;
       params.append('page', currentPage.toString());
 
       const res = await fetch(`/api/search?${params.toString()}`);
       const data = await res.json();
-      
+
       if (isLoadMore) {
         setResults(prev => [...prev, ...(data.results || [])]);
         setPage(currentPage);
@@ -168,7 +158,7 @@ export default function Home() {
         setUsageStats(prev => ({ ...prev, searchesThisMonth: newSearchCount, isLimitReached: newSearchCount >= prev.searchLimit }));
         fetch('/api/user/track-usage', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'search' }) }).catch(console.error);
       }
-    } catch (err) { console.error(err); } finally { 
+    } catch (err) { console.error(err); } finally {
       setLoading(false);
       setLoadingMore(false);
     }
@@ -241,16 +231,10 @@ export default function Home() {
     });
   };
 
-  const addToCartAction = (product: Product) => {
-    addToCart(product);
-  };
-
   const formatPriceDisplay = (amount: string) => parseFloat(amount).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   const displayPrice = (product: Product) => {
-    if (product.price_on_request) {
-      return "Price on Request";
-    }
+    if (product.price_on_request) return "Price on Request";
     return `R ${formatPriceDisplay(calculatePriceWithDiscount(product.price_ex_vat).exVat)}`;
   };
 
@@ -273,130 +257,17 @@ export default function Home() {
 
       <div className="max-w-[1400px] mx-auto px-6 pt-32">
         {!hasSearched ? (
-          /* MODERN BENTO DASHBOARD */
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 animate-in fade-in slide-in-from-bottom-8 duration-1000 ease-out">
-            
-            {/* HERO FEATURE TILE (LARGE) */}
-            <div className="md:col-span-12 bg-white dark:bg-gray-900 rounded-[3rem] p-12 relative overflow-hidden group shadow-2xl shadow-gray-200/50 dark:shadow-none border border-white/40 dark:border-gray-800/40 min-h-[500px] flex flex-col justify-center">
-                <div className="relative z-10 space-y-6 max-w-2xl mx-auto text-center">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-full text-[10px] font-black uppercase tracking-widest text-gray-500">
-                        <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
-                        Live Stock Aggregator
-                    </div>
-                    <h1 className="text-6xl md:text-7xl font-black text-gray-900 dark:text-white leading-[0.95] tracking-tighter">
-                        Find Stock, <br/>
-                        <span className="text-orange-500 italic">Instantly.</span>
-                    </h1>
-                    <p className="text-lg font-medium text-gray-500 leading-relaxed">
-                        Built for IT Professionals. Compare pricing across all major SA suppliers in one powerful dashboard.
-                    </p>
-                    <div className="pt-4 flex items-center gap-4">
-                        <button 
-                            onClick={() => performSearch("")}
-                            className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-8 py-4 rounded-2xl font-black text-sm hover:scale-105 transition-transform flex items-center gap-3 active:scale-95 shadow-xl shadow-gray-200 dark:shadow-none"
-                        >
-                            View All Products
-                            <svg className="w-5 h-5 rotate-[-45deg]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                        </button>
-                        
-                        {userRole === 'admin' && (
-                          <a 
-                              href="/admin"
-                              className="bg-emerald-500 text-white px-8 py-4 rounded-2xl font-black text-sm hover:scale-105 transition-transform flex items-center gap-3 active:scale-95 shadow-xl shadow-emerald-200/50"
-                          >
-                              Admin Portal
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                          </a>
-                        )}
-                    </div>
-                </div>
-
-
-            </div>
-
-            <div className="md:col-span-4 flex flex-col gap-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-[#D8E698] rounded-[2.5rem] p-8 flex flex-col justify-between group cursor-pointer hover:scale-[0.98] transition-all border border-transparent hover:border-[#4A5D16]/20">
-                    <div className="flex justify-between items-start">
-                        <h3 className="text-2xl font-black text-gray-900 leading-none">Integrated <br/>Suppliers</h3>
-                        <div className="w-10 h-10 bg-white/50 rounded-full flex items-center justify-center rotate-[-45deg] group-hover:rotate-0 transition-transform">
-                             <svg className="w-6 h-6 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                        </div>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mt-8">
-                        {suppliers.map(s => (
-                            <button 
-                                key={s.slug} 
-                                onClick={(e) => { 
-                                  e.stopPropagation(); 
-                                  if (userRole === 'management' || userRole === 'admin') {
-                                    setSelectedSuppliers([s.slug]); 
-                                    performSearch(""); 
-                                  }
-                                }}
-                                className={`px-3 py-1.5 bg-white/40 hover:bg-white rounded-xl text-xs font-black text-gray-800 border border-white/20 uppercase tracking-tighter transition-all ${(userRole === 'public' || userRole === 'team') ? 'blur-[4px] cursor-default' : ''}`}
-                            >
-                                {s.name}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 border border-white/40 dark:border-gray-800/40 shadow-xl shadow-gray-200/40 flex flex-col justify-between overflow-hidden relative">
-                    <div>
-                        <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">Usage Monitor</h3>
-                        <p className="text-xs font-medium text-gray-400">Search activity for current cycle</p>
-                    </div>
-                    <div className="mt-6">
-                        <div className="text-4xl font-black text-orange-500 mb-2">
-                            {usageStats.searchesThisMonth} <span className="text-sm text-gray-300 font-bold uppercase">Searches</span>
-                        </div>
-                        <div className="w-full h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                            <div 
-                                className="h-full bg-orange-500 transition-all duration-1000" 
-                                style={{ width: `${Math.min(100, (usageStats.searchesThisMonth / usageStats.searchLimit) * 100)}%` }} 
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="md:col-span-12 bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 border border-white/40 dark:border-gray-800/40 shadow-xl shadow-gray-200/40 min-h-[220px]">
-                <div className="flex items-center justify-between mb-8">
-                    <h3 className="text-xl font-black text-gray-900 dark:text-white">Popular Quick-Tags</h3>
-                    <button onClick={() => setShowCategoryBrowser(true)} className="text-[10px] font-black uppercase tracking-widest text-orange-500 hover:text-orange-600">Explore More</button>
-                </div>
-                <CategoryTiles 
-                    onCategoryClick={(searchTerm) => {
-                        setQuery(searchTerm);
-                        performSearch(searchTerm);
-                    }}
-                />
-            </div>
-
-            <div 
-                onClick={() => setShowCategoryBrowser(true)}
-                className="md:col-span-12 bg-[#FF6B6B] rounded-[2.5rem] p-8 min-h-[140px] flex items-center justify-between group cursor-pointer relative overflow-hidden hover:brightness-105 transition-all shadow-2xl shadow-red-200/50"
-            >
-                <div className="flex items-center gap-6 relative z-10">
-                    <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                        <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
-                    </div>
-                    <div>
-                        <h3 className="text-2xl font-black text-white leading-tight">Advanced Categorical Drilldown</h3>
-                        <p className="text-red-100 text-sm font-medium mt-1 uppercase tracking-widest">Open the structural hierarchy explorer</p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-4 relative z-10">
-                    <div className="px-6 py-3 bg-black/10 backdrop-blur rounded-2xl text-white font-black text-xs uppercase tracking-widest border border-white/20">
-                        {selectedCategories.length} Categories Selected
-                    </div>
-                </div>
-            </div>
-
-          </div>
+          <BentoDashboard
+            suppliers={suppliers}
+            userRole={userRole}
+            usageStats={usageStats}
+            performSearch={performSearch}
+            onCategoryClick={(searchTerm) => { setQuery(searchTerm); performSearch(searchTerm); }}
+            onViewAllProducts={() => performSearch("")}
+            onShowCategoryBrowser={() => setShowCategoryBrowser(true)}
+            setSelectedSuppliers={setSelectedSuppliers}
+          />
         ) : (
-          /* SEARCH RESULTS VIEW */
           <div className="animate-in fade-in duration-500">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-800">
               <div>
@@ -406,223 +277,69 @@ export default function Home() {
                 <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-1">Found {totalResults} items in real-time</p>
               </div>
               <div className="flex items-center gap-3">
-                 <div className="flex bg-white dark:bg-gray-900 rounded-xl p-1 border border-gray-200 dark:border-gray-800 mr-2">
-                    <button 
-                      onClick={() => setViewMode('grid')}
-                      className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-gray-100 dark:bg-gray-800 text-orange-500' : 'text-gray-400 hover:text-gray-600'}`}
-                      title="Grid View"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
-                    </button>
-                    <button 
-                      onClick={() => setViewMode('table')}
-                      className={`p-2 rounded-lg transition-all ${viewMode === 'table' ? 'bg-gray-100 dark:bg-gray-800 text-orange-500' : 'text-gray-400 hover:text-gray-600'}`}
-                      title="Table View"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
-                    </button>
-                 </div>
-                 <button onClick={() => setShowFilters(!showFilters)} className={`px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center gap-2 ${showFilters ? 'bg-gray-900 text-white shadow-xl shadow-gray-200' : 'bg-white dark:bg-gray-900 text-gray-600 border border-gray-200 dark:border-gray-800 hover:border-orange-500/50'}`}>
-                    Refine
-                    {hasActiveFilters && <span className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.5)]"></span>}
-                 </button>
-                 <button onClick={clearSearch} className="px-4 py-3 text-xs font-black text-gray-400 uppercase hover:text-red-500 transition-colors">Reset</button>
-              </div>
-            </div>
-
-            {/* EXPANDABLE MODERN FILTER PANEL */}
-            {showFilters && (
-              <div className="mb-10 p-8 bg-white dark:bg-gray-900 rounded-[2.5rem] border border-white dark:border-gray-800 shadow-2xl shadow-gray-200/40 dark:shadow-none animate-in slide-in-from-top-4 duration-500">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                  {/* Price Range */}
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Price Boundary</label>
-                    <div className="flex items-center gap-2">
-                      <input type="number" placeholder="Min" value={minPrice} onChange={e => setMinPrice(e.target.value)} className="w-full p-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm border-none focus:ring-2 focus:ring-orange-500/20" />
-                      <div className="w-4 h-[2px] bg-gray-200 dark:bg-gray-700 shrink-0" />
-                      <input type="number" placeholder="Max" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} className="w-full p-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm border-none focus:ring-2 focus:ring-orange-500/20" />
-                    </div>
-                  </div>
-
-                  {/* Brand Filter */}
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Brand Filter</label>
-                    <input type="text" placeholder="e.g. Cisco, HP, Dell" value={selectedBrand} onChange={e => setSelectedBrand(e.target.value)} className="w-full p-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm border-none focus:ring-2 focus:ring-orange-500/20 font-bold" />
-                  </div>
-
-                  {/* Category Selection */}
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Categories</label>
-                    <button onClick={() => setShowCategoryBrowser(true)} className="w-full p-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all flex justify-between items-center">
-                      {selectedCategories.length > 0 ? `${selectedCategories.length} selected` : 'Browse Structure'}
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                    </button>
-                    {selectedCategories.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {selectedCategories.slice(0, 3).map(c => <span key={c} className="px-2 py-0.5 bg-orange-50 text-orange-600 rounded-md text-[10px] font-bold border border-orange-100">{c}</span>)}
-                        {selectedCategories.length > 3 && <span className="text-[9px] text-gray-400 font-bold">+{selectedCategories.length - 3} more</span>}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Sort Selection */}
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Priority Order</label>
-                    <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="w-full p-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-sm border-none focus:ring-2 focus:ring-orange-500/20 font-bold appearance-none cursor-pointer">
-                      <option value="relevance">Sort by Relevance</option>
-                      <option value="price_asc">Price: Low to High</option>
-                      <option value="price_desc">Price: High to Low</option>
-                      <option value="name_asc">Name: A - Z</option>
-                      <option value="newest">Newest First</option>
-                    </select>
-                  </div>
+                <div className="flex bg-white dark:bg-gray-900 rounded-xl p-1 border border-gray-200 dark:border-gray-800 mr-2">
+                  <button onClick={() => setViewMode('grid')} className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-gray-100 dark:bg-gray-800 text-orange-500' : 'text-gray-400 hover:text-gray-600'}`} title="Grid View">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                  </button>
+                  <button onClick={() => setViewMode('table')} className={`p-2 rounded-lg transition-all ${viewMode === 'table' ? 'bg-gray-100 dark:bg-gray-800 text-orange-500' : 'text-gray-400 hover:text-gray-600'}`} title="Table View">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
+                  </button>
                 </div>
-
-                <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8 pt-8 border-t border-gray-50 dark:border-gray-800">
-                    {(userRole === 'management' || userRole === 'admin') ? (
-                        <div>
-                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 block">Supplier Network</label>
-                            <div className="flex flex-wrap gap-2">
-                                {suppliers.map(s => {
-                                    const active = selectedSuppliers.includes(s.slug);
-                                    return (
-                                        <button 
-                                            key={s.slug} 
-                                            onClick={() => active ? setSelectedSuppliers(selectedSuppliers.filter(x => x !== s.slug)) : setSelectedSuppliers([...selectedSuppliers, s.slug])}
-                                            className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all ${active ? 'bg-orange-500 text-white shadow-lg shadow-orange-200' : 'bg-gray-50 dark:bg-gray-800 text-gray-500 hover:bg-gray-100'}`}
-                                        >
-                                            {s.name}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    ) : (
-                        <div>
-                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 block">Supplier Network</label>
-                               <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700">
-                                  <p className="text-[10px] font-bold text-gray-400 uppercase italic mb-2">Supplier information is restricted to Premium Tiers.</p>
-                                  <p className="text-[10px] font-bold text-orange-500 uppercase">6 Suppliers Integrated</p>
-                              </div>
-                        </div>
-                    )}
-                    <div className="flex flex-col justify-end gap-3">
-                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Search Intensity</label>
-                        <div className="flex gap-4">
-                            <label className="flex items-center gap-3 cursor-pointer group">
-                                <input type="checkbox" checked={inStockOnly} onChange={e => setInStockOnly(e.target.checked)} className="w-5 h-5 rounded-lg border-gray-200 text-orange-500 focus:ring-orange-500/20" />
-                                <span className="text-xs font-bold text-gray-600 group-hover:text-gray-900 transition-colors">In Stock Only</span>
-                            </label>
-                            <label className="flex items-center gap-3 cursor-pointer group">
-                                <input type="checkbox" checked={searchInDescription} onChange={e => setSearchInDescription(e.target.checked)} className="w-5 h-5 rounded-lg border-gray-200 text-orange-500 focus:ring-orange-500/20" />
-                                <span className="text-xs font-bold text-gray-600 group-hover:text-gray-900 transition-colors">Scan Descriptions</span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                   <button onClick={clearSearch} className="text-[10px] font-black text-red-500 uppercase tracking-widest hover:underline">Reset All Parameters</button>
-                   <button onClick={() => performSearch()} className="px-10 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-2xl shadow-gray-300 dark:shadow-none hover:scale-105 active:scale-95 transition-all">Apply Filter Matrix</button>
-                </div>
-              </div>
-            )}
-
-            {/* Search Results Container */}
-            <div>
-            {loading && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {[...Array(8)].map((_, i) => (
-                  <div key={i} className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-4 border border-white dark:border-gray-800 shadow-sm relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
-                    <div className="aspect-square bg-gray-50 dark:bg-gray-800/50 rounded-[2rem] mb-4" />
-                    <div className="h-4 bg-gray-50 dark:bg-gray-800/50 rounded-full w-3/4 mb-4" />
-                    <div className="h-3 bg-gray-50 dark:bg-gray-800/50 rounded-full w-1/2 mb-8" />
-                    <div className="flex justify-between items-end">
-                      <div className="space-y-2">
-                        <div className="h-6 bg-gray-50 dark:bg-gray-800/50 rounded-full w-24" />
-                        <div className="h-2 bg-gray-50 dark:bg-gray-800/50 rounded-full w-12" />
-                      </div>
-                      <div className="h-10 bg-gray-50 dark:bg-gray-800/50 rounded-xl w-16" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {!loading && results.length === 0 && (
-              <div className="text-center py-24 bg-white dark:bg-gray-900 rounded-[3rem] border border-dashed border-gray-300 dark:border-gray-700 animate-in fade-in zoom-in duration-500">
-                <div className="text-6xl mb-6">🔍</div>
-                <h4 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">No matches found</h4>
-                <p className="text-gray-400 mt-2 mb-10 max-w-sm mx-auto font-medium">We couldn't find exactly what you're looking for. Try a broader search or explore our top categories.</p>
-                
-                <div className="max-w-4xl mx-auto px-6">
-                    <div className="flex items-center justify-center gap-2 mb-6">
-                        <div className="h-[1px] bg-gray-100 dark:bg-gray-800 flex-1" />
-                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Try these instead</span>
-                        <div className="h-[1px] bg-gray-100 dark:bg-gray-800 flex-1" />
-                    </div>
-                    <CategoryTiles 
-                        onCategoryClick={(searchTerm) => {
-                            setQuery(searchTerm);
-                            performSearch(searchTerm);
-                        }}
-                    />
-                </div>
-              </div>
-            )}
-
-            {viewMode === 'grid' ? (
-              <ProductGrid
-                products={results}
-                userRole={userRole}
-                onSelectProduct={(product) => setSelectedProduct(product)}
-                onToggleCompare={toggleCompare}
-                onAddToCart={addToCartAction}
-                compareList={compareList}
-                displayPrice={displayPrice}
-              />
-            ) : (
-              <ProductTable
-                products={results}
-                userRole={userRole}
-                onSelectProduct={(product) => setSelectedProduct(product)}
-                onToggleCompare={toggleCompare}
-                onAddToCart={addToCartAction}
-                compareList={compareList}
-                displayPrice={displayPrice}
-              />
-            )}
-
-            {results.length < totalResults && (
-              <div className="mt-20 flex justify-center">
-                <button 
-                  onClick={() => performSearch(undefined, true)} 
-                  disabled={loadingMore}
-                  className="bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black text-xs uppercase tracking-widest px-12 py-4 rounded-2xl shadow-xl hover:scale-105 transition-transform active:scale-95 border border-gray-100 dark:border-gray-800 flex items-center gap-3 disabled:opacity-50"
-                >
-                  {loadingMore && <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />}
-                  {loadingMore ? 'Fetching More...' : `Load More Items (${totalResults - results.length} remaining)`}
+                <button onClick={() => setShowFilters(!showFilters)} className={`px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center gap-2 ${showFilters ? 'bg-gray-900 text-white shadow-xl shadow-gray-200' : 'bg-white dark:bg-gray-900 text-gray-600 border border-gray-200 dark:border-gray-800 hover:border-orange-500/50'}`}>
+                  Refine
+                  {hasActiveFilters && <span className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.5)]"></span>}
                 </button>
-            )}
+                <button onClick={clearSearch} className="px-4 py-3 text-xs font-black text-gray-400 uppercase hover:text-red-500 transition-colors">Reset</button>
+              </div>
             </div>
+
+            {showFilters && (
+              <FilterPanel
+                minPrice={minPrice} setMinPrice={setMinPrice} maxPrice={maxPrice} setMaxPrice={setMaxPrice}
+                selectedBrand={selectedBrand} setSelectedBrand={setSelectedBrand}
+                selectedCategories={selectedCategories} onShowCategoryBrowser={() => setShowCategoryBrowser(true)}
+                sortBy={sortBy} setSortBy={setSortBy}
+                userRole={userRole} suppliers={suppliers}
+                selectedSuppliers={selectedSuppliers} setSelectedSuppliers={setSelectedSuppliers}
+                inStockOnly={inStockOnly} setInStockOnly={setInStockOnly}
+                searchInDescription={searchInDescription} setSearchInDescription={setSearchInDescription}
+                onClearSearch={clearSearch} onPerformSearch={() => performSearch()}
+              />
+            )}
+
+            {loading ? <ResultsSkeleton /> : results.length === 0 ? <EmptySearchResults onCategoryClick={(searchTerm) => { setQuery(searchTerm); performSearch(searchTerm); }} /> : (
+              <>
+                {viewMode === 'grid' ? (
+                  <ProductGrid products={results} userRole={userRole} onSelectProduct={setSelectedProduct} onToggleCompare={toggleCompare} onAddToCart={addToCart} compareList={compareList} displayPrice={displayPrice} />
+                ) : (
+                  <ProductTable products={results} userRole={userRole} onSelectProduct={setSelectedProduct} onToggleCompare={toggleCompare} onAddToCart={addToCart} compareList={compareList} displayPrice={displayPrice} />
+                )}
+
+                {results.length < totalResults && (
+                  <div className="mt-20 flex justify-center">
+                    <button onClick={() => performSearch(undefined, true)} disabled={loadingMore} className="bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-black text-xs uppercase tracking-widest px-12 py-4 rounded-2xl shadow-xl hover:scale-105 transition-transform active:scale-95 border border-gray-100 dark:border-gray-800 flex items-center gap-3 disabled:opacity-50">
+                      {loadingMore && <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />}
+                      {loadingMore ? 'Fetching More...' : `Load More Items (${totalResults - results.length} remaining)`}
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         )}
+      </div>
 
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} items={cart} updateQuantity={updateCartQuantity} removeItem={removeCartItem} userRole={userRole} pricingSettings={pricingSettings} />
       <ProductDetailModal product={selectedProduct} isOpen={selectedProduct !== null} onClose={() => setSelectedProduct(null)} onAddToCart={addToCart} onToggleCompare={toggleCompare} isInCompare={!!selectedProduct && !!compareList.find(p => p.id === selectedProduct.id)} calculatePrice={(basePrice: string) => calculatePrice(basePrice, userRole, pricingSettings)} userRole={userRole} />
       <ComparisonModal products={compareList} isOpen={isCompareModalOpen} onClose={() => setIsCompareModalOpen(false)} onRemove={(id) => setCompareList(prev => prev.filter(p => p.id !== id))} onAddToCart={addToCart} formatPrice={formatPriceDisplay} displayPrice={displayPrice} calculatePrice={(base) => calculatePrice(base, userRole, pricingSettings)} userRole={userRole} />
 
-      {/* Floating Comparison Toggle */}
       {compareList.length > 0 && !isCompareModalOpen && (
-        <button 
-            onClick={() => setIsCompareModalOpen(true)}
-            className="fixed bottom-8 right-8 z-[400] flex items-center gap-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-6 py-4 rounded-[2rem] shadow-2xl hover:scale-105 transition-all active:scale-95 group border border-white/20"
-        >
-            <div className="relative">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" /></svg>
-                <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-white dark:border-gray-900">{compareList.length}</span>
-            </div>
-            <span className="font-black text-xs uppercase tracking-widest">Compare Selection</span>
+        <button onClick={() => setIsCompareModalOpen(true)} className="fixed bottom-8 right-8 z-[400] flex items-center gap-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-6 py-4 rounded-[2rem] shadow-2xl hover:scale-105 transition-all active:scale-95 group border border-white/20">
+          <div className="relative">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" /></svg>
+            <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-white dark:border-gray-900">{compareList.length}</span>
+          </div>
+          <span className="font-black text-xs uppercase tracking-widest">Compare Selection</span>
         </button>
       )}
 
@@ -630,24 +347,21 @@ export default function Home() {
         <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-8">
           <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-md" onClick={() => setShowCategoryBrowser(false)} />
           <div className="relative bg-white dark:bg-gray-900 rounded-[3rem] shadow-2xl max-w-6xl w-full h-full max-h-[85vh] overflow-hidden border border-white/20">
-             <button onClick={() => setShowCategoryBrowser(false)} className="absolute top-8 right-8 z-[510] p-3 bg-gray-100 dark:bg-gray-800 rounded-2xl hover:bg-red-500 hover:text-white transition-all group shadow-sm"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg></button>
-             <CategoryBrowser selectedCategories={selectedCategories} onCategoriesChange={setSelectedCategories} onCategoryClick={(category) => { if (!selectedCategories.includes(category)) { setSelectedCategories([...selectedCategories, category]); } performSearch(); }} />
+            <button onClick={() => setShowCategoryBrowser(false)} className="absolute top-8 right-8 z-[510] p-3 bg-gray-100 dark:bg-gray-800 rounded-2xl hover:bg-red-500 hover:text-white transition-all group shadow-sm"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg></button>
+            <CategoryBrowser selectedCategories={selectedCategories} onCategoriesChange={setSelectedCategories} onCategoryClick={(category) => { if (!selectedCategories.includes(category)) { setSelectedCategories([...selectedCategories, category]); } performSearch(); }} />
           </div>
         </div>
       )}
 
-      {showRoleModal && (
-        <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-md" onClick={() => setShowRoleModal(false)} />
-          <div className="relative bg-white dark:bg-gray-900 rounded-[3rem] p-10 max-w-lg w-full animate-in zoom-in-95 duration-300 shadow-2xl border border-white/20">
-            <h3 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter mb-2">Access Portal</h3>
-            <p className="text-gray-400 font-medium mb-8 text-sm uppercase tracking-widest">Verify your credentials</p>
-            <input type="password" placeholder="Passphrase" value={passphrase} onChange={(e) => setPassphrase(e.target.value)} className="w-full p-4 bg-gray-50 dark:bg-gray-800 border-none rounded-2xl mb-4 focus:ring-2 focus:ring-orange-500/20 text-lg outline-none text-gray-900 dark:text-white font-bold" />
-            {passphraseError && <p className="text-xs font-bold text-red-500 mb-4 ml-2 uppercase tracking-widest">{passphraseError}</p>}
-            <button onClick={verifyPassphrase} className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black py-4 rounded-2xl hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-2xl shadow-gray-400/20 active:scale-[0.98]">{isAuthenticating ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Enter Portal'}</button>
-          </div>
-        </div>
-      )}
+      <AccessPortalModal
+        isOpen={showRoleModal}
+        onClose={() => setShowRoleModal(false)}
+        passphrase={passphrase}
+        setPassphrase={setPassphrase}
+        passphraseError={passphraseError}
+        onVerify={verifyPassphrase}
+        isAuthenticating={isAuthenticating}
+      />
     </main>
   );
 }
