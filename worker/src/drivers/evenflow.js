@@ -31,14 +31,22 @@ async function evenflowDriver(supplier, feedData, helpers) {
         }
 
         const loginData = await loginResponse.json();
-        console.log('Evenflow: Login response:', JSON.stringify(loginData, null, 2));
+        console.log('Evenflow: Login response received');
 
-        const token = loginData.token || loginData.access_token || loginData.jwt || loginData.Token || loginData.AccessToken;
+        const token = loginData.token ||
+                      loginData.access_token ||
+                      loginData.jwt ||
+                      loginData.Token ||
+                      loginData.AccessToken ||
+                      (loginData.Data && loginData.Data.Token) ||
+                      (loginData.data && loginData.data.token);
 
         if (!token) {
-            console.error('Evenflow: Available fields in response:', Object.keys(loginData));
+            console.error('Evenflow: Login response structure:', JSON.stringify(loginData, null, 2));
             throw new Error('No token received from login response');
         }
+
+        console.log('Evenflow: Token extracted successfully');
 
         console.log('Evenflow: Login successful, fetching products...');
 
