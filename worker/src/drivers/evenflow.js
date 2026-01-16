@@ -3,6 +3,10 @@
  */
 async function evenflowDriver(supplier, feedData, helpers) {
     try {
+        console.log(`Evenflow driver started for supplier: ${supplier.name}`);
+        console.log(`Supplier URL: ${supplier.url}`);
+        console.log(`Supplier config:`, { id: supplier.id, name: supplier.name, type: supplier.type });
+
         // The feedData here is actually the supplier URL, not the response
         // We need to handle authentication and pagination ourselves
         const baseUrl = supplier.url; // https://www.evenflow.online/B2BPricingFeed/GetB2BPricing
@@ -12,6 +16,9 @@ async function evenflowDriver(supplier, feedData, helpers) {
         const email = process.env.EVENFLOW_EMAIL || 'blake@smartintegrate.co.za';
         const password = process.env.EVENFLOW_PASSWORD || 'Smart@2026!';
 
+        console.log('Evenflow: Environment check - Email:', email ? 'Set' : 'Not set');
+        console.log('Evenflow: Environment check - Password:', password ? 'Set' : 'Not set');
+        console.log('Evenflow: Login URL:', loginUrl);
         console.log('Evenflow: Attempting login...');
 
         const loginResponse = await fetch(loginUrl, {
@@ -32,6 +39,7 @@ async function evenflowDriver(supplier, feedData, helpers) {
 
         const loginData = await loginResponse.json();
         console.log('Evenflow: Login response received');
+        console.log('Evenflow: Login response status:', loginResponse.status);
 
         const token = loginData.token ||
                       loginData.access_token ||
@@ -41,8 +49,11 @@ async function evenflowDriver(supplier, feedData, helpers) {
                       (loginData.Data && loginData.Data.Token) ||
                       (loginData.data && loginData.data.token);
 
+        console.log('Evenflow: Token found:', token ? 'Yes' : 'No');
+        console.log('Evenflow: Login response keys:', Object.keys(loginData));
+
         if (!token) {
-            console.error('Evenflow: Login response structure:', JSON.stringify(loginData, null, 2));
+            console.error('Evenflow: Full login response:', JSON.stringify(loginData, null, 2));
             throw new Error('No token received from login response');
         }
 
@@ -57,6 +68,7 @@ async function evenflowDriver(supplier, feedData, helpers) {
         let hasMorePages = true;
 
         while (hasMorePages) {
+            console.log(`Evenflow: Fetching page ${pageNumber} from ${baseUrl}`);
             const response = await fetch(baseUrl, {
                 method: 'POST',
                 headers: {
@@ -69,6 +81,8 @@ async function evenflowDriver(supplier, feedData, helpers) {
                     PageSize: pageSize
                 })
             });
+
+            console.log(`Evenflow: Response status ${response.status} for page ${pageNumber}`);
 
             if (!response.ok) {
                 throw new Error(`API request failed: ${response.status} ${response.statusText}`);
