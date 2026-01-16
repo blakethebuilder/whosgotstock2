@@ -85,7 +85,7 @@ export async function POST() {
             INSERT INTO suppliers (name, slug, url, type, enabled) VALUES
             ('Scoop', 'scoop', 'https://scoop.co.za/scoop_pricelist.xml', 'xml', true),
             ('Esquire', 'esquire', 'https://api.esquire.co.za/api/DataFeed?u=blake@smartintegrate.co.za&p=Smart@1991&t=xml&m=10&o=ascending&r=RoundNone&rm=10&min=0', 'xml', true),
-            ('Even Flow', 'evenflow', 'https://www.evenflow.online/B2BPricingFeed/GetB2BPricing', 'json', true)
+            ('Even Flow', 'evenflow', '', 'manual', true)
             ON CONFLICT (slug) DO NOTHING;
         `);
 
