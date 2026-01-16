@@ -13,7 +13,7 @@ import FilterPanel from './components/FilterPanel';
 import ResultsSkeleton from './components/ResultsSkeleton';
 import EmptySearchResults from './components/EmptySearchResults';
 import AccessPortalModal from './components/AccessPortalModal';
-import { Product, Supplier, CartItem, UserRole, UsageStats } from './types';
+import { Product, Supplier, CartItem, UserRole, UsageStats, Project } from './types';
 import { debounce } from '@/lib/debounce';
 import { calculatePrice, formatPrice } from '@/lib/pricing';
 
@@ -67,8 +67,9 @@ export default function Home() {
   const [showFilters, setShowFilters] = useState(false);
   const [showCategoryBrowser, setShowCategoryBrowser] = useState(false);
 
-  // Cart State
+  // Cart & Project State
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   useEffect(() => {
@@ -107,6 +108,10 @@ export default function Home() {
     if (savedCart) {
       try { setCart(JSON.parse(savedCart)); } catch (e) { console.error("Failed to parse cart", e); }
     }
+    const savedProjects = localStorage.getItem('whosgotstock_projects');
+    if (savedProjects) {
+      try { setProjects(JSON.parse(savedProjects)); } catch (e) { console.error("Failed to parse projects", e); }
+    }
     const savedRole = localStorage.getItem('whosgotstock_user_role');
     if (savedRole && ['public', 'team', 'management', 'admin'].includes(savedRole)) {
       setUserRole(savedRole as UserRole);
@@ -114,7 +119,28 @@ export default function Home() {
   }, []);
 
   useEffect(() => { localStorage.setItem('whosgotstock_cart', JSON.stringify(cart)); }, [cart]);
+  useEffect(() => { localStorage.setItem('whosgotstock_projects', JSON.stringify(projects)); }, [projects]);
   useEffect(() => { localStorage.setItem('whosgotstock_user_role', userRole); }, [userRole]);
+
+  const addProject = (name: string) => {
+    const newProject: Project = {
+      id: Math.random().toString(36).substr(2, 9),
+      name,
+      createdAt: Date.now()
+    };
+    setProjects(prev => [...prev, newProject]);
+    return newProject.id;
+  };
+
+  const removeProject = (id: string) => {
+    setProjects(prev => prev.filter(p => p.id !== id));
+    // Also move items in this project back to "General" (null)
+    setCart(prev => prev.map(item => item.projectId === id ? { ...item, projectId: undefined } : item));
+  };
+
+  const updateItemProject = (itemId: number, projectId?: string) => {
+    setCart(prev => prev.map(item => item.id === itemId ? { ...item, projectId } : item));
+  };
 
   const addToCart = (product: Product) => {
     setCart(prev => {
@@ -289,15 +315,15 @@ export default function Home() {
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 mb-12 pb-12 border-b border-gray-200 dark:border-gray-800">
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
-                  <button onClick={clearSearch} className="hover:text-orange-500 transition-colors">Vision</button>
+                  <button onClick={clearSearch} className="hover:text-orange-500 transition-colors">Unified Feed</button>
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                  <span>Search Intelligence</span>
+                  <span>Real-time Availability</span>
                 </div>
                 <h3 className="text-5xl md:text-6xl font-black text-gray-900 dark:text-white tracking-tighter leading-tight">
-                  Discovery <br />
-                  <span className="text-orange-500 italic">{query ? `"${query}"` : 'Everything'}</span>
+                  Stock <br />
+                  <span className="text-orange-500 italic">Found.</span>
                 </h3>
-                <p className="text-sm font-bold text-gray-400 uppercase tracking-[0.2em]">Live feed from 20+ distributors • {totalResults.toLocaleString()} Items Synchronized</p>
+                <p className="text-sm font-bold text-gray-400 uppercase tracking-[0.2em]">Aggregated from {suppliers.length} distributors • {totalResults.toLocaleString()} Items Synchronized</p>
               </div>
               <div className="flex flex-wrap items-center gap-4">
                 <div className="flex bg-white dark:bg-gray-900 rounded-2xl p-1.5 border border-gray-200 dark:border-gray-800 shadow-sm">
@@ -361,7 +387,19 @@ export default function Home() {
         )}
       </div>
 
-      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} items={cart} updateQuantity={updateCartQuantity} removeItem={removeCartItem} userRole={userRole} pricingSettings={pricingSettings} />
+      <CartDrawer
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        items={cart}
+        projects={projects}
+        addProject={addProject}
+        removeProject={removeProject}
+        updateItemProject={updateItemProject}
+        updateQuantity={updateCartQuantity}
+        removeItem={removeCartItem}
+        userRole={userRole}
+        pricingSettings={pricingSettings}
+      />
       <ProductDetailModal product={selectedProduct} isOpen={selectedProduct !== null} onClose={() => setSelectedProduct(null)} onAddToCart={addToCart} onToggleCompare={toggleCompare} isInCompare={!!selectedProduct && !!compareList.find(p => p.id === selectedProduct.id)} calculatePrice={(basePrice: string) => calculatePrice(basePrice, userRole, pricingSettings)} userRole={userRole} />
       <ComparisonModal products={compareList} isOpen={isCompareModalOpen} onClose={() => setIsCompareModalOpen(false)} onRemove={(id) => setCompareList(prev => prev.filter(p => p.id !== id))} onAddToCart={addToCart} formatPrice={formatPriceDisplay} displayPrice={displayPrice} calculatePrice={(base) => calculatePrice(base, userRole, pricingSettings)} userRole={userRole} />
 

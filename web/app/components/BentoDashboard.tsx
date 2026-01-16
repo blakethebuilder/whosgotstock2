@@ -48,8 +48,8 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
                     <div className="space-y-2">
                         <h2 className="text-orange-500 font-black text-lg md:text-xl tracking-tighter italic">Instant Channel Visibility.</h2>
                         <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-gray-900 dark:text-white leading-[0.9] tracking-tighter">
-                            The Pulse of SA's<br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-orange-300">Tech Supply Chain.</span>
+                            Find Stock,<br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-orange-300">Fast.</span>
                         </h1>
                     </div>
 
