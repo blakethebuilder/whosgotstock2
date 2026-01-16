@@ -553,51 +553,53 @@ export default function AdminPage() {
                              {/* Supplier Statistics Table */}
                              <div>
                                  <h3 className="text-md font-medium text-gray-900 mb-3">Supplier Statistics</h3>
-                                 <div className="overflow-x-auto">
-                                     <table className="min-w-full divide-y divide-gray-200">
-                                         <thead className="bg-gray-50">
-                                             <tr>
-                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
-                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Items</th>
-                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">In Stock</th>
-                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Updated</th>
-                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price Range</th>
-                                             </tr>
-                                         </thead>
-                                         <tbody className="bg-white divide-y divide-gray-200">
-                                             {supplierStats.map((stat) => (
-                                                 <tr key={stat.supplier_slug}>
-                                                     <td className="px-4 py-3 text-sm font-medium text-gray-900">{stat.supplier_name}</td>
-                                                     <td className="px-4 py-3 text-sm text-gray-700">{stat.supplier_type}</td>
-                                                     <td className="px-4 py-3">
-                                                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                                             stat.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                                         }`}>
-                                                             {stat.enabled ? 'Active' : 'Inactive'}
-                                                         </span>
-                                                     </td>
-                                                     <td className="px-4 py-3 text-sm text-gray-900 font-medium">{stat.total_products.toLocaleString()}</td>
-                                                     <td className="px-4 py-3 text-sm text-green-600 font-medium">{stat.products_in_stock.toLocaleString()}</td>
-                                                     <td className="px-4 py-3 text-sm text-gray-700">
-                                                         {stat.last_updated ? new Date(stat.last_updated).toLocaleString() : 'Never'}
-                                                     </td>
-                                                     <td className="px-4 py-3 text-sm text-gray-700">
-                                                         {stat.min_price !== '0.00' ? `R${stat.min_price} - R${stat.max_price}` : 'N/A'}
-                                                     </td>
-                                                 </tr>
-                                             ))}
-                                             {supplierStats.length === 0 && (
-                                                 <tr>
-                                                     <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
-                                                         No supplier statistics available
-                                                     </td>
-                                                 </tr>
-                                             )}
-                                         </tbody>
-                                     </table>
-                                 </div>
+                                  <div className="overflow-x-auto">
+                                      <table className="min-w-full divide-y divide-gray-200 text-xs">
+                                          <thead className="bg-gray-50">
+                                              <tr>
+                                                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
+                                                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                                                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                                                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">In Stock</th>
+                                                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Last Updated</th>
+                                                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Price Range</th>
+                                              </tr>
+                                          </thead>
+                                          <tbody className="bg-white divide-y divide-gray-200">
+                                              {supplierStats.map((stat) => (
+                                                  <tr key={stat.supplier_slug}>
+                                                      <td className="px-2 py-2 text-xs font-medium text-gray-900 truncate max-w-[120px]" title={stat.supplier_name}>
+                                                          {stat.supplier_name}
+                                                      </td>
+                                                      <td className="px-2 py-2 text-xs text-gray-600 uppercase">{stat.supplier_type}</td>
+                                                      <td className="px-2 py-2">
+                                                          <span className={`inline-flex px-1.5 py-0.5 text-xs font-medium rounded-full ${
+                                                              stat.enabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                                          }`}>
+                                                              {stat.enabled ? 'Active' : 'Inactive'}
+                                                          </span>
+                                                      </td>
+                                                      <td className="px-2 py-2 text-xs text-gray-900 font-medium">{stat.total_products.toLocaleString()}</td>
+                                                      <td className="px-2 py-2 text-xs text-green-600 font-medium">{stat.products_in_stock.toLocaleString()}</td>
+                                                      <td className="px-2 py-2 text-xs text-gray-600 truncate max-w-[100px]" title={stat.last_updated ? new Date(stat.last_updated).toLocaleString() : 'Never'}>
+                                                          {stat.last_updated ? new Date(stat.last_updated).toLocaleDateString() : 'Never'}
+                                                      </td>
+                                                      <td className="px-2 py-2 text-xs text-gray-600">
+                                                          {stat.min_price !== '0.00' ? `R${stat.min_price}-${stat.max_price}` : 'N/A'}
+                                                      </td>
+                                                  </tr>
+                                              ))}
+                                              {supplierStats.length === 0 && (
+                                                  <tr>
+                                                      <td colSpan={7} className="px-2 py-4 text-center text-xs text-gray-500">
+                                                          No supplier statistics available
+                                                      </td>
+                                                  </tr>
+                                              )}
+                                          </tbody>
+                                      </table>
+                                  </div>
                              </div>
                          </div>
 
