@@ -268,8 +268,8 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 animate-in fade-in slide-in-from-bottom-8 duration-1000 ease-out">
             
             {/* HERO FEATURE TILE (LARGE) */}
-            <div className="md:col-span-8 bg-white dark:bg-gray-900 rounded-[3rem] p-12 relative overflow-hidden group shadow-2xl shadow-gray-200/50 dark:shadow-none border border-white/40 dark:border-gray-800/40 min-h-[500px] flex flex-col justify-center">
-                <div className="relative z-10 space-y-6 max-w-lg">
+            <div className="md:col-span-12 bg-white dark:bg-gray-900 rounded-[3rem] p-12 relative overflow-hidden group shadow-2xl shadow-gray-200/50 dark:shadow-none border border-white/40 dark:border-gray-800/40 min-h-[500px] flex flex-col justify-center">
+                <div className="relative z-10 space-y-6 max-w-2xl mx-auto text-center">
                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-full text-[10px] font-black uppercase tracking-widest text-gray-500">
                         <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
                         Live Stock Aggregator
@@ -302,16 +302,7 @@ export default function Home() {
                     </div>
                 </div>
 
-                <div className="absolute right-8 top-1/2 -translate-y-1/2 w-2/5 hidden md:block select-none group-hover:scale-105 transition-transform duration-1000 ease-out pointer-events-none">
-                     <div className="relative">
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-orange-500/20 blur-[100px] rounded-full" />
-                        <img 
-                            src="https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?q=80&w=1000&auto=format&fit=crop" 
-                            alt="Premium Laptop" 
-                            className="w-full h-auto object-contain rounded-3xl shadow-2xl relative z-10 brightness-110 contrast-105"
-                        />
-                     </div>
-                </div>
+
             </div>
 
             <div className="md:col-span-4 flex flex-col gap-6">
