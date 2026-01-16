@@ -51,10 +51,22 @@ function parseCSV(csvText) {
 const driverHelpers = { normalizeCategory, parseCSV };
 
 // --- Core Logic ---
-async function fetchFeed(url) {
+async function fetchFeed(url, supplier) {
     if (!url.startsWith('http')) return '';
+
+    const headers = { 'User-Agent': 'Mozilla/5.0' };
+
+    // Add authentication for JSON APIs
+    if (supplier.type === 'json') {
+        if (supplier.id === 'evenflow' && process.env.EVENFLOW_API_KEY) {
+            headers['Authorization'] = `Bearer ${process.env.EVENFLOW_API_KEY}`;
+            headers['X-API-Key'] = process.env.EVENFLOW_API_KEY;
+        }
+        // Add other JSON API authentication here as needed
+    }
+
     const res = await fetch(url, {
-        headers: { 'User-Agent': 'Mozilla/5.0' },
+        headers,
         signal: AbortSignal.timeout(60000)
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -75,12 +87,12 @@ async function ingestData(client) {
     for (const supplier of suppliers) {
         console.log(`\n>>> Ingesting ${supplier.name} via Driver Plugin...`);
         try {
-            const feedData = await fetchFeed(supplier.url);
-            
+            const feedData = await fetchFeed(supplier.url, supplier);
+
             // Determine driver (slug or type override)
-            const driverKey = (['xml', 'json', 'csv'].includes(supplier.type?.toLowerCase())) ? supplier.id : supplier.type;
+            const driverKey = (['xml', 'json'].includes(supplier.type?.toLowerCase())) ? supplier.id : supplier.type;
             const driverPath = path.join(__dirname, 'drivers', `${driverKey}.js`);
-            
+
             if (!fs.existsSync(driverPath)) {
                 console.error(`Driver missing: ${driverKey} at ${driverPath}`);
                 continue;

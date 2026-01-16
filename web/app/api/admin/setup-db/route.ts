@@ -68,21 +68,23 @@ export async function POST() {
 
         // Insert default settings
         await client.query(`
-            INSERT INTO settings (key, value) VALUES 
+            INSERT INTO settings (key, value) VALUES
             ('update_interval_minutes', '60'),
             ('free_markup', '15'),
             ('professional_markup', '5'),
             ('enterprise_markup', '0'),
             ('staff_markup', '10'),
-            ('partner_markup', '0')
+            ('partner_markup', '0'),
+            ('EVENFLOW_API_KEY', 'your-evenflow-api-key-here')
             ON CONFLICT (key) DO NOTHING;
         `);
 
         // Insert default suppliers
         await client.query(`
-            INSERT INTO suppliers (name, slug, url, type, enabled) VALUES 
+            INSERT INTO suppliers (name, slug, url, type, enabled) VALUES
             ('Scoop', 'scoop', 'https://scoop.co.za/scoop_pricelist.xml', 'xml', true),
-            ('Esquire', 'esquire', 'https://api.esquire.co.za/api/DataFeed?u=blake@smartintegrate.co.za&p=Smart@1991&t=xml&m=10&o=ascending&r=RoundNone&rm=10&min=0', 'xml', true)
+            ('Esquire', 'esquire', 'https://api.esquire.co.za/api/DataFeed?u=blake@smartintegrate.co.za&p=Smart@1991&t=xml&m=10&o=ascending&r=RoundNone&rm=10&min=0', 'xml', true),
+            ('Even Flow', 'evenflow', 'https://api.evenflow.co.za/v1/products', 'json', true)
             ON CONFLICT (slug) DO NOTHING;
         `);
 

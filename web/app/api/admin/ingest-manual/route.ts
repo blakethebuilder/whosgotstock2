@@ -174,8 +174,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           const standardPrice = sanitizePrice(rawStandardPrice);
           const sellingPrice = sanitizePrice(rawSellingPrice);
 
-          // For EvenFlow, only use standard price - skip if no standard price
-          if (standardPrice <= 0) continue;
+           // Skip Even Flow products - now handled by official JSON API
+           if (worksheet.name.toLowerCase().includes('even') || worksheet.name.toLowerCase().includes('flow')) {
+             continue;
+           }
+
+           // For other suppliers, ensure we have a valid price
+           if (standardPrice <= 0 && sellingPrice <= 0) continue;
 
           const product = {
             efCode,

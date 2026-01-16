@@ -66,33 +66,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             ];
             break;
 
-          case 'evenflow':
-            query = `
-              INSERT INTO evenflow_products (
-                ef_code, product_name, description, standard_price, selling_price, 
-                category, raw_data, last_updated
-              ) VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)
-              ON CONFLICT (ef_code) 
-              DO UPDATE SET 
-                product_name = EXCLUDED.product_name,
-                description = EXCLUDED.description,
-                standard_price = EXCLUDED.standard_price,
-                selling_price = EXCLUDED.selling_price,
-                category = EXCLUDED.category,
-                raw_data = EXCLUDED.raw_data,
-                last_updated = CURRENT_TIMESTAMP
-              RETURNING (xmax = 0) AS inserted
-            `;
-            values = [
-              product.productCode || `EF-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-              product.name,
-              product.description || null,
-              product.price,
-              product.price,
-              product.category || null,
-              JSON.stringify(product)
-            ];
-            break;
+          // Evenflow manual imports removed - now uses official JSON API
 
           default:
             // Use generic manual_supplier_products table

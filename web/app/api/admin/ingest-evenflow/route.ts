@@ -75,10 +75,17 @@ function mapColumns(headerRow: any[]): { [key: string]: number } {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  // Manual Evenflow imports have been disabled. Use the official JSON API instead.
+  return NextResponse.json({
+    error: 'Manual Evenflow imports have been disabled. Products are now fetched automatically via the official Evenflow JSON API.',
+    migration: 'Please use the worker service to fetch Evenflow products from the JSON API.'
+  }, { status: 410 }); // 410 Gone - resource no longer available
+
+  /* Original code disabled
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    
+
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
@@ -241,11 +248,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
     });
 
-  } catch (error: any) {
-    console.error('Excel ingestion error:', error);
-    return NextResponse.json(
-      { error: `Processing failed: ${error.message}` },
-      { status: 500 }
-    );
-  }
-}
+   } catch (error: any) {
+     console.error('Excel ingestion error:', error);
+     return NextResponse.json(
+       { error: `Processing failed: ${error.message}` },
+       { status: 500 }
+     );
+   }
+   */
+ }
