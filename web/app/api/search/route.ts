@@ -63,19 +63,17 @@ export async function GET(request: Request) {
   }
 
   const params: any[] = [];
-  let whereConditions: string[] = [];
+  const whereConditions: string[] = [];
 
-    let sql = `
-      SELECT 
-        p.id::text, p.supplier_sku, p.name, p.brand, p.price_ex_vat, 
-        p.qty_on_hand, p.stock_jhb, p.stock_cpt, p.image_url, p.supplier_name, s.slug as supplier_slug,
-        p.last_updated, p.category, COALESCE(p.description, '') as description
-      FROM products p
-      JOIN suppliers s ON p.supplier_name = s.name
-      WHERE s.enabled = true
-    `;
-
-    const whereConditions: string[] = [];
+  let sql = `
+    SELECT 
+      p.id::text, p.supplier_sku, p.name, p.brand, p.price_ex_vat, 
+      p.qty_on_hand, p.stock_jhb, p.stock_cpt, p.image_url, p.supplier_name, s.slug as supplier_slug,
+      p.last_updated, p.category, COALESCE(p.description, '') as description
+    FROM products p
+    JOIN suppliers s ON p.supplier_name = s.name
+    WHERE s.enabled = true
+  `;
 
   // DEEP SEARCH LOGIC: Match components of query with AND logic
   if (rawQuery) {
@@ -103,22 +101,6 @@ export async function GET(request: Request) {
     suppliers.forEach(supplier => {
         params.push(supplier);
         supplierConditions.push(`s.slug = $${params.length}`);
-    });
-    whereConditions.push(`(${supplierConditions.join(' OR ')})`);
-  }
-        cond += `)`;
-        groupConditions.push(cond);
-      });
-      // Within a group (synonyms), we use OR. Between groups (words), we use AND.
-      whereConditions.push(`(${groupConditions.join(' OR ')})`);
-    });
-  }
-
-  if (suppliers.length > 0) {
-    const supplierConditions: string[] = [];
-    suppliers.forEach(supplier => {
-        params.push(supplier);
-        supplierConditions.push(`p.supplier_slug = $${params.length}`);
     });
     whereConditions.push(`(${supplierConditions.join(' OR ')})`);
   }
