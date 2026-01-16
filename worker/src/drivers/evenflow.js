@@ -68,20 +68,17 @@ async function evenflowDriver(supplier, feedData, helpers) {
         let hasMorePages = true;
 
         while (hasMorePages) {
-            console.log(`Evenflow: Fetching page ${pageNumber} from ${baseUrl}`);
-            console.log(`Evenflow: Request URL: ${paginatedUrl}`);
+            // Try with query parameters instead of body for GET request
+            const urlWithParams = `${baseUrl}?PageNumber=${pageNumber}&PageSize=${pageSize}`;
 
-            const response = await fetch(paginatedUrl, {
-                method: 'POST',
+            console.log(`Evenflow: Fetching page ${pageNumber} from ${urlWithParams}`);
+
+            const response = await fetch(urlWithParams, {
+                method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36'
-                },
-                body: JSON.stringify({
-                    PageNumber: pageNumber,
-                    PageSize: pageSize
-                })
+                }
             });
 
             console.log(`Evenflow: Response status ${response.status} for page ${pageNumber}`);
