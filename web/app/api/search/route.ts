@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   if (!rateLimitResult.success) {
     return NextResponse.json(
       { error: 'Too many requests', retryAfter: rateLimitResult.reset },
-      { 
+      {
         status: 429,
         headers: {
           'X-RateLimit-Limit': rateLimitResult.limit.toString(),
@@ -22,22 +22,22 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url);
-  
+
   const rawQuery = searchParams.get('q')?.trim().slice(0, 200) || '';
   const suppliersParam = searchParams.get('suppliers');
   const brand = searchParams.get('brand')?.trim().slice(0, 100);
   const categoriesParam = searchParams.get('categories');
   const searchInDescription = searchParams.get('search_description') === 'true';
-  
+
   const minPrice = parseFloat(searchParams.get('min_price') || '0') || 0;
   const maxPrice = parseFloat(searchParams.get('max_price') || '999999') || 999999;
   const page = Math.max(1, Math.min(100, parseInt(searchParams.get('page') || '1')));
-  
+
   const inStock = searchParams.get('in_stock') === 'true';
-  const sort = ['relevance', 'price_asc', 'price_desc', 'newest', 'name_asc', 'name_desc'].includes(searchParams.get('sort') || '') 
-    ? searchParams.get('sort') 
+  const sort = ['relevance', 'price_asc', 'price_desc', 'newest', 'name_asc', 'name_desc'].includes(searchParams.get('sort') || '')
+    ? searchParams.get('sort')
     : 'relevance';
-  
+
   const limit = 50;
   const offset = (page - 1) * limit;
 
@@ -51,7 +51,7 @@ export async function GET(request: Request) {
   const cacheKey = `search:${JSON.stringify({
     q: rawQuery, suppliers, brand, categories, minPrice, maxPrice, inStock, sort, page, searchInDescription
   })}`;
-  
+
   const cached = getCached(cacheKey);
   if (cached) {
     return NextResponse.json(cached);
@@ -87,8 +87,8 @@ export async function GET(request: Request) {
   if (suppliers.length > 0) {
     const supplierConditions: string[] = [];
     suppliers.forEach(supplier => {
-        params.push(supplier);
-        supplierConditions.push(`s.slug = $${params.length}`);
+      params.push(supplier);
+      supplierConditions.push(`s.slug = $${params.length}`);
     });
     whereConditions.push(`(${supplierConditions.join(' OR ')})`);
   }
@@ -160,6 +160,23 @@ export async function GET(request: Request) {
       page,
       limit
     };
+
+    // Asynchronous logging to avoid blocking the response
+    const filters = {
+      suppliers,
+      brand,
+      categories,
+      minPrice,
+      maxPrice,
+      inStock,
+      sort,
+      searchInDescription
+    };
+
+    client.query(
+      'INSERT INTO search_logs (query, filters, results_count) VALUES ($1, $2, $3)',
+      [rawQuery, JSON.stringify(filters), result.total]
+    ).catch(err => console.error('Failed to log search:', err));
 
     setCache(cacheKey, result, 120000);
     return NextResponse.json(result);

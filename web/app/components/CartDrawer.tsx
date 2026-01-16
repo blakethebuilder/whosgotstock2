@@ -30,13 +30,25 @@ export default function CartDrawer({ isOpen, onClose, items, updateQuantity, rem
         const price = calculatePrice(item.price_ex_vat, userRole, pricingSettings);
         return sum + parseFloat(price.exVat) * item.quantity;
     }, 0);
-    
+
     const totalIncVat = items.reduce((sum, item) => {
         const price = calculatePrice(item.price_ex_vat, userRole, pricingSettings);
         return sum + parseFloat(price.incVat) * item.quantity;
     }, 0);
 
     const generateEmailTemplate = () => {
+        // Log the quote generation
+        fetch('/api/admin/quote-logs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                items,
+                totalExVat,
+                totalIncVat,
+                userRole
+            })
+        }).catch(err => console.error('Failed to log quote:', err));
+
         setIsOrderModalOpen(true);
     };
 

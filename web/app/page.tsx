@@ -273,28 +273,43 @@ export default function Home() {
             setSelectedSuppliers={setSelectedSuppliers}
           />
         ) : (
-          <div className="animate-in fade-in duration-500">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-800">
-              <div>
-                <h3 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter">
-                  Results <span className="text-orange-500">{query ? `for "${query}"` : ''}</span>
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 mb-12 pb-12 border-b border-gray-200 dark:border-gray-800">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+                  <button onClick={clearSearch} className="hover:text-orange-500 transition-colors">Vision</button>
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                  <span>Search Intelligence</span>
+                </div>
+                <h3 className="text-5xl md:text-6xl font-black text-gray-900 dark:text-white tracking-tighter leading-tight">
+                  Discovery <br />
+                  <span className="text-orange-500 italic">{query ? `"${query}"` : 'Everything'}</span>
                 </h3>
-                <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-1">Found {totalResults} items in real-time</p>
+                <p className="text-sm font-bold text-gray-400 uppercase tracking-[0.2em]">Live feed from 20+ distributors • {totalResults.toLocaleString()} Items Synchronized</p>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="flex bg-white dark:bg-gray-900 rounded-xl p-1 border border-gray-200 dark:border-gray-800 mr-2">
-                  <button onClick={() => setViewMode('grid')} className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-gray-100 dark:bg-gray-800 text-orange-500' : 'text-gray-400 hover:text-gray-600'}`} title="Grid View">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex bg-white dark:bg-gray-900 rounded-2xl p-1.5 border border-gray-200 dark:border-gray-800 shadow-sm">
+                  <button onClick={() => setViewMode('grid')} className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${viewMode === 'grid' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-lg shadow-gray-200/50' : 'text-gray-400 hover:text-gray-600'}`}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                    Grid
                   </button>
-                  <button onClick={() => setViewMode('table')} className={`p-2 rounded-lg transition-all ${viewMode === 'table' ? 'bg-gray-100 dark:bg-gray-800 text-orange-500' : 'text-gray-400 hover:text-gray-600'}`} title="Table View">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
+                  <button onClick={() => setViewMode('table')} className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${viewMode === 'table' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-lg shadow-gray-200/50' : 'text-gray-400 hover:text-gray-600'}`}>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>
+                    Table
                   </button>
                 </div>
-                <button onClick={() => setShowFilters(!showFilters)} className={`px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center gap-2 ${showFilters ? 'bg-gray-900 text-white shadow-xl shadow-gray-200' : 'bg-white dark:bg-gray-900 text-gray-600 border border-gray-200 dark:border-gray-800 hover:border-orange-500/50'}`}>
-                  Refine
-                  {hasActiveFilters && <span className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.5)]"></span>}
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`group relative h-[52px] px-8 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center gap-3 overflow-hidden ${showFilters
+                      ? 'bg-orange-500 text-white shadow-2xl shadow-orange-200 overflow-hidden'
+                      : 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white border-2 border-gray-100 dark:border-gray-800 hover:border-gray-900 dark:hover:border-white'
+                    }`}
+                >
+                  <svg className={`w-4 h-4 transition-transform duration-500 ${showFilters ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+                  Parameters
+                  {hasActiveFilters && <span className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-orange-400 border border-white" />}
                 </button>
-                <button onClick={clearSearch} className="px-4 py-3 text-xs font-black text-gray-400 uppercase hover:text-red-500 transition-colors">Reset</button>
+                <button onClick={clearSearch} className="h-[52px] px-6 text-[10px] font-black text-gray-400 uppercase hover:text-red-500 hover:bg-red-50/50 rounded-2xl transition-all">Reset All</button>
               </div>
             </div>
 

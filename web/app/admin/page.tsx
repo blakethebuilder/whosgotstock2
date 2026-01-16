@@ -8,9 +8,11 @@ export default function AdminPage() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [passphrase, setPassphrase] = useState('');
     const [authError, setAuthError] = useState('');
-    
+
     const [suppliers, setSuppliers] = useState<any[]>([]);
     const [supplierStats, setSupplierStats] = useState<any[]>([]);
+    const [searchLogs, setSearchLogs] = useState<any[]>([]);
+    const [quoteLogs, setQuoteLogs] = useState<any[]>([]);
     const [settings, setSettings] = useState({
         update_interval_minutes: '60',
         public_markup: '15',
@@ -36,7 +38,7 @@ export default function AdminPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ passphrase, role: 'admin' })
             });
-            
+
             const data = await response.json();
             if (data.success) {
                 setIsAuthenticated(true);
@@ -52,26 +54,28 @@ export default function AdminPage() {
     const refreshData = async () => {
         setLoading(true);
         try {
-            console.log('Fetching suppliers, settings, and stats...');
-            const [supRes, setRes, statsRes] = await Promise.all([
+            console.log('Fetching suppliers, settings, stats, search logs, and quote logs...');
+            const [supRes, setRes, statsRes, logsRes, quoteRes] = await Promise.all([
                 fetch('/api/admin/suppliers').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve([]) })),
                 fetch('/api/admin/settings').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve({}) })),
-                fetch('/api/admin/supplier-stats').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve([]) }))
+                fetch('/api/admin/supplier-stats').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve([]) })),
+                fetch('/api/admin/search-logs').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve([]) })),
+                fetch('/api/admin/quote-logs').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve([]) }))
             ]);
-            
+
             console.log('Suppliers response status:', supRes.status);
             console.log('Settings response status:', setRes.status);
-            
+
             let supData: any[] = [];
             let setData: any = {};
-            
+
             if (supRes.ok) {
                 supData = await supRes.json();
             } else {
                 console.error('Suppliers API error:', supRes.status);
                 supData = []; // Ensure it's an array
             }
-            
+
             if (setRes.ok) {
                 setData = await setRes.json();
             } else {
@@ -86,13 +90,31 @@ export default function AdminPage() {
                 console.error('Supplier stats API error:', statsRes.status);
                 statsData = [];
             }
-            
+
+            let logsData: any[] = [];
+            if (logsRes.ok) {
+                logsData = await logsRes.json();
+            } else {
+                console.error('Search logs API error:', logsRes.status);
+                logsData = [];
+            }
+
+            let quotesData: any[] = [];
+            if (quoteRes.ok) {
+                quotesData = await quoteRes.json();
+            } else {
+                console.error('Quote logs API error:', quoteRes.status);
+                quotesData = [];
+            }
+
             console.log('Suppliers data:', supData);
             console.log('Settings data:', setData);
-            
+
             // Ensure supData is an array
             setSuppliers(Array.isArray(supData) ? supData : []);
             setSupplierStats(Array.isArray(statsData) ? statsData : []);
+            setSearchLogs(Array.isArray(logsData) ? logsData : []);
+            setQuoteLogs(Array.isArray(quotesData) ? quotesData : []);
             setSettings({
                 update_interval_minutes: (setData as any)?.update_interval_minutes || '60',
                 public_markup: (setData as any)?.public_markup || '15',
@@ -136,10 +158,10 @@ export default function AdminPage() {
             await fetch('/api/admin/suppliers', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    action: 'toggle', 
-                    id, 
-                    enabled: !supplier?.enabled 
+                body: JSON.stringify({
+                    action: 'toggle',
+                    id,
+                    enabled: !supplier?.enabled
                 })
             });
             refreshData();
@@ -150,7 +172,7 @@ export default function AdminPage() {
 
     const handleDeleteSupplier = async (id: number) => {
         if (!confirm("Are you sure you want to delete this supplier?")) return;
-        
+
         try {
             await fetch('/api/admin/suppliers', {
                 method: 'POST',
@@ -210,7 +232,7 @@ export default function AdminPage() {
                         <h1 className="text-2xl font-bold text-gray-900">Admin Portal</h1>
                         <p className="text-gray-600 mt-2">Enter admin passphrase to continue</p>
                     </div>
-                    
+
                     <div className="space-y-4">
                         <div>
                             <input
@@ -228,11 +250,11 @@ export default function AdminPage() {
                                 inputMode="text"
                             />
                         </div>
-                        
+
                         {authError && (
                             <div className="text-red-600 text-sm text-center">{authError}</div>
                         )}
-                        
+
                         <button
                             onClick={handleAuth}
                             className="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 px-4 rounded-lg font-medium transition-colors"
@@ -264,8 +286,8 @@ export default function AdminPage() {
                     <div className="flex justify-between items-center py-4">
                         <h1 className="text-2xl font-bold text-gray-900">WhosGotStock Admin Portal</h1>
                         <div className="flex items-center gap-4">
-                            <a 
-                                href="/" 
+                            <a
+                                href="/"
                                 className="text-orange-600 hover:text-orange-700 font-medium"
                             >
                                 Back to Search
@@ -296,7 +318,7 @@ export default function AdminPage() {
                                     <input
                                         type="number"
                                         value={settings.update_interval_minutes}
-                                        onChange={(e) => setSettings({...settings, update_interval_minutes: e.target.value})}
+                                        onChange={(e) => setSettings({ ...settings, update_interval_minutes: e.target.value })}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white"
                                     />
                                 </div>
@@ -315,7 +337,7 @@ export default function AdminPage() {
                             <p className="text-xs text-gray-500 mb-4">Run database migrations and schema fixes.</p>
                             <button
                                 onClick={async () => {
-                                    if(!confirm("Initialize or fix database schema? This will ensure all columns exist.")) return;
+                                    if (!confirm("Initialize or fix database schema? This will ensure all columns exist.")) return;
                                     try {
                                         const res = await fetch('/api/admin/setup-db', { method: 'POST' });
                                         const data = await res.json();
@@ -342,7 +364,7 @@ export default function AdminPage() {
                                         <input
                                             type="number"
                                             value={settings.public_markup}
-                                            onChange={(e) => setSettings({...settings, public_markup: e.target.value})}
+                                            onChange={(e) => setSettings({ ...settings, public_markup: e.target.value })}
                                             className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white font-medium"
                                         />
                                         <span className="text-sm text-gray-900 font-medium">%</span>
@@ -354,7 +376,7 @@ export default function AdminPage() {
                                         <input
                                             type="number"
                                             value={settings.team_markup}
-                                            onChange={(e) => setSettings({...settings, team_markup: e.target.value})}
+                                            onChange={(e) => setSettings({ ...settings, team_markup: e.target.value })}
                                             className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white font-medium"
                                         />
                                         <span className="text-sm text-gray-900 font-medium">%</span>
@@ -366,7 +388,7 @@ export default function AdminPage() {
                                         <input
                                             type="number"
                                             value={settings.management_markup}
-                                            onChange={(e) => setSettings({...settings, management_markup: e.target.value})}
+                                            onChange={(e) => setSettings({ ...settings, management_markup: e.target.value })}
                                             className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white font-medium"
                                         />
                                         <span className="text-sm text-gray-900 font-medium">%</span>
@@ -378,7 +400,7 @@ export default function AdminPage() {
                                         <input
                                             type="number"
                                             value={settings.admin_markup}
-                                            onChange={(e) => setSettings({...settings, admin_markup: e.target.value})}
+                                            onChange={(e) => setSettings({ ...settings, admin_markup: e.target.value })}
                                             className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white font-medium"
                                         />
                                         <span className="text-sm text-gray-900 font-medium">%</span>
@@ -440,9 +462,8 @@ export default function AdminPage() {
                                                     <td className="px-4 py-2 text-sm font-medium text-gray-900">{supplier.name}</td>
                                                     <td className="px-4 py-2 text-sm text-gray-700">{supplier.type}</td>
                                                     <td className="px-4 py-2">
-                                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                                            supplier.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                                        }`}>
+                                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${supplier.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                                            }`}>
                                                             {supplier.enabled ? 'Active' : 'Inactive'}
                                                         </span>
                                                     </td>
@@ -521,90 +542,223 @@ export default function AdminPage() {
                                     </button>
                                 </div>
                             </div>
-                         </div>
+                        </div>
 
-                         {/* Supplier Stats & Manual Control - New */}
-                         <div className="bg-white rounded-lg shadow-sm p-6">
-                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Supplier Statistics & Manual Control</h2>
+                        {/* Supplier Stats & Manual Control - New */}
+                        <div className="bg-white rounded-lg shadow-sm p-6">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Supplier Statistics & Manual Control</h2>
 
-                             {/* Manual Fetch Buttons */}
-                             <div className="mb-6">
-                                 <h3 className="text-md font-medium text-gray-900 mb-3">Manual API Fetch</h3>
-                                 <p className="text-sm text-gray-600 mb-4">Trigger manual data ingestion for specific suppliers (normally runs automatically every 8 hours)</p>
-                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                                     {suppliers.map((supplier) => (
-                                         <button
-                                             key={supplier.slug}
-                                             onClick={() => handleManualIngest(supplier.slug)}
-                                             className="flex flex-col items-center p-3 border border-gray-300 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors"
-                                         >
-                                             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mb-2">
-                                                 <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                 </svg>
-                                             </div>
-                                             <span className="text-xs font-medium text-gray-900 text-center">{supplier.name}</span>
-                                             <span className="text-xs text-gray-500 mt-1">{supplier.slug}</span>
-                                         </button>
-                                     ))}
-                                 </div>
-                             </div>
+                            {/* Manual Fetch Buttons */}
+                            <div className="mb-6">
+                                <h3 className="text-md font-medium text-gray-900 mb-3">Manual API Fetch</h3>
+                                <p className="text-sm text-gray-600 mb-4">Trigger manual data ingestion for specific suppliers (normally runs automatically every 8 hours)</p>
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                                    {suppliers.map((supplier) => (
+                                        <button
+                                            key={supplier.slug}
+                                            onClick={() => handleManualIngest(supplier.slug)}
+                                            className="flex flex-col items-center p-3 border border-gray-300 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                                        >
+                                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mb-2">
+                                                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                </svg>
+                                            </div>
+                                            <span className="text-xs font-medium text-gray-900 text-center">{supplier.name}</span>
+                                            <span className="text-xs text-gray-500 mt-1">{supplier.slug}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
 
-                             {/* Supplier Statistics Table */}
-                             <div>
-                                 <h3 className="text-md font-medium text-gray-900 mb-3">Supplier Statistics</h3>
-                                  <div className="overflow-x-auto">
-                                      <table className="min-w-full divide-y divide-gray-200 text-xs">
-                                          <thead className="bg-gray-50">
-                                              <tr>
-                                                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
-                                                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                                                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
-                                                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">In Stock</th>
-                                                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Last Updated</th>
-                                                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Price Range</th>
-                                              </tr>
-                                          </thead>
-                                          <tbody className="bg-white divide-y divide-gray-200">
-                                              {supplierStats.map((stat) => (
-                                                  <tr key={stat.supplier_slug}>
-                                                      <td className="px-2 py-2 text-xs font-medium text-gray-900 truncate max-w-[120px]" title={stat.supplier_name}>
-                                                          {stat.supplier_name}
-                                                      </td>
-                                                      <td className="px-2 py-2 text-xs text-gray-600 uppercase">{stat.supplier_type}</td>
-                                                      <td className="px-2 py-2">
-                                                          <span className={`inline-flex px-1.5 py-0.5 text-xs font-medium rounded-full ${
-                                                              stat.enabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                                                          }`}>
-                                                              {stat.enabled ? 'Active' : 'Inactive'}
-                                                          </span>
-                                                      </td>
-                                                      <td className="px-2 py-2 text-xs text-gray-900 font-medium">{stat.total_products.toLocaleString()}</td>
-                                                      <td className="px-2 py-2 text-xs text-green-600 font-medium">{stat.products_in_stock.toLocaleString()}</td>
-                                                      <td className="px-2 py-2 text-xs text-gray-600 truncate max-w-[100px]" title={stat.last_updated ? new Date(stat.last_updated).toLocaleString() : 'Never'}>
-                                                          {stat.last_updated ? new Date(stat.last_updated).toLocaleDateString() : 'Never'}
-                                                      </td>
-                                                      <td className="px-2 py-2 text-xs text-gray-600">
-                                                          {stat.min_price !== '0.00' ? `R${stat.min_price}-${stat.max_price}` : 'N/A'}
-                                                      </td>
-                                                  </tr>
-                                              ))}
-                                              {supplierStats.length === 0 && (
-                                                  <tr>
-                                                      <td colSpan={7} className="px-2 py-4 text-center text-xs text-gray-500">
-                                                          No supplier statistics available
-                                                      </td>
-                                                  </tr>
-                                              )}
-                                          </tbody>
-                                      </table>
-                                  </div>
-                             </div>
-                         </div>
+                            {/* Supplier Statistics Table */}
+                            <div>
+                                <h3 className="text-md font-medium text-gray-900 mb-3">Supplier Statistics</h3>
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full divide-y divide-gray-200 text-xs">
+                                        <thead className="bg-gray-50">
+                                            <tr>
+                                                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
+                                                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                                                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                                                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">In Stock</th>
+                                                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Last Updated</th>
+                                                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Price Range</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {supplierStats.map((stat) => (
+                                                <tr key={stat.supplier_slug}>
+                                                    <td className="px-2 py-2 text-xs font-medium text-gray-900 truncate max-w-[120px]" title={stat.supplier_name}>
+                                                        {stat.supplier_name}
+                                                    </td>
+                                                    <td className="px-2 py-2 text-xs text-gray-600 uppercase">{stat.supplier_type}</td>
+                                                    <td className="px-2 py-2">
+                                                        <span className={`inline-flex px-1.5 py-0.5 text-xs font-medium rounded-full ${stat.enabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                                            }`}>
+                                                            {stat.enabled ? 'Active' : 'Inactive'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-2 py-2 text-xs text-gray-900 font-medium">{stat.total_products.toLocaleString()}</td>
+                                                    <td className="px-2 py-2 text-xs text-green-600 font-medium">{stat.products_in_stock.toLocaleString()}</td>
+                                                    <td className="px-2 py-2 text-xs text-gray-600 truncate max-w-[100px]" title={stat.last_updated ? new Date(stat.last_updated).toLocaleString() : 'Never'}>
+                                                        {stat.last_updated ? new Date(stat.last_updated).toLocaleDateString() : 'Never'}
+                                                    </td>
+                                                    <td className="px-2 py-2 text-xs text-gray-600">
+                                                        {stat.min_price !== '0.00' ? `R${stat.min_price}-${stat.max_price}` : 'N/A'}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            {supplierStats.length === 0 && (
+                                                <tr>
+                                                    <td colSpan={7} className="px-2 py-4 text-center text-xs text-gray-500">
+                                                        No supplier statistics available
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
 
-                         {/* Manual Product Import - Second */}
-                         <DistributorImport />
+                        {/* Recent Search Logs - New */}
+                        <div className="bg-white rounded-lg shadow-sm p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-lg font-semibold text-gray-900">Recent Search Activity</h2>
+                                <button
+                                    onClick={refreshData}
+                                    className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                                >
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                    Refresh logs
+                                </button>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200 text-xs">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Query</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Results</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Filters Applied</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {searchLogs.map((log) => (
+                                            <tr key={log.id} className="hover:bg-gray-50">
+                                                <td className="px-4 py-3 whitespace-nowrap text-gray-500 text-[10px]">
+                                                    {new Date(log.created_at).toLocaleString()}
+                                                </td>
+                                                <td className="px-4 py-3 font-medium text-gray-900">
+                                                    {log.query || <span className="text-gray-400 italic font-normal text-[10px]">Aggregated View</span>}
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-500 font-bold">
+                                                    {log.results_count.toLocaleString()}
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-500">
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {log.filters?.suppliers?.length > 0 && (
+                                                            <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md text-[9px] font-black border border-blue-100 uppercase tracking-tighter">
+                                                                {log.filters.suppliers.join(', ')}
+                                                            </span>
+                                                        )}
+                                                        {log.filters?.categories?.length > 0 && (
+                                                            <span className="px-2 py-0.5 bg-purple-50 text-purple-600 rounded-md text-[9px] font-black border border-purple-100 uppercase tracking-tighter">
+                                                                {log.filters.categories.length} Cat
+                                                            </span>
+                                                        )}
+                                                        {log.filters?.brand && (
+                                                            <span className="px-2 py-0.5 bg-green-50 text-green-600 rounded-md text-[9px] font-black border border-green-100 uppercase tracking-tighter">
+                                                                {log.filters.brand}
+                                                            </span>
+                                                        )}
+                                                        {(log.filters?.minPrice > 0 || log.filters?.maxPrice < 999999) && (
+                                                            <span className="px-2 py-0.5 bg-yellow-50 text-yellow-600 rounded-md text-[9px] font-black border border-yellow-100 uppercase tracking-tighter">
+                                                                R{log.filters.minPrice}-R{log.filters.maxPrice}
+                                                            </span>
+                                                        )}
+                                                        {!log.filters?.suppliers?.length && !log.filters?.categories?.length && !log.filters?.brand && log.filters?.minPrice === 0 && log.filters?.maxPrice === 999999 && (
+                                                            <span className="text-gray-300 text-[9px] font-bold uppercase tracking-tighter">Clean Search</span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {searchLogs.length === 0 && (
+                                            <tr>
+                                                <td colSpan={4} className="px-4 py-10 text-center text-gray-500">
+                                                    No search logs recorded yet.
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Recent Quote Activity - New */}
+                        <div className="bg-white rounded-lg shadow-sm p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-lg font-semibold text-gray-900">Recent Quote Templates Generated</h2>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200 text-xs">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total (Inc VAT)</th>
+                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {quoteLogs.map((log) => (
+                                            <tr key={log.id} className="hover:bg-gray-50">
+                                                <td className="px-4 py-3 whitespace-nowrap text-gray-500 text-[10px]">
+                                                    {new Date(log.created_at).toLocaleString()}
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tighter border ${log.user_role === 'admin' ? 'bg-green-50 text-green-600 border-green-100' :
+                                                            log.user_role === 'management' ? 'bg-purple-50 text-purple-600 border-purple-100' :
+                                                                log.user_role === 'team' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                                                    'bg-gray-50 text-gray-600 border-gray-100'
+                                                        }`}>
+                                                        {log.user_role}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-900 font-medium">
+                                                    {log.items?.length || 0} Products
+                                                </td>
+                                                <td className="px-4 py-3 text-orange-600 font-black">
+                                                    R {parseFloat(log.total_inc_vat).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}
+                                                </td>
+                                                <td className="px-4 py-3 text-right">
+                                                    <button
+                                                        onClick={() => alert(JSON.stringify(log.items, null, 2))}
+                                                        className="text-[10px] font-bold text-gray-400 hover:text-gray-900 uppercase tracking-widest"
+                                                    >
+                                                        View
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {quoteLogs.length === 0 && (
+                                            <tr>
+                                                <td colSpan={5} className="px-4 py-10 text-center text-gray-500">
+                                                    No quotes generated yet.
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Manual Product Import - Second */}
+                        <DistributorImport />
 
                         {/* Generic Scraper - Last with close option */}
                         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -641,7 +795,7 @@ export default function AdminPage() {
                                     )}
                                 </button>
                             </div>
-                            
+
                             {showScraper && (
                                 <div className="p-6">
                                     <GenericScraper />

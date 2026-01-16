@@ -19,12 +19,12 @@ interface NavbarProps {
   onCompareOpen: () => void;
 }
 
-export default function Navbar({ 
-  cart, 
-  onCartOpen, 
-  userRole, 
-  usageStats, 
-  onRoleSwitch, 
+export default function Navbar({
+  cart,
+  onCartOpen,
+  userRole,
+  usageStats,
+  onRoleSwitch,
   onClearSearch,
   searchQuery,
   onSearchChange,
@@ -48,79 +48,79 @@ export default function Navbar({
   return (
     <nav className="fixed top-6 w-full z-[100] px-6">
       <div className="max-w-7xl mx-auto flex justify-between items-center gap-4 bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-white/40 dark:border-gray-800/40 px-6 py-3 rounded-[2rem] shadow-2xl shadow-gray-200/50 dark:shadow-none">
-        
+
         {/* Logo - nitec style */}
         <div className="flex items-center gap-2">
           <button
             onClick={onClearSearch}
             className="flex items-center gap-2 group"
           >
-            <div className="w-10 h-10 bg-gray-900 dark:bg-white rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95">
-                <span className="text-white dark:text-gray-900 font-black text-xl">?</span>
+            <div className="w-10 h-10 bg-gray-900 dark:bg-white rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95 shadow-lg shadow-gray-200 dark:shadow-none">
+              <span className="text-white dark:text-gray-900 font-black text-xl italic">W</span>
             </div>
-            <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-white hidden md:block">
-              stock.
+            <span className="text-xl font-black tracking-tighter text-gray-900 dark:text-white hidden md:block">
+              WhosGot<span className="text-orange-500">Stock?</span>
             </span>
           </button>
         </div>
 
         {/* Centered Search - Integrated into Navbar like inspiration */}
         <div className="flex-1 max-w-xl flex relative group mx-1 sm:mx-0">
-            <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-orange-500 transition-colors">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-orange-500 transition-colors">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          </div>
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="w-full bg-gray-100/50 dark:bg-gray-800/50 border-none rounded-2xl py-2 sm:py-2.5 pl-9 sm:pl-12 pr-10 sm:pr-12 text-xs sm:text-sm font-medium focus:ring-2 focus:ring-orange-500/20 focus:bg-white dark:focus:bg-gray-800 transition-all outline-none text-gray-900 dark:text-white"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => onSearchChange('')}
+              className="absolute inset-y-0 right-10 sm:right-12 px-2 flex items-center text-gray-400 hover:text-orange-500 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          )}
+          {/* Quick Filter Icon (Visual Only like image) */}
+          <div className="absolute inset-y-0 right-0 pr-2 sm:pr-3 flex items-center">
+            <div className="w-6 h-6 sm:w-7 sm:h-7 bg-gray-900 dark:bg-gray-700 rounded-lg flex items-center justify-center text-white cursor-pointer hover:bg-orange-500 transition-colors">
+              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
             </div>
-            <input 
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full bg-gray-100/50 dark:bg-gray-800/50 border-none rounded-2xl py-2 sm:py-2.5 pl-9 sm:pl-12 pr-10 sm:pr-12 text-xs sm:text-sm font-medium focus:ring-2 focus:ring-orange-500/20 focus:bg-white dark:focus:bg-gray-800 transition-all outline-none text-gray-900 dark:text-white"
-            />
-            {searchQuery && (
-              <button 
-                onClick={() => onSearchChange('')}
-                className="absolute inset-y-0 right-10 sm:right-12 px-2 flex items-center text-gray-400 hover:text-orange-500 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-            )}
-            {/* Quick Filter Icon (Visual Only like image) */}
-            <div className="absolute inset-y-0 right-0 pr-2 sm:pr-3 flex items-center">
-                <div className="w-6 h-6 sm:w-7 sm:h-7 bg-gray-900 dark:bg-gray-700 rounded-lg flex items-center justify-center text-white cursor-pointer hover:bg-orange-500 transition-colors">
-                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
-                </div>
-            </div>
+          </div>
         </div>
 
         {/* Right Side Actions */}
         <div className="flex items-center gap-2">
-          
+
           <div className="flex bg-gray-100/50 dark:bg-gray-800/50 p-1 rounded-2xl border border-white/20">
-              <button
-                onClick={onCartOpen}
-                className="p-2 text-gray-600 dark:text-gray-400 hover:text-orange-500 hover:bg-white dark:hover:bg-gray-700 rounded-xl transition-all relative"
-                title="Quote Cart"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-                {cartItemCount > 0 && (
-                  <span className="absolute top-1 right-1 bg-orange-600 text-white text-[9px] font-black w-3.5 h-3.5 flex items-center justify-center rounded-full">
-                    {cartItemCount}
-                  </span>
-                )}
-              </button>
-              
-              <button
-                onClick={onCompareOpen}
-                className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-500 hover:bg-white dark:hover:bg-gray-700 rounded-xl transition-all relative"
-                title="Compare Products"
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" /></svg>
-                {compareCount > 0 && (
-                  <span className="absolute top-1 right-1 bg-red-600 text-white text-[9px] font-black w-3.5 h-3.5 flex items-center justify-center rounded-full">
-                    {compareCount}
-                  </span>
-                )}
-              </button>
+            <button
+              onClick={onCartOpen}
+              className="p-2 text-gray-600 dark:text-gray-400 hover:text-orange-500 hover:bg-white dark:hover:bg-gray-700 rounded-xl transition-all relative"
+              title="Quote Cart"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+              {cartItemCount > 0 && (
+                <span className="absolute top-1 right-1 bg-orange-600 text-white text-[9px] font-black w-3.5 h-3.5 flex items-center justify-center rounded-full">
+                  {cartItemCount}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={onCompareOpen}
+              className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-500 hover:bg-white dark:hover:bg-gray-700 rounded-xl transition-all relative"
+              title="Compare Products"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" /></svg>
+              {compareCount > 0 && (
+                <span className="absolute top-1 right-1 bg-red-600 text-white text-[9px] font-black w-3.5 h-3.5 flex items-center justify-center rounded-full">
+                  {compareCount}
+                </span>
+              )}
+            </button>
           </div>
 
           <div className="h-8 w-[1px] bg-gray-200 dark:bg-gray-700 mx-1 hidden sm:block" />
@@ -140,16 +140,16 @@ export default function Navbar({
                 </p>
               </div>
               <div className={`w-9 h-9 rounded-2xl flex items-center justify-center overflow-hidden border-2 border-white dark:border-gray-800 shadow-sm transition-transform group-hover:scale-105 active:scale-95 ${getRoleColor(userRole)}`}>
-                 {user ? (
-                   <span className="text-white font-black text-sm">{user.firstName.charAt(0)}</span>
-                 ) : (
-                   <svg className="w-5 h-5 text-white/70" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>
-                 )}
+                {user ? (
+                  <span className="text-white font-black text-sm">{user.firstName.charAt(0)}</span>
+                ) : (
+                  <svg className="w-5 h-5 text-white/70" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>
+                )}
               </div>
             </button>
 
             {userRole === 'admin' && (
-              <a 
+              <a
                 href="/admin"
                 className="p-2 text-emerald-500 hover:text-emerald-600 transition-colors"
                 title="Admin Portal"
@@ -159,7 +159,7 @@ export default function Navbar({
             )}
 
             {userRole !== 'public' && (
-              <button 
+              <button
                 onClick={() => {
                   localStorage.removeItem('whosgotstock_user_role');
                   window.location.reload();
