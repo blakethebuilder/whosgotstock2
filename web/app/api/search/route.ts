@@ -23,7 +23,7 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   
-  const rawQuery = searchParams.get('q')?.trim().slice(0, 200);
+  const rawQuery = searchParams.get('q')?.trim().slice(0, 200) || '';
   const suppliersParam = searchParams.get('suppliers');
   const brand = searchParams.get('brand')?.trim().slice(0, 100);
   const categoriesParam = searchParams.get('categories');
@@ -54,44 +54,32 @@ export async function GET(request: Request) {
   
   const cached = getCached(cacheKey);
   if (cached) {
-    return NextResponse.json(cached, {
-      headers: {
-        'X-RateLimit-Limit': rateLimitResult.limit.toString(),
-        'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-      }
-    });
+    return NextResponse.json(cached);
   }
 
   const params: any[] = [];
   const whereConditions: string[] = [];
 
-  let sql = `
-    SELECT 
-      p.id::text, p.supplier_sku, p.name, p.brand, p.price_ex_vat, 
-      p.qty_on_hand, p.stock_jhb, p.stock_cpt, p.image_url, p.supplier_name, s.slug as supplier_slug,
-      p.last_updated, p.category, COALESCE(p.description, '') as description
+  // Base Query
+  let sqlBase = `
     FROM products p
     JOIN suppliers s ON p.supplier_name = s.name
     WHERE s.enabled = true
   `;
 
-  // DEEP SEARCH LOGIC: Match components of query with AND logic
+  // Search Logic
   if (rawQuery) {
     const termGroups = expandQueryToGroups(rawQuery);
-    
     termGroups.forEach(group => {
       const groupConditions: string[] = [];
       group.forEach(term => {
         params.push(`%${term}%`);
         const pNum = params.length;
         let cond = `(p.name ILIKE $${pNum} OR p.supplier_sku ILIKE $${pNum} OR p.brand ILIKE $${pNum}`;
-        if (searchInDescription) {
-          cond += ` OR p.description ILIKE $${pNum}`;
-        }
+        if (searchInDescription) cond += ` OR p.description ILIKE $${pNum}`;
         cond += `)`;
         groupConditions.push(cond);
       });
-      // Within a group (synonyms), we use OR. Between groups (words), we use AND.
       whereConditions.push(`(${groupConditions.join(' OR ')})`);
     });
   }
@@ -115,14 +103,8 @@ export async function GET(request: Request) {
   }
 
   if (brand) {
-    const brands = brand.split(',').filter(b => b.trim() !== '').slice(0, 10);
-    if (brands.length > 0) {
-      const brandConditions = brands.map(b => {
-        params.push(`%${b.trim()}%`);
-        return `p.brand ILIKE $${params.length}`;
-      });
-      whereConditions.push(`(${brandConditions.join(' OR ')})`);
-    }
+    params.push(`%${brand}%`);
+    whereConditions.push(`p.brand ILIKE $${params.length}`);
   }
 
   if (minPrice > 0) {
@@ -139,45 +121,34 @@ export async function GET(request: Request) {
   }
 
   if (whereConditions.length > 0) {
-    sql += ` AND ${whereConditions.join(' AND ')}`;
+    sqlBase += ` AND ${whereConditions.join(' AND ')}`;
   }
 
-  const countSql = `SELECT COUNT(*) FROM (${sql}) as total`;
-  const countParams = [...params]; 
+  // Final SQL with Columns
+  let sql = `
+    SELECT 
+      p.id::text, p.supplier_sku, p.name, p.brand, p.price_ex_vat, 
+      p.qty_on_hand, p.stock_jhb, p.stock_cpt, p.image_url, p.supplier_name, s.slug as supplier_slug,
+      p.last_updated, p.category, COALESCE(p.description, '') as description
+    ${sqlBase}
+  `;
 
   // Sorting
-  if (sort === 'price_asc') {
-    sql += ` ORDER BY p.price_ex_vat ASC, p.qty_on_hand DESC`;
-  } else if (sort === 'price_desc') {
-    sql += ` ORDER BY p.price_ex_vat DESC, p.qty_on_hand DESC`;
-  } else if (sort === 'newest') {
-    sql += ` ORDER BY p.last_updated DESC, p.qty_on_hand DESC`;
-  } else if (sort === 'name_asc') {
-    sql += ` ORDER BY p.name ASC, p.price_ex_vat ASC`;
-  } else if (sort === 'name_desc') {
-    sql += ` ORDER BY p.name DESC, p.price_ex_vat ASC`;
-  } else if (sort === 'relevance' && rawQuery) {
-    const normalized = normalizeSearchQuery(rawQuery);
-    params.push(`%${normalized}%`);
-    sql += ` ORDER BY 
-      CASE 
-        WHEN p.name ILIKE $${params.length} THEN 1
-        WHEN p.supplier_sku ILIKE $${params.length} THEN 2
-        WHEN p.brand ILIKE $${params.length} THEN 3
-        ELSE 4
-      END,
-      p.qty_on_hand DESC, 
-      p.price_ex_vat ASC`;
-  } else {
-    sql += ` ORDER BY p.qty_on_hand DESC, p.price_ex_vat ASC`;
-  }
+  if (sort === 'price_asc') sql += ` ORDER BY p.price_ex_vat ASC`;
+  else if (sort === 'price_desc') sql += ` ORDER BY p.price_ex_vat DESC`;
+  else if (sort === 'newest') sql += ` ORDER BY p.last_updated DESC`;
+  else sql += ` ORDER BY p.qty_on_hand DESC, p.price_ex_vat ASC`;
 
+  // Pagination
   params.push(limit, offset);
   sql += ` LIMIT $${params.length - 1} OFFSET $${params.length}`;
+
+  const countSql = `SELECT COUNT(*) ${sqlBase}`;
 
   let client;
   try {
     client = await pool.connect();
+    const countParams = params.slice(0, params.length - 2);
     const [countRes, dataRes] = await Promise.all([
       client.query(countSql, countParams),
       client.query(sql, params)
@@ -187,22 +158,14 @@ export async function GET(request: Request) {
       results: dataRes.rows,
       total: parseInt(countRes.rows[0].count),
       page,
-      limit,
-      searchTerms: rawQuery ? expandSearchTerms(normalizeSearchQuery(rawQuery)) : [],
-      filters: { suppliers, categories, brand: brand || null, priceRange: { min: minPrice, max: maxPrice }, inStock, searchInDescription }
+      limit
     };
 
     setCache(cacheKey, result, 120000);
-
-    return NextResponse.json(result, {
-      headers: {
-        'X-RateLimit-Limit': rateLimitResult.limit.toString(),
-        'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-      }
-    });
+    return NextResponse.json(result);
   } catch (err: any) {
     console.error('Search API error:', err);
-    return NextResponse.json({ error: 'Search failed', results: [], total: 0 }, { status: 500 });
+    return NextResponse.json({ error: 'Search failed', details: err.message, results: [], total: 0 }, { status: 500 });
   } finally {
     if (client) client.release();
   }
