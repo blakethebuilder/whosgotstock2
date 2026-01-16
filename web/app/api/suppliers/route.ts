@@ -22,23 +22,23 @@ export async function GET() {
         const suppliersResult = await client.query('SELECT name, slug FROM suppliers WHERE enabled = true ORDER BY name ASC');
         console.log('Suppliers API: Query executed, found', suppliersResult.rows.length, 'suppliers');
         
-        // Check if we have evenflow products (handle table not existing)
+        // Check if we have Evenflow products in main products table
         let hasEvenflowProducts = false;
         try {
-            const evenflowCountResult = await client.query('SELECT COUNT(*) FROM evenflow_products');
+            const evenflowCountResult = await client.query("SELECT COUNT(*) FROM products WHERE supplier_name = 'Even Flow'");
             hasEvenflowProducts = parseInt(evenflowCountResult.rows[0].count) > 0;
             console.log('Suppliers API: EvenFlow products check completed, has evenflow products:', hasEvenflowProducts);
         } catch (err: any) {
-            // Table doesn't exist, that's fine
-            console.log('Suppliers API: evenflow_products table does not exist yet');
+            console.log('Suppliers API: Error checking Evenflow products:', err.message);
         }
-        
+
         client.release();
         console.log('Suppliers API: Database connection released');
-        
+
         const suppliers = suppliersResult.rows;
-        
-        // Add Even Flow if we have evenflow products
+
+        // Always include Even Flow since it's now a regular supplier
+        // But only show it if we actually have products from them
         if (hasEvenflowProducts) {
             suppliers.push({
                 name: 'Even Flow',
