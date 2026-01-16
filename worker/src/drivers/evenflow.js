@@ -1,5 +1,5 @@
 /**
- * Driver for Evenflow (JSON API with authentication and pagination)
+ * Driver for Evenflow (JSON API with authentication, pagination, and cookie support)
  */
 const axios = require('axios');
 
@@ -8,8 +8,7 @@ async function evenflowDriver(supplier, feedData, helpers) {
         console.log(`Evenflow driver started for supplier: ${supplier.name}`);
         const baseUrl = supplier.url; // https://www.evenflow.online/B2BPricingFeed/GetB2BPricing
 
-        // Get authentication credentials from environment variables
-        // Determine login URL more robustly
+        // Determine login URL
         let loginUrl = baseUrl;
         if (baseUrl.toLowerCase().includes('/getb2bpricing')) {
             loginUrl = baseUrl.replace(/\/getb2bpricing/i, '/login');
@@ -26,7 +25,7 @@ async function evenflowDriver(supplier, feedData, helpers) {
 
         console.log(`Evenflow: Attempting login at ${loginUrl}...`);
 
-        // Login to get bearer token
+        // Login with cookie handling enabled
         const loginResponse = await axios.post(loginUrl, {
             Email: email,
             password: password
@@ -34,23 +33,26 @@ async function evenflowDriver(supplier, feedData, helpers) {
             headers: {
                 'Content-Type': 'application/json',
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36'
-            }
+            },
+            withCredentials: true
         });
 
-        const loginData = loginResponse.data;
-        let token = loginData.token || loginData.Token;
+        // Extract cookies from login response - IMPORTANT for some .NET APIs
+        const cookies = loginResponse.headers['set-cookie'] || [];
 
-        // Handle cases where token is inside Data object or is Data itself
+        const loginData = loginResponse.data;
+        let token = loginData.token || loginData.Token || loginData.access_token;
+
         if (!token && loginData.Data) {
             token = typeof loginData.Data === 'string' ? loginData.Data : loginData.Data.Token;
         }
 
         if (!token) {
-            console.error('Evenflow Login Response Keys:', Object.keys(loginData));
+            console.error('Evenflow Login Failed. Response keys:', Object.keys(loginData));
             throw new Error('Authentication failed: No token received from Evenflow');
         }
 
-        console.log(`Evenflow: Authentication successful. Token starts with: ${token.substring(0, 5)}...`);
+        console.log(`Evenflow: Authentication successful. Token found, ${cookies.length} cookies received.`);
 
         // Now fetch products with pagination
         const allProducts = [];
@@ -62,10 +64,14 @@ async function evenflowDriver(supplier, feedData, helpers) {
             console.log(`Evenflow: Fetching page ${pageNumber}...`);
 
             try {
-                // IMPORTANT: Evenflow requires a GET with a JSON body for pagination
+                // IMPORTANT: Evenflow requires a GET with a JSON body and session cookies
                 const response = await axios({
                     method: 'GET',
                     url: baseUrl,
+                    params: {
+                        PageNumber: pageNumber,
+                        PageSize: pageSize
+                    },
                     data: {
                         PageNumber: pageNumber,
                         PageSize: pageSize
@@ -73,6 +79,7 @@ async function evenflowDriver(supplier, feedData, helpers) {
                     headers: {
                         'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}`,
                         'Content-Type': 'application/json',
+                        'Cookie': cookies.join('; '),
                         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36'
                     }
                 });
@@ -90,7 +97,7 @@ async function evenflowDriver(supplier, feedData, helpers) {
                     allProducts.push(...products);
                     console.log(`Evenflow: Harvested ${products.length} items from page ${pageNumber}`);
                     pageNumber++;
-                    if (pageNumber > 500) break;
+                    if (pageNumber > 1000) break;
                 }
             } catch (err) {
                 console.error(`Evenflow API Page ${pageNumber} Error:`, err.message);
@@ -106,10 +113,10 @@ async function evenflowDriver(supplier, feedData, helpers) {
         console.log(`Evenflow: Processing ${allProducts.length} products`);
 
         return allProducts
-            .filter(p => p && (p.Sku || p.sku))
+            .filter(p => p && (p.Sku || p.sku || p.SKU))
             .map(p => {
-                const itemCode = p.Sku || p.sku;
-                const priceStr = String(p.Price || '');
+                const itemCode = p.Sku || p.sku || p.SKU;
+                const priceStr = String(p.Price || p.price || '');
 
                 // Parse price (e.g., "R476 756,21 excl VAT")
                 let price = 0;
@@ -124,7 +131,7 @@ async function evenflowDriver(supplier, feedData, helpers) {
                     hasPrice = !isNaN(price) && price > 0;
                 }
 
-                // Parse complex Stock array for branch-specific values
+                // Handle complex Stock array or simple number
                 let stockJhb = 0;
                 let stockCpt = 0;
                 let totalStock = 0;
@@ -141,23 +148,23 @@ async function evenflowDriver(supplier, feedData, helpers) {
                         }
                     });
                     totalStock = stockJhb + stockCpt;
-                } else if (p.Stock) {
-                    totalStock = parseInt(p.Stock) || 0;
+                } else {
+                    totalStock = parseInt(p.Stock || p.stock || 0);
                 }
 
                 return {
                     supplier_sku: String(itemCode).trim().substring(0, 255),
                     supplier_name: supplier.name,
-                    name: String(p.Name || '').substring(0, 250),
-                    description: String(p.Description || ''),
-                    brand: String(p.Manufacturer || '').substring(0, 100),
+                    name: String(p.Name || p.name || p.product_name || '').substring(0, 250),
+                    description: String(p.Description || p.description || ''),
+                    brand: String(p.Manufacturer || p.manufacturer || p.brand || '').substring(0, 100),
                     price_ex_vat: hasPrice ? price : 0,
                     price_on_request: !hasPrice,
                     qty_on_hand: totalStock,
                     stock_jhb: stockJhb,
                     stock_cpt: stockCpt,
-                    image_url: String(p.PictureUrl || ''),
-                    category: helpers.normalizeCategory(p.Category, 'evenflow'),
+                    image_url: String(p.PictureUrl || p.pictureUrl || p.Image || p.image || ''),
+                    category: helpers.normalizeCategory(p.Category || p.category, 'evenflow'),
                     master_sku: `${supplier.id}-${itemCode}`.substring(0, 255),
                     raw_data: JSON.stringify(p)
                 };
