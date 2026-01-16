@@ -9,15 +9,22 @@ async function evenflowDriver(supplier, feedData, helpers) {
         const baseUrl = supplier.url; // https://www.evenflow.online/B2BPricingFeed/GetB2BPricing
 
         // Get authentication credentials from environment variables
-        const loginUrl = baseUrl.replace('/GetB2BPricing', '/login');
-        const email = process.env.EVENFLOW_EMAIL;
-        const password = process.env.EVENFLOW_PASSWORD;
+        // Determine login URL more robustly
+        let loginUrl = baseUrl;
+        if (baseUrl.toLowerCase().includes('/getb2bpricing')) {
+            loginUrl = baseUrl.replace(/\/getb2bpricing/i, '/login');
+        } else {
+            loginUrl = baseUrl.endsWith('/') ? baseUrl + 'login' : baseUrl + '/login';
+        }
+
+        const email = (process.env.EVENFLOW_EMAIL || '').trim();
+        const password = (process.env.EVENFLOW_PASSWORD || '').trim();
 
         if (!email || !password) {
             throw new Error('Missing EVENFLOW_EMAIL or EVENFLOW_PASSWORD environment variables');
         }
 
-        console.log('Evenflow: Attempting login...');
+        console.log(`Evenflow: Attempting login at ${loginUrl}...`);
 
         // Login to get bearer token
         const loginResponse = await axios.post(loginUrl, {
@@ -31,15 +38,19 @@ async function evenflowDriver(supplier, feedData, helpers) {
         });
 
         const loginData = loginResponse.data;
-        const token = loginData.token ||
-            loginData.Token ||
-            (loginData.Data && loginData.Data.Token);
+        let token = loginData.token || loginData.Token;
+
+        // Handle cases where token is inside Data object or is Data itself
+        if (!token && loginData.Data) {
+            token = typeof loginData.Data === 'string' ? loginData.Data : loginData.Data.Token;
+        }
 
         if (!token) {
+            console.error('Evenflow Login Response Keys:', Object.keys(loginData));
             throw new Error('Authentication failed: No token received from Evenflow');
         }
 
-        console.log('Evenflow: Authentication successful');
+        console.log(`Evenflow: Authentication successful. Token starts with: ${token.substring(0, 5)}...`);
 
         // Now fetch products with pagination
         const allProducts = [];
@@ -51,15 +62,16 @@ async function evenflowDriver(supplier, feedData, helpers) {
             console.log(`Evenflow: Fetching page ${pageNumber}...`);
 
             try {
+                // IMPORTANT: Evenflow requires a GET with a JSON body for pagination
                 const response = await axios({
-                    method: 'POST',
+                    method: 'GET',
                     url: baseUrl,
                     data: {
                         PageNumber: pageNumber,
                         PageSize: pageSize
                     },
                     headers: {
-                        'Authorization': `Bearer ${token}`,
+                        'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}`,
                         'Content-Type': 'application/json',
                         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36'
                     }
