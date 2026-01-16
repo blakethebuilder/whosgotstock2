@@ -69,7 +69,9 @@ async function evenflowDriver(supplier, feedData, helpers) {
 
         while (hasMorePages) {
             console.log(`Evenflow: Fetching page ${pageNumber} from ${baseUrl}`);
-            const response = await fetch(baseUrl, {
+            console.log(`Evenflow: Request URL: ${paginatedUrl}`);
+
+            const response = await fetch(paginatedUrl, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -83,6 +85,13 @@ async function evenflowDriver(supplier, feedData, helpers) {
             });
 
             console.log(`Evenflow: Response status ${response.status} for page ${pageNumber}`);
+
+            if (!response.ok) {
+                console.error(`Evenflow: API Error - ${response.status} ${response.statusText}`);
+                const errorText = await response.text();
+                console.error(`Evenflow: Error response: ${errorText.substring(0, 500)}`);
+                throw new Error(`Evenflow API returned ${response.status}: ${response.statusText}`);
+            }
 
             if (!response.ok) {
                 throw new Error(`API request failed: ${response.status} ${response.statusText}`);

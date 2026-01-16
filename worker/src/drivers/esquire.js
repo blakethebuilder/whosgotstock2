@@ -19,20 +19,25 @@ async function esquireDriver(supplier, feedData, helpers) {
 
     return raw.map(p => {
         let stockQty = 0;
-        const available = p.AvailableQty || p.QtyAvailable || p.Stock || 0;
-        
+        const available = p.AvailableQty || p.QtyAvailable || p.Stock || '';
+
         if (available !== undefined && available !== null) {
-            const directNum = parseFloat(available);
-            if (!isNaN(directNum) && directNum >= 0) {
-                stockQty = Math.floor(directNum);
-            } else if (typeof available === 'string') {
+            // Handle Esquire's "Yes/No" availability format
+            if (typeof available === 'string') {
                 const qtyStr = available.toLowerCase().trim();
-                if (['yes', 'y', 'true', '1', 'in stock'].includes(qtyStr)) stockQty = 1;
-                else if (['no', 'n', 'false', '0', 'out of stock'].includes(qtyStr)) stockQty = 0;
-                else {
+                if (['yes', 'y', 'true', 'available', 'in stock'].includes(qtyStr)) {
+                    stockQty = 50; // Default reasonable stock for available items
+                } else if (['no', 'n', 'false', '0', 'out of stock', 'unavailable'].includes(qtyStr)) {
+                    stockQty = 0;
+                } else {
+                    // Try to extract number from string
                     const numMatch = qtyStr.match(/(\d+)/);
                     stockQty = numMatch ? parseInt(numMatch[1]) : 0;
                 }
+            } else {
+                // Handle numeric values
+                const directNum = parseFloat(available);
+                stockQty = (!isNaN(directNum) && directNum >= 0) ? Math.floor(directNum) : 0;
             }
         }
 
