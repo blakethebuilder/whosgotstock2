@@ -87,8 +87,6 @@ async function ingestData(client) {
     for (const supplier of suppliers) {
         console.log(`\n>>> Ingesting ${supplier.name} via Driver Plugin...`);
         try {
-            const feedData = await fetchFeed(supplier.url, supplier);
-
             // Determine driver (slug or type override)
             const driverKey = (['xml', 'json'].includes(supplier.type?.toLowerCase())) ? supplier.id : supplier.type;
             const driverPath = path.join(__dirname, 'drivers', `${driverKey}.js`);
@@ -99,7 +97,16 @@ async function ingestData(client) {
             }
 
             const driver = require(driverPath);
-            const products = await driver(supplier, feedData, driverHelpers);
+
+            // For JSON APIs (like Evenflow), let the driver handle HTTP requests itself
+            // For traditional APIs, fetch the data first
+            let products;
+            if (supplier.type === 'json') {
+                products = await driver(supplier, null, driverHelpers);
+            } else {
+                const feedData = await fetchFeed(supplier.url, supplier);
+                products = await driver(supplier, feedData, driverHelpers);
+            }
 
             if (products && products.length > 0) {
                 const chunkSize = 300;

@@ -1,0 +1,106 @@
+{
+  "info": {
+    "_postman_id": "298828a9-af15-4060-a0b8-9ace1efef704",
+    "name": "Evenflow - Feed manager",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "evenflow login",
+      "id": "bc5d6ca0-6e5c-4de2-a267-4d51706fd952",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJDdXN0b21lcklkIjoyMjY1MTIzLCJjcmVhdGVkb24iOjE3Nzk3NzY5NjkuMCwiZXhwIjoxNzc5Nzc4NzY5LjB9.nxedqU96eOFZlE_Ncu-_voBpaWDkpUoyPmR1gBxvnLk",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \r\n    \"Email\": \"blake@smartintegrate.co.za\",\r\n    \"password\": \"Smart@2026!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://www.evenflow.online/B2BPricingFeed/login",
+          "protocol": "https",
+          "host": [
+            "www",
+            "evenflow",
+            "online"
+          ],
+          "path": [
+            "B2BPricingFeed",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "get pricing feed live",
+      "id": "a80f7333-a302-44fd-8e3f-ad8272520002",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true,
+        "disabledSystemHeaders": {
+          "user-agent": true
+        }
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJDdXN0b21lcklkIjoyMzA2ODQzLCJjcmVhdGVkb24iOjE3ODQwMTIzODIuMCwiZXhwIjoxNzg0MDE0MTgyLjB9.SdxUIJAXe7JwGFOpi1b3t93B4uSKGPfnJAywA8sMMDc",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "User-Agent",
+            "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"PageNumber\": 1,\r\n    \"PageSize\": 100\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://www.evenflow.online/B2BPricingFeed/GetB2BPricing",
+          "protocol": "https",
+          "host": [
+            "www",
+            "evenflow",
+            "online"
+          ],
+          "path": [
+            "B2BPricingFeed",
+            "GetB2BPricing"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

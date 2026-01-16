@@ -75,7 +75,8 @@ export async function POST() {
             ('enterprise_markup', '0'),
             ('staff_markup', '10'),
             ('partner_markup', '0'),
-            ('EVENFLOW_API_KEY', 'your-evenflow-api-key-here')
+            ('EVENFLOW_EMAIL', 'blake@smartintegrate.co.za'),
+            ('EVENFLOW_PASSWORD', 'Smart@2026!')
             ON CONFLICT (key) DO NOTHING;
         `);
 
@@ -84,7 +85,7 @@ export async function POST() {
             INSERT INTO suppliers (name, slug, url, type, enabled) VALUES
             ('Scoop', 'scoop', 'https://scoop.co.za/scoop_pricelist.xml', 'xml', true),
             ('Esquire', 'esquire', 'https://api.esquire.co.za/api/DataFeed?u=blake@smartintegrate.co.za&p=Smart@1991&t=xml&m=10&o=ascending&r=RoundNone&rm=10&min=0', 'xml', true),
-            ('Even Flow', 'evenflow', 'https://api.evenflow.co.za/v1/products', 'json', true)
+            ('Even Flow', 'evenflow', 'https://www.evenflow.online/B2BPricingFeed/GetB2BPricing', 'json', true)
             ON CONFLICT (slug) DO NOTHING;
         `);
 
