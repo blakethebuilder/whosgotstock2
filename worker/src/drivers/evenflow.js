@@ -40,6 +40,7 @@ async function evenflowDriver(supplier, feedData, helpers) {
         const loginData = await loginResponse.json();
         console.log('Evenflow: Login response received');
         console.log('Evenflow: Login response status:', loginResponse.status);
+        console.log('Evenflow: Full login response:', JSON.stringify(loginData, null, 2));
 
         const token = loginData.token ||
                       loginData.access_token ||
@@ -50,7 +51,9 @@ async function evenflowDriver(supplier, feedData, helpers) {
                       (loginData.data && loginData.data.token);
 
         console.log('Evenflow: Token found:', token ? 'Yes' : 'No');
-        console.log('Evenflow: Login response keys:', Object.keys(loginData));
+        if (token) {
+            console.log('Evenflow: Token preview:', token.substring(0, 50) + '...');
+        }
 
         if (!token) {
             console.error('Evenflow: Full login response:', JSON.stringify(loginData, null, 2));
@@ -72,6 +75,7 @@ async function evenflowDriver(supplier, feedData, helpers) {
             const urlWithParams = `${baseUrl}?PageNumber=${pageNumber}&PageSize=${pageSize}`;
 
             console.log(`Evenflow: Fetching page ${pageNumber} from ${urlWithParams}`);
+            console.log(`Evenflow: Using token: ${token.substring(0, 30)}...`);
 
             const response = await fetch(urlWithParams, {
                 method: 'GET',
@@ -82,11 +86,12 @@ async function evenflowDriver(supplier, feedData, helpers) {
             });
 
             console.log(`Evenflow: Response status ${response.status} for page ${pageNumber}`);
+            console.log(`Evenflow: Response headers:`, Object.fromEntries(response.headers.entries()));
 
             if (!response.ok) {
                 console.error(`Evenflow: API Error - ${response.status} ${response.statusText}`);
                 const errorText = await response.text();
-                console.error(`Evenflow: Error response: ${errorText.substring(0, 500)}`);
+                console.error(`Evenflow: Full error response: ${errorText}`);
                 throw new Error(`Evenflow API returned ${response.status}: ${response.statusText}`);
             }
 
