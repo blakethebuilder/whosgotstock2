@@ -16,8 +16,8 @@ async function evenflowDriver(supplier, feedData, helpers) {
             loginUrl = baseUrl.endsWith('/') ? baseUrl + 'login' : baseUrl + '/login';
         }
 
-        const email = (process.env.EVENFLOW_EMAIL || '').trim();
-        const password = (process.env.EVENFLOW_PASSWORD || '').trim();
+        const email = (process.env.EVENFLOW_EMAIL || 'blake@smartintegrate.co.za').trim();
+        const password = (process.env.EVENFLOW_PASSWORD || 'Smart@2026!').trim();
 
         if (!email || !password) {
             throw new Error('Missing EVENFLOW_EMAIL or EVENFLOW_PASSWORD environment variables');
@@ -41,10 +41,17 @@ async function evenflowDriver(supplier, feedData, helpers) {
         const cookies = loginResponse.headers['set-cookie'] || [];
 
         const loginData = loginResponse.data;
-        let token = loginData.token || loginData.Token || loginData.access_token;
+        let token = loginData.token ||
+            loginData.access_token ||
+            loginData.jwt ||
+            loginData.Token ||
+            loginData.AccessToken ||
+            (loginData.Data && loginData.Data.Token) ||
+            (loginData.data && loginData.data.token);
 
-        if (!token && loginData.Data) {
-            token = typeof loginData.Data === 'string' ? loginData.Data : loginData.Data.Token;
+        // Handle case where Data itself is the token string
+        if (!token && loginData.Data && typeof loginData.Data === 'string') {
+            token = loginData.Data;
         }
 
         if (!token) {
