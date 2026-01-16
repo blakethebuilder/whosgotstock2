@@ -49,18 +49,17 @@ export default function Navbar({
     <nav className="fixed top-6 w-full z-[100] px-6">
       <div className="max-w-7xl mx-auto flex justify-between items-center gap-4 bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-white/40 dark:border-gray-800/40 px-6 py-3 rounded-[2rem] shadow-2xl shadow-gray-200/50 dark:shadow-none">
 
-        {/* Logo - nitec style */}
+        {/* Logo - WhosGotStock */}
         <div className="flex items-center gap-2">
           <button
             onClick={onClearSearch}
             className="flex items-center gap-2 group"
           >
-            <div className="w-10 h-10 bg-gray-900 dark:bg-white rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95 shadow-lg shadow-gray-200 dark:shadow-none">
-              <span className="text-white dark:text-gray-900 font-black text-xl italic">W</span>
+            <div className="bg-gray-900 dark:bg-white px-5 h-10 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95 shadow-lg shadow-gray-200 dark:shadow-none border border-white/10">
+              <span className="text-white dark:text-gray-900 font-black text-xs sm:text-sm tracking-tighter uppercase flex items-center gap-1">
+                WHOSGOT<span className="text-orange-500">STOCK</span>
+              </span>
             </div>
-            <span className="text-xl font-black tracking-tighter text-gray-900 dark:text-white hidden md:block">
-              WhosGot<span className="text-orange-500">Stock?</span>
-            </span>
           </button>
         </div>
 
@@ -74,8 +73,11 @@ export default function Navbar({
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full bg-gray-100/50 dark:bg-gray-800/50 border-none rounded-2xl py-2 sm:py-2.5 pl-9 sm:pl-12 pr-10 sm:pr-12 text-xs sm:text-sm font-medium focus:ring-2 focus:ring-orange-500/20 focus:bg-white dark:focus:bg-gray-800 transition-all outline-none text-gray-900 dark:text-white"
+            className="w-full bg-gray-100/50 dark:bg-gray-800/50 border-none rounded-2xl py-2 sm:py-2.5 pl-9 sm:pl-12 pr-20 sm:pr-24 text-xs sm:text-sm font-medium focus:ring-2 focus:ring-orange-500/20 focus:bg-white dark:focus:bg-gray-800 transition-all outline-none text-gray-900 dark:text-white"
           />
+          <div className="absolute inset-y-0 right-14 sm:right-16 flex items-center pointer-events-none">
+            <span className="hidden sm:inline-block px-1.5 py-0.5 border border-gray-200 dark:border-gray-700 rounded text-[9px] font-black text-gray-400 bg-white/50 dark:bg-gray-800/50">⌘K</span>
+          </div>
           {searchQuery && (
             <button
               onClick={() => onSearchChange('')}

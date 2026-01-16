@@ -32,7 +32,7 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
             <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
 
             {/* HERO FEATURE TILE (LARGE) */}
-            <div className="md:col-span-12 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-[4rem] p-12 md:p-20 relative overflow-hidden group shadow-2xl shadow-gray-200/50 dark:shadow-none border border-white dark:border-gray-800 flex flex-col justify-center min-h-[600px]">
+            <div className="md:col-span-12 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-[4rem] p-12 md:p-16 relative overflow-hidden group shadow-2xl shadow-gray-200/50 dark:shadow-none border border-white dark:border-gray-800 flex flex-col justify-center min-h-[550px]">
                 {/* Subtle Grid Pattern Overlay */}
                 <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
@@ -54,7 +54,7 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
                     </div>
 
                     <p className="text-xl md:text-2xl font-medium text-gray-400 leading-relaxed max-w-2xl mx-auto">
-                        One interface. <span className="text-gray-900 dark:text-white font-bold">20+ Suppliers.</span> <span className="text-gray-900 dark:text-white font-bold">Zero Hassle.</span><br className="hidden md:block" />
+                        One interface. <span className="text-gray-900 dark:text-white font-bold">{usageStats.totalSuppliers || 6} Major Suppliers.</span> <span className="text-gray-900 dark:text-white font-bold">{(usageStats.totalProducts || 15000).toLocaleString()}+ Items.</span><br className="hidden md:block" />
                         Built by suppliers, for suppliers. Stop the tab-switching nightmare.
                     </p>
 
@@ -119,9 +119,9 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
                 <div className="mt-6">
                     <div className="flex items-end gap-2 mb-3">
                         <span className="text-5xl font-black text-orange-500 tabular-nums">
-                            {usageStats.searchesThisMonth}
+                            {(usageStats.totalProducts || 15000).toLocaleString()}+
                         </span>
-                        <span className="text-[10px] font-black text-gray-300 uppercase pb-2 tracking-widest">Points Aggregated</span>
+                        <span className="text-[10px] font-black text-gray-300 uppercase pb-2 tracking-widest">Items Synchronized</span>
                     </div>
                     <div className="w-full h-4 bg-gray-100 dark:bg-gray-800/50 rounded-full overflow-hidden border border-gray-100 dark:border-gray-800">
                         <div

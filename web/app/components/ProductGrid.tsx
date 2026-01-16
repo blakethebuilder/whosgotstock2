@@ -10,7 +10,22 @@ interface ProductGridProps {
   onAddToCart: (product: Product) => void;
   compareList: Product[];
   displayPrice: (product: Product) => { exVat: string; incVat: string; isPOR: boolean };
+  searchQuery?: string;
 }
+
+const Highlight = ({ text, query }: { text: string, query: string }) => {
+  if (!query || query.length < 2) return <>{text}</>;
+  const parts = text.split(new RegExp(`(${query})`, 'gi'));
+  return (
+    <>
+      {parts.map((part, i) =>
+        part.toLowerCase() === query.toLowerCase()
+          ? <span key={i} className="bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 rounded-sm px-0.5">{part}</span>
+          : part
+      )}
+    </>
+  );
+};
 
 export default function ProductGrid({
   products,
@@ -19,7 +34,8 @@ export default function ProductGrid({
   onToggleCompare,
   onAddToCart,
   compareList,
-  displayPrice
+  displayPrice,
+  searchQuery = ''
 }: ProductGridProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
@@ -52,7 +68,7 @@ export default function ProductGrid({
           </div>
           <div className="px-2 pb-2">
             <h4 className="font-black text-gray-900 dark:text-white text-base line-clamp-2 leading-tight mb-2 group-hover:text-orange-500 transition-colors">
-              {product.name}
+              <Highlight text={product.name} query={searchQuery} />
             </h4>
             <div className="flex items-center gap-2 mb-4">
               <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-lg">

@@ -91,6 +91,18 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+        if (searchInput) searchInput.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  useEffect(() => {
     const savedCart = localStorage.getItem('whosgotstock_cart');
     if (savedCart) {
       try { setCart(JSON.parse(savedCart)); } catch (e) { console.error("Failed to parse cart", e); }
@@ -301,8 +313,8 @@ export default function Home() {
                 <button
                   onClick={() => setShowFilters(!showFilters)}
                   className={`group relative h-[52px] px-8 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all flex items-center gap-3 overflow-hidden ${showFilters
-                      ? 'bg-orange-500 text-white shadow-2xl shadow-orange-200 overflow-hidden'
-                      : 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white border-2 border-gray-100 dark:border-gray-800 hover:border-gray-900 dark:hover:border-white'
+                    ? 'bg-orange-500 text-white shadow-2xl shadow-orange-200 overflow-hidden'
+                    : 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white border-2 border-gray-100 dark:border-gray-800 hover:border-gray-900 dark:hover:border-white'
                     }`}
                 >
                   <svg className={`w-4 h-4 transition-transform duration-500 ${showFilters ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
@@ -330,9 +342,9 @@ export default function Home() {
             {loading ? <ResultsSkeleton /> : results.length === 0 ? <EmptySearchResults onCategoryClick={(searchTerm) => { setQuery(searchTerm); performSearch(searchTerm); }} /> : (
               <>
                 {viewMode === 'grid' ? (
-                  <ProductGrid products={results} userRole={userRole} onSelectProduct={setSelectedProduct} onToggleCompare={toggleCompare} onAddToCart={addToCart} compareList={compareList} displayPrice={displayPrice} />
+                  <ProductGrid products={results} userRole={userRole} onSelectProduct={setSelectedProduct} onToggleCompare={toggleCompare} onAddToCart={addToCart} compareList={compareList} displayPrice={displayPrice} searchQuery={query} />
                 ) : (
-                  <ProductTable products={results} userRole={userRole} onSelectProduct={setSelectedProduct} onToggleCompare={toggleCompare} onAddToCart={addToCart} compareList={compareList} displayPrice={displayPrice} />
+                  <ProductTable products={results} userRole={userRole} onSelectProduct={setSelectedProduct} onToggleCompare={toggleCompare} onAddToCart={addToCart} compareList={compareList} displayPrice={displayPrice} searchQuery={query} />
                 )}
 
                 {results.length < totalResults && (

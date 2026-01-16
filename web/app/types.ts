@@ -34,6 +34,8 @@ export interface UsageStats {
     searchLimit: number;
     quotesGenerated: number;
     isLimitReached: boolean;
+    totalProducts?: number;
+    totalSuppliers?: number;
 }
 
 export interface TierFeatures {

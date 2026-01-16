@@ -10,7 +10,22 @@ interface ProductTableProps {
   onAddToCart: (product: Product) => void;
   compareList: Product[];
   displayPrice: (product: Product) => { exVat: string; incVat: string; isPOR: boolean };
+  searchQuery?: string;
 }
+
+const Highlight = ({ text, query }: { text: string, query: string }) => {
+  if (!query || query.length < 2) return <>{text}</>;
+  const parts = text.split(new RegExp(`(${query})`, 'gi'));
+  return (
+    <>
+      {parts.map((part, i) =>
+        part.toLowerCase() === query.toLowerCase()
+          ? <span key={i} className="bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 rounded-sm px-0.5">{part}</span>
+          : part
+      )}
+    </>
+  );
+};
 
 export default function ProductTable({
   products,
@@ -19,7 +34,8 @@ export default function ProductTable({
   onToggleCompare,
   onAddToCart,
   compareList,
-  displayPrice
+  displayPrice,
+  searchQuery = ''
 }: ProductTableProps) {
   return (
     <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-white dark:border-gray-800 shadow-2xl shadow-gray-200/50 dark:shadow-none overflow-hidden">
@@ -52,7 +68,7 @@ export default function ProductTable({
                       )}
                     </div>
                     <span className="font-bold text-sm text-gray-900 dark:text-white line-clamp-1 group-hover:text-orange-500 transition-colors">
-                      {product.name}
+                      <Highlight text={product.name} query={searchQuery} />
                     </span>
                   </div>
                 </td>
