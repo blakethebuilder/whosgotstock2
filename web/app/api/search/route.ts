@@ -75,6 +75,8 @@ export async function GET(request: Request) {
       WHERE s.enabled = true
     `;
 
+    const whereConditions: string[] = [];
+
   // DEEP SEARCH LOGIC: Match components of query with AND logic
   if (rawQuery) {
     const termGroups = expandQueryToGroups(rawQuery);
@@ -88,6 +90,22 @@ export async function GET(request: Request) {
         if (searchInDescription) {
           cond += ` OR p.description ILIKE $${pNum}`;
         }
+        cond += `)`;
+        groupConditions.push(cond);
+      });
+      // Within a group (synonyms), we use OR. Between groups (words), we use AND.
+      whereConditions.push(`(${groupConditions.join(' OR ')})`);
+    });
+  }
+
+  if (suppliers.length > 0) {
+    const supplierConditions: string[] = [];
+    suppliers.forEach(supplier => {
+        params.push(supplier);
+        supplierConditions.push(`s.slug = $${params.length}`);
+    });
+    whereConditions.push(`(${supplierConditions.join(' OR ')})`);
+  }
         cond += `)`;
         groupConditions.push(cond);
       });
