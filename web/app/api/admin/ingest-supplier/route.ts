@@ -10,7 +10,18 @@ async function runManualIngestion(client: any, supplier: any) {
     // For JSON APIs like Evenflow, we need to handle them differently
     if (supplier.type === 'json') {
       // Import and run the Evenflow driver directly
-      const evenflowDriver = require('../../../../worker/src/drivers/evenflow.js');
+      // For deployed version, we need to use a different approach
+      console.log('Loading Evenflow driver...');
+
+      // Dynamic import to avoid build issues
+      let evenflowDriver;
+      try {
+        evenflowDriver = require('../../../../worker/src/drivers/evenflow.js');
+        console.log('Evenflow driver loaded successfully');
+      } catch (e) {
+        console.error('Failed to load Evenflow driver:', e.message);
+        return { success: false, error: 'Evenflow driver not available: ' + e.message };
+      }
 
       console.log('Running Evenflow driver...');
       const products = await evenflowDriver(supplier, null, {
@@ -147,10 +158,11 @@ export async function POST(request: Request) {
 
       const supplier = supplierResult.rows[0];
 
-      console.log(`Manual ingestion triggered for ${supplier.name} (${supplier.slug})`);
+      console.log(`Manual ingestion triggered for ${supplier.name} (${supplier.slug}) - starting actual ingestion`);
 
       // Actually run the ingestion
       const result = await runManualIngestion(client, supplier);
+      console.log(`Manual ingestion completed for ${supplier.name}:`, result);
 
       if (result.success) {
         return NextResponse.json({
