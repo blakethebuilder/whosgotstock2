@@ -32,12 +32,12 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
             <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
 
             {/* HERO FEATURE TILE (LARGE) */}
-            <div className="md:col-span-12 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-[4rem] p-12 md:p-16 relative overflow-hidden group shadow-2xl shadow-gray-200/50 dark:shadow-none border border-white dark:border-gray-800 flex flex-col justify-center min-h-[550px]">
+            <div className="md:col-span-12 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-[3rem] p-8 md:p-12 relative overflow-hidden group shadow-2xl shadow-gray-200/50 dark:shadow-none border border-white dark:border-gray-800 flex flex-col justify-center min-h-[400px]">
                 {/* Subtle Grid Pattern Overlay */}
                 <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
-                <div className="relative z-10 space-y-10 max-w-4xl mx-auto text-center">
-                    <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 border border-white/50 dark:border-gray-700/50">
+                <div className="relative z-10 space-y-6 max-w-4xl mx-auto text-center">
+                    <div className="inline-flex items-center gap-3 px-5 py-2 bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 border border-white/50 dark:border-gray-700/50">
                         <span className="relative flex h-2 w-2">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
@@ -45,27 +45,43 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
                         Unified Supply Intelligence
                     </div>
 
-                    <div className="space-y-4">
-                        <h2 className="text-orange-500 font-black text-2xl md:text-3xl tracking-tighter italic">WhosGotStock?</h2>
-                        <h1 className="text-7xl md:text-8xl lg:text-9xl font-black text-gray-900 dark:text-white leading-[0.85] tracking-tighter">
-                            Find Stock <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-orange-300">Instantly.</span>
+                    <div className="space-y-2">
+                        <h2 className="text-orange-500 font-black text-lg md:text-xl tracking-tighter italic">Instant Channel Visibility.</h2>
+                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-gray-900 dark:text-white leading-[0.9] tracking-tighter">
+                            The Pulse of SA's<br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-orange-300">Tech Supply Chain.</span>
                         </h1>
                     </div>
 
-                    <p className="text-xl md:text-2xl font-medium text-gray-400 leading-relaxed max-w-2xl mx-auto">
-                        One interface. <span className="text-gray-900 dark:text-white font-bold">{usageStats.totalSuppliers || 6} Major Suppliers.</span> <span className="text-gray-900 dark:text-white font-bold">{(usageStats.totalProducts || 15000).toLocaleString()}+ Items.</span><br className="hidden md:block" />
-                        Built by suppliers, for suppliers. Stop the tab-switching nightmare.
-                    </p>
+                    <div className="space-y-4">
+                        <p className="text-base md:text-lg font-medium text-gray-400 leading-relaxed max-w-3xl mx-auto">
+                            Aggregated live inventory from <span className="text-gray-900 dark:text-white font-bold">{usageStats.totalSuppliers} Major Distributors.</span> One search. One result. No tab-switching required.
+                        </p>
 
-                    <div className="pt-8 flex flex-col sm:flex-row items-center gap-6 justify-center">
+                        <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 text-[10px] font-black uppercase tracking-widest text-gray-400/80">
+                            <div className="flex items-center gap-2">
+                                <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                Live B2B Pricing
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                Instant Comparisons
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                Automated Procurement
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="pt-6 flex flex-col sm:flex-row items-center gap-5 justify-center">
                         <button
                             onClick={onViewAllProducts}
-                            className="group relative bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-10 py-5 rounded-[2rem] font-black text-base hover:scale-105 transition-all active:scale-95 shadow-2xl shadow-gray-400/20 flex items-center gap-4 overflow-hidden"
+                            className="group relative bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-10 py-5 rounded-2xl font-black text-sm hover:scale-105 transition-all active:scale-95 shadow-2xl shadow-gray-400/20 flex items-center gap-4 overflow-hidden"
                         >
                             <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                            <span className="relative">Start Searching Now</span>
-                            <svg className="w-6 h-6 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <span className="relative">Explore All Hardware</span>
+                            <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                             </svg>
                         </button>
@@ -73,9 +89,9 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
                         {userRole === 'admin' && (
                             <a
                                 href="/admin"
-                                className="px-8 py-5 rounded-[2rem] font-black text-base border-2 border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-3"
+                                className="px-8 py-5 rounded-2xl font-black text-sm border-2 border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-3"
                             >
-                                Admin System
+                                Control Center
                             </a>
                         )}
                     </div>
@@ -171,6 +187,71 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
                     <CategoryTiles
                         onCategoryClick={onCategoryClick}
                     />
+                </div>
+            </div>
+
+            {/* CHANNEL INTELLIGENCE / HOW IT WORKS */}
+            <div className="md:col-span-12 mt-8 py-16 px-10 bg-gray-900 dark:bg-gray-800/20 rounded-[4rem] text-center relative overflow-hidden border border-white/10 shadow-2xl">
+                <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
+                    <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(30deg, #f97316 12%, transparent 12.5%, transparent 87%, #f97316 87.5%, #f97316), linear-gradient(150deg, #f97316 12%, transparent 12.5%, transparent 87%, #f97316 87.5%, #f97316), linear-gradient(30deg, #f97316 12%, transparent 12.5%, transparent 87%, #f97316 87.5%, #f97316), linear-gradient(150deg, #f97316 12%, transparent 12.5%, transparent 87%, #f97316 87.5%, #f97316), linear-gradient(60deg, #f97316 25%, transparent 25.5%, transparent 75%, #f97316 75%, #f97316), linear-gradient(60deg, #f97316 25%, transparent 25.5%, transparent 75%, #f97316 75%, #f97316)', backgroundSize: '80px 140px' }} />
+                </div>
+
+                <div className="relative z-10 max-w-5xl mx-auto space-y-16">
+                    <div className="space-y-4">
+                        <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter italic">One Search. Complete Clarity.</h3>
+                        <p className="text-gray-400 text-lg font-medium max-w-2xl mx-auto uppercase tracking-widest text-xs">A sophisticated aggregation engine built on live data connections.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {[
+                            {
+                                step: "01",
+                                title: "Search Instantly",
+                                desc: "Type any SKU or brand in the global search bar. We query live inventory across all 6 major distributors simultaneously.",
+                                icon: (
+                                    <svg className="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                )
+                            },
+                            {
+                                step: "02",
+                                title: "Assemble Your Order",
+                                desc: "Select and add products to your cart. Compare pricing from 2+ suppliers per item to ensure you're getting the best margin.",
+                                icon: (
+                                    <svg className="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                )
+                            },
+                            {
+                                step: "03",
+                                title: "Generate Quote",
+                                desc: "Convert your cart into a professional PDF quote or a direct supplier procurement request in one click.",
+                                icon: (
+                                    <svg className="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                )
+                            }
+                        ].map((item, i) => (
+                            <div key={i} className="group p-8 rounded-[2.5rem] bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-left relative overflow-hidden">
+                                <div className="absolute -right-4 -top-4 opacity-10 group-hover:scale-110 transition-transform">
+                                    <span className="text-8xl font-black italic">{item.step}</span>
+                                </div>
+                                <div className="mb-6 bg-white/10 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:bg-orange-500/20 transition-colors">
+                                    {item.icon}
+                                </div>
+                                <h4 className="text-xl font-black text-white mb-3 uppercase tracking-tighter">{item.title}</h4>
+                                <p className="text-gray-400 text-sm leading-relaxed font-medium relative z-10">{item.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="pt-8 flex flex-col items-center gap-6">
+                        <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.3em]">Built for the modern MSP workflow</p>
+                        <div className="w-px h-16 bg-gradient-to-b from-orange-500 to-transparent" />
+                    </div>
                 </div>
             </div>
         </div>
