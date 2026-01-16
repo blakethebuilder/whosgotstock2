@@ -50,14 +50,14 @@ export default function Navbar({
       <div className="max-w-7xl mx-auto flex justify-between items-center gap-4 bg-white/60 dark:bg-gray-900/60 backdrop-blur-xl border border-white/40 dark:border-gray-800/40 px-6 py-3 rounded-[2rem] shadow-2xl shadow-gray-200/50 dark:shadow-none">
 
         {/* Logo - WhosGotStock */}
-        <div className="flex items-center gap-2">
+        <div className="flex-shrink-0">
           <button
             onClick={onClearSearch}
-            className="flex items-center gap-2 group"
+            className="flex items-center group"
           >
-            <div className="bg-gray-900 dark:bg-white px-5 h-10 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95 shadow-lg shadow-gray-200 dark:shadow-none border border-white/10">
-              <span className="text-white dark:text-gray-900 font-black text-xs sm:text-sm tracking-tighter uppercase flex items-center gap-1">
-                WHOSGOT<span className="text-orange-500">STOCK</span>
+            <div className="bg-gray-900 dark:bg-white px-3 sm:px-5 h-9 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95 shadow-lg shadow-gray-200 dark:shadow-none border border-white/10">
+              <span className="text-white dark:text-gray-900 font-black text-[10px] sm:text-sm tracking-tighter uppercase">
+                <span className="sm:inline">WHOSGOT</span><span className="text-orange-500 sm:inline ml-0.5 sm:ml-1">STOCK</span>
               </span>
             </div>
           </button>
@@ -73,7 +73,7 @@ export default function Navbar({
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full bg-gray-100/50 dark:bg-gray-800/50 border-none rounded-2xl py-2 sm:py-2.5 pl-9 sm:pl-12 pr-20 sm:pr-24 text-xs sm:text-sm font-medium focus:ring-2 focus:ring-orange-500/20 focus:bg-white dark:focus:bg-gray-800 transition-all outline-none text-gray-900 dark:text-white"
+            className="w-full bg-gray-100 dark:bg-gray-800 border-2 border-transparent focus:border-orange-500/30 rounded-2xl py-2.5 sm:py-2.5 pl-10 sm:pl-12 pr-10 sm:pr-24 text-base sm:text-sm font-semibold focus:bg-white dark:focus:bg-gray-900 transition-all outline-none text-gray-900 dark:text-white"
           />
           <div className="absolute inset-y-0 right-14 sm:right-16 flex items-center pointer-events-none">
             <span className="hidden sm:inline-block px-1.5 py-0.5 border border-gray-200 dark:border-gray-700 rounded text-[9px] font-black text-gray-400 bg-white/50 dark:bg-gray-800/50">⌘K</span>
@@ -131,7 +131,7 @@ export default function Navbar({
           <div className="flex items-center gap-1">
             <button
               onClick={onRoleSwitch}
-              className="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-2xl transition-all group"
+              className="flex items-center gap-2 p-1 sm:px-3 sm:py-1.5 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-2xl transition-all group"
             >
               <div className="text-right hidden md:block">
                 <p className="text-xs font-bold text-gray-900 dark:text-white leading-none mb-0.5">
@@ -141,11 +141,11 @@ export default function Navbar({
                   {userRole} tier
                 </p>
               </div>
-              <div className={`w-9 h-9 rounded-2xl flex items-center justify-center overflow-hidden border-2 border-white dark:border-gray-800 shadow-sm transition-transform group-hover:scale-105 active:scale-95 ${getRoleColor(userRole)}`}>
+              <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl sm:rounded-2xl flex items-center justify-center overflow-hidden border-2 border-white dark:border-gray-800 shadow-sm transition-transform group-hover:scale-105 active:scale-95 ${getRoleColor(userRole)}`}>
                 {user ? (
-                  <span className="text-white font-black text-sm">{user.firstName.charAt(0)}</span>
+                  <span className="text-white font-black text-xs sm:text-sm">{user.firstName.charAt(0)}</span>
                 ) : (
-                  <svg className="w-5 h-5 text-white/70" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white/70" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>
                 )}
               </div>
             </button>
