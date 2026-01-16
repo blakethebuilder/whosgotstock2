@@ -10,6 +10,7 @@ export default function AdminPage() {
     const [authError, setAuthError] = useState('');
     
     const [suppliers, setSuppliers] = useState<any[]>([]);
+    const [supplierStats, setSupplierStats] = useState<any[]>([]);
     const [settings, setSettings] = useState({
         update_interval_minutes: '60',
         public_markup: '15',
@@ -51,10 +52,11 @@ export default function AdminPage() {
     const refreshData = async () => {
         setLoading(true);
         try {
-            console.log('Fetching suppliers and settings...');
-            const [supRes, setRes] = await Promise.all([
+            console.log('Fetching suppliers, settings, and stats...');
+            const [supRes, setRes, statsRes] = await Promise.all([
                 fetch('/api/admin/suppliers').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve([]) })),
-                fetch('/api/admin/settings').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve({}) }))
+                fetch('/api/admin/settings').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve({}) })),
+                fetch('/api/admin/supplier-stats').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve([]) }))
             ]);
             
             console.log('Suppliers response status:', supRes.status);
@@ -76,12 +78,21 @@ export default function AdminPage() {
                 console.error('Settings API error:', setRes.status);
                 setData = {}; // Ensure it's an object
             }
+
+            let statsData: any[] = [];
+            if (statsRes.ok) {
+                statsData = await statsRes.json();
+            } else {
+                console.error('Supplier stats API error:', statsRes.status);
+                statsData = [];
+            }
             
             console.log('Suppliers data:', supData);
             console.log('Settings data:', setData);
             
             // Ensure supData is an array
             setSuppliers(Array.isArray(supData) ? supData : []);
+            setSupplierStats(Array.isArray(statsData) ? statsData : []);
             setSettings({
                 update_interval_minutes: (setData as any)?.update_interval_minutes || '60',
                 public_markup: (setData as any)?.public_markup || '15',
@@ -93,6 +104,7 @@ export default function AdminPage() {
             console.error('Error fetching data:', e);
             // Set safe default values
             setSuppliers([]);
+            setSupplierStats([]);
             setSettings({
                 update_interval_minutes: '60',
                 public_markup: '15',
@@ -156,26 +168,47 @@ export default function AdminPage() {
             alert('Please fill in all fields');
             return;
         }
-        
+
         try {
             await fetch('/api/admin/suppliers', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    action: 'create', 
-                    name: newName, 
-                    slug: newSlug, 
-                    url: newUrl, 
-                    type: newType 
+                body: JSON.stringify({
+                    action: 'create',
+                    name: newName,
+                    slug: newSlug,
+                    url: newUrl,
+                    type: newType
                 })
             });
-            setNewName(''); 
-            setNewSlug(''); 
-            setNewUrl(''); 
+            setNewName('');
+            setNewSlug('');
+            setNewUrl('');
             setNewType('scoop');
             refreshData();
         } catch (error) {
             alert('Failed to add supplier');
+        }
+    };
+
+    const handleManualIngest = async (supplierSlug: string) => {
+        try {
+            const response = await fetch('/api/admin/ingest-supplier', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ supplierSlug })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                alert(`Ingestion triggered for ${data.supplier}`);
+                // Refresh stats after a short delay
+                setTimeout(() => refreshData(), 2000);
+            } else {
+                alert(`Failed: ${data.error}`);
+            }
+        } catch (error) {
+            alert('Failed to trigger ingestion');
         }
     };
 
@@ -505,10 +538,88 @@ export default function AdminPage() {
                                     </button>
                                 </div>
                             </div>
-                        </div>
+                         </div>
 
-                        {/* Manual Product Import - Second */}
-                        <DistributorImport />
+                         {/* Supplier Stats & Manual Control - New */}
+                         <div className="bg-white rounded-lg shadow-sm p-6">
+                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Supplier Statistics & Manual Control</h2>
+
+                             {/* Manual Fetch Buttons */}
+                             <div className="mb-6">
+                                 <h3 className="text-md font-medium text-gray-900 mb-3">Manual API Fetch</h3>
+                                 <p className="text-sm text-gray-600 mb-4">Trigger manual data ingestion for specific suppliers (normally runs automatically every 8 hours)</p>
+                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                                     {suppliers.map((supplier) => (
+                                         <button
+                                             key={supplier.slug}
+                                             onClick={() => handleManualIngest(supplier.slug)}
+                                             className="flex flex-col items-center p-3 border border-gray-300 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                                         >
+                                             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mb-2">
+                                                 <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                 </svg>
+                                             </div>
+                                             <span className="text-xs font-medium text-gray-900 text-center">{supplier.name}</span>
+                                             <span className="text-xs text-gray-500 mt-1">{supplier.slug}</span>
+                                         </button>
+                                     ))}
+                                 </div>
+                             </div>
+
+                             {/* Supplier Statistics Table */}
+                             <div>
+                                 <h3 className="text-md font-medium text-gray-900 mb-3">Supplier Statistics</h3>
+                                 <div className="overflow-x-auto">
+                                     <table className="min-w-full divide-y divide-gray-200">
+                                         <thead className="bg-gray-50">
+                                             <tr>
+                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
+                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Items</th>
+                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">In Stock</th>
+                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Updated</th>
+                                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price Range</th>
+                                             </tr>
+                                         </thead>
+                                         <tbody className="bg-white divide-y divide-gray-200">
+                                             {supplierStats.map((stat) => (
+                                                 <tr key={stat.supplier_slug}>
+                                                     <td className="px-4 py-3 text-sm font-medium text-gray-900">{stat.supplier_name}</td>
+                                                     <td className="px-4 py-3 text-sm text-gray-700">{stat.supplier_type}</td>
+                                                     <td className="px-4 py-3">
+                                                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                             stat.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                                         }`}>
+                                                             {stat.enabled ? 'Active' : 'Inactive'}
+                                                         </span>
+                                                     </td>
+                                                     <td className="px-4 py-3 text-sm text-gray-900 font-medium">{stat.total_products.toLocaleString()}</td>
+                                                     <td className="px-4 py-3 text-sm text-green-600 font-medium">{stat.products_in_stock.toLocaleString()}</td>
+                                                     <td className="px-4 py-3 text-sm text-gray-700">
+                                                         {stat.last_updated ? new Date(stat.last_updated).toLocaleString() : 'Never'}
+                                                     </td>
+                                                     <td className="px-4 py-3 text-sm text-gray-700">
+                                                         {stat.min_price !== '0.00' ? `R${stat.min_price} - R${stat.max_price}` : 'N/A'}
+                                                     </td>
+                                                 </tr>
+                                             ))}
+                                             {supplierStats.length === 0 && (
+                                                 <tr>
+                                                     <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                                                         No supplier statistics available
+                                                     </td>
+                                                 </tr>
+                                             )}
+                                         </tbody>
+                                     </table>
+                                 </div>
+                             </div>
+                         </div>
+
+                         {/* Manual Product Import - Second */}
+                         <DistributorImport />
 
                         {/* Generic Scraper - Last with close option */}
                         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
