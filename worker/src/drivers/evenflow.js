@@ -134,31 +134,33 @@ async function evenflowDriver(supplier, feedData, helpers) {
         console.log(`Evenflow: Retrieved ${allProducts.length} products from ${pageNumber - 1} pages`);
 
         return allProducts
-            .filter(p => p && (p.ItemCode || p.SKU || p.ProductCode || p.Code)) // Ensure product has identifier
+            .filter(p => p && (p['SKU CODE'] || p.SKU_CODE || p.ItemCode || p.SKU)) // Ensure product has identifier
             .map(p => {
-                // Map Evenflow API fields to our schema
-                const itemCode = p.ItemCode || p.SKU || p.ProductCode || p.Code || '';
-                const productName = p.ProductName || p.Name || p.Description || p.ItemDescription || '';
-                const price = parseFloat(p.SellingPrice || p.Price || p.UnitPrice || 0);
-                const qtyAvailable = parseInt(p.QtyAvailable || p.Quantity || p.Stock || 0);
+                // Map Evenflow API fields to our schema based on their documentation
+                const itemCode = p['SKU CODE'] || p.SKU_CODE || p.ItemCode || p.SKU || '';
+                const productName = p['PRODUCT NAME'] || p.PRODUCT_NAME || p.ProductName || p.Name || '';
+                const price = parseFloat(p['PRICE'] || p.PRICE || p.price || 0);
+                const hasPrice = price > 0;
+                const stockQuantity = parseInt(p['STOCK QUANTITY'] || p.STOCK_QUANTITY || p.QtyAvailable || p.Quantity || 0);
 
                 return {
                     supplier_sku: String(itemCode).trim().substring(0, 255),
                     supplier_name: supplier.name,
                     name: String(productName).substring(0, 250),
-                    description: String(p.Description || p.ItemDescription || productName || ''),
-                    brand: String(p.Brand || p.Manufacturer || 'Evenflow').substring(0, 100),
-                    price_ex_vat: price,
-                    qty_on_hand: qtyAvailable,
-                    stock_jhb: parseInt(p.QtyJHB || p.StockJHB || 0),
-                    stock_cpt: parseInt(p.QtyCPT || p.StockCPT || 0),
-                    image_url: String(p.ImageUrl || p.Image || p.ProductImage || ''),
-                    category: helpers.normalizeCategory(p.Category || p.ProductCategory || p.Group, 'evenflow'),
+                    description: String(productName || ''), // Use product name as description if no separate description
+                    brand: String(p['MANUFACTURER'] || p.MANUFACTURER || p.Manufacturer || 'Evenflow').substring(0, 100),
+                    price_ex_vat: hasPrice ? price : 0,
+                    price_on_request: !hasPrice, // Flag for "price on request"
+                    qty_on_hand: stockQuantity,
+                    stock_jhb: 0, // Evenflow doesn't provide branch-specific stock
+                    stock_cpt: 0, // Evenflow doesn't provide branch-specific stock
+                    image_url: String(p['IMAGE'] || p.IMAGE || p.ImageUrl || p.Image || ''),
+                    category: helpers.normalizeCategory(p['CATEGORY'] || p.CATEGORY || p.Category, 'evenflow'),
                     master_sku: `${supplier.id}-${itemCode}`.substring(0, 255),
                     raw_data: JSON.stringify(p)
                 };
             })
-            .filter(p => p.price_ex_vat > 0 && p.supplier_sku); // Filter out invalid products
+            .filter(p => p.supplier_sku); // Keep products even without price (will show "price on request")
 
     } catch (error) {
         console.error('Evenflow API: Error:', error.message);

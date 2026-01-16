@@ -245,6 +245,13 @@ export default function Home() {
 
   const formatPriceDisplay = (amount: string) => parseFloat(amount).toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+  const displayPrice = (product: Product) => {
+    if (product.price_on_request) {
+      return "Price on Request";
+    }
+    return `R ${formatPriceDisplay(calculatePriceWithDiscount(product.price_ex_vat).exVat)}`;
+  };
+
   const hasActiveFilters = selectedSuppliers.length > 0 || selectedCategories.length > 0 || minPrice || maxPrice || inStockOnly || selectedBrand || searchInDescription;
 
   return (
@@ -584,7 +591,7 @@ export default function Home() {
                           <div className="flex items-center gap-2 mb-4"><span className="text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-lg">{(userRole === 'public' || userRole === 'team') ? 'Smart Integrate' : product.supplier_name}</span></div>
                           <div className="flex items-end justify-between gap-4 mt-6">
                               <div className="space-y-0.5">
-                                  <div className="text-2xl font-black text-gray-900 dark:text-white leading-none">R {formatPriceDisplay(calculatePriceWithDiscount(product.price_ex_vat).exVat)}</div>
+                                  <div className="text-2xl font-black text-gray-900 dark:text-white leading-none">{displayPrice(product)}</div>
                                   <div className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Excluding VAT</div>
                               </div>
                               <div className="flex flex-col items-end gap-2">
@@ -653,7 +660,7 @@ export default function Home() {
                             </div>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <span className="font-black text-gray-900 dark:text-white text-base">R {formatPriceDisplay(calculatePriceWithDiscount(product.price_ex_vat).exVat)}</span>
+                            <span className="font-black text-gray-900 dark:text-white text-base">{displayPrice(product)}</span>
                           </td>
                           <td className="px-6 py-4 text-right">
                             <div className="flex items-center justify-end gap-2">
@@ -697,7 +704,7 @@ export default function Home() {
 
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} items={cart} updateQuantity={updateCartQuantity} removeItem={removeCartItem} userRole={userRole} pricingSettings={pricingSettings} />
       <ProductDetailModal product={selectedProduct} isOpen={selectedProduct !== null} onClose={() => setSelectedProduct(null)} onAddToCart={addToCart} onToggleCompare={toggleCompare} isInCompare={!!selectedProduct && !!compareList.find(p => p.id === selectedProduct.id)} calculatePrice={(basePrice: string) => calculatePrice(basePrice, userRole, pricingSettings)} userRole={userRole} />
-      <ComparisonModal products={compareList} isOpen={isCompareModalOpen} onClose={() => setIsCompareModalOpen(false)} onRemove={(id) => setCompareList(prev => prev.filter(p => p.id !== id))} onAddToCart={addToCart} formatPrice={formatPriceDisplay} calculatePrice={(base) => calculatePrice(base, userRole, pricingSettings)} userRole={userRole} />
+      <ComparisonModal products={compareList} isOpen={isCompareModalOpen} onClose={() => setIsCompareModalOpen(false)} onRemove={(id) => setCompareList(prev => prev.filter(p => p.id !== id))} onAddToCart={addToCart} formatPrice={formatPriceDisplay} displayPrice={displayPrice} calculatePrice={(base) => calculatePrice(base, userRole, pricingSettings)} userRole={userRole} />
 
       {/* Floating Comparison Toggle */}
       {compareList.length > 0 && !isCompareModalOpen && (

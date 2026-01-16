@@ -14,6 +14,7 @@ export interface Product {
     raw_data: any;
     stock_jhb?: number;
     stock_cpt?: number;
+    price_on_request?: boolean;
 }
 
 export interface Supplier {

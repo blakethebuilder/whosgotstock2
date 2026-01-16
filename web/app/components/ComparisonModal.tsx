@@ -8,6 +8,7 @@ interface ComparisonModalProps {
     onRemove: (id: number) => void;
     onAddToCart: (product: Product) => void;
     formatPrice: (amount: string) => string;
+    displayPrice: (product: Product) => string;
     calculatePrice: (base: string) => { exVat: string; incVat: string };
     userRole: UserRole;
 }
@@ -19,6 +20,7 @@ export default function ComparisonModal({
     onRemove,
     onAddToCart,
     formatPrice,
+    displayPrice,
     calculatePrice,
     userRole
 }: ComparisonModalProps) {
@@ -142,7 +144,7 @@ export default function ComparisonModal({
                                                 case 'pricing_ex':
                                                     content = (
                                                         <div className="text-left">
-                                                            <p className="text-lg font-black text-gray-900 dark:text-white">R {formatPrice(prices.exVat)}</p>
+                                                            <p className="text-lg font-black text-gray-900 dark:text-white">{displayPrice(product)}</p>
                                                             <p className="text-xs text-gray-400">Ex VAT</p>
                                                         </div>
                                                     );
