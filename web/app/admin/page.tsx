@@ -192,24 +192,7 @@ export default function AdminPage() {
     };
 
     const handleManualIngest = async (supplierSlug: string) => {
-        try {
-            const response = await fetch('/api/admin/ingest-supplier', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ supplierSlug })
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                alert(`Ingestion triggered for ${data.supplier}`);
-                // Refresh stats after a short delay
-                setTimeout(() => refreshData(), 2000);
-            } else {
-                alert(`Failed: ${data.error}`);
-            }
-        } catch (error) {
-            alert('Failed to trigger ingestion');
-        }
+        alert(`Manual ingestion for ${supplierSlug} is handled automatically by the worker every 8 hours. Check worker logs for status.`);
     };
 
     useEffect(() => {

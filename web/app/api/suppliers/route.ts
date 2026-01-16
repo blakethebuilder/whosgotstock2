@@ -26,7 +26,7 @@ export async function GET() {
         console.log('Suppliers API: Database connection released');
 
         const suppliers = suppliersResult.rows;
-        
+
         console.log('Suppliers API: Returning', suppliers.length, 'suppliers');
         return NextResponse.json(suppliers);
     } catch (err: any) {
