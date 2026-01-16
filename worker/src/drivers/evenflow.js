@@ -44,43 +44,50 @@ async function evenflowDriver(supplier, feedData, helpers) {
         // Now fetch products with pagination
         const allProducts = [];
         let pageNumber = 1;
-        const pageSize = 500;
+        const pageSize = 100;
         let hasMorePages = true;
 
         while (hasMorePages) {
             console.log(`Evenflow: Fetching page ${pageNumber}...`);
 
-            const response = await axios.get(baseUrl, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36'
-                },
-                params: {
-                    PageNumber: pageNumber,
-                    PageSize: pageSize
+            try {
+                const response = await axios({
+                    method: 'GET',
+                    url: baseUrl,
+                    data: {
+                        PageNumber: pageNumber,
+                        PageSize: pageSize
+                    },
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36'
+                    }
+                });
+
+                const data = response.data;
+                const products = data.Data || data.data || (data.Result && data.Result.Data) || [];
+
+                if (!Array.isArray(products) || products.length === 0) {
+                    if (pageNumber === 1) {
+                        console.log(`Evenflow: Page 1 returned no products. Response keys: ${Object.keys(data).join(', ')}`);
+                        if (data.Message) console.log(`Evenflow Message: ${data.Message}`);
+                    }
+                    hasMorePages = false;
+                } else {
+                    allProducts.push(...products);
+                    console.log(`Evenflow: Harvested ${products.length} items from page ${pageNumber}`);
+                    pageNumber++;
+                    if (pageNumber > 500) break;
                 }
-            });
-
-            const data = response.data;
-            // Evenflow sometimes returns Data (capitalized) in the response object
-            const products = data.Data || data.data || (data.Result && data.Result.Data) || [];
-
-            if (!Array.isArray(products) || products.length === 0) {
-                if (pageNumber === 1) {
-                    console.log(`Evenflow: Page 1 returned no products. Response keys: ${Object.keys(data).join(', ')}`);
+            } catch (err) {
+                console.error(`Evenflow API Page ${pageNumber} Error:`, err.message);
+                if (err.response) {
+                    console.error('Evenflow Error Detail:', JSON.stringify(err.response.data));
                 }
                 hasMorePages = false;
-            } else {
-                allProducts.push(...products);
-                console.log(`Evenflow: Harvested ${products.length} items from page ${pageNumber}`);
-                pageNumber++;
-
-                // Safety check to prevent excessive fetching in dev
-                if (pageNumber > 500) break;
             }
 
-            // Respectful delay between pages
             await new Promise(resolve => setTimeout(resolve, 50));
         }
 

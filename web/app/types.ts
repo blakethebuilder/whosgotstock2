@@ -25,8 +25,16 @@ export interface Supplier {
     enabled: boolean;
 }
 
+export interface Project {
+    id: string;
+    name: string;
+    description?: string;
+    createdAt: number;
+}
+
 export interface CartItem extends Product {
     quantity: number;
+    projectId?: string; // Optional reference to a project
 }
 
 export interface UsageStats {
