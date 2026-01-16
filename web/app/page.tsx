@@ -123,6 +123,10 @@ export default function Home() {
   useEffect(() => { localStorage.setItem('whosgotstock_user_role', userRole); }, [userRole]);
 
   const addProject = (name: string) => {
+    if (projects.length >= 3) {
+      alert("Maximum of 3 sites/projects allowed. Please remove a site to add a new one.");
+      return null;
+    }
     const newProject: Project = {
       id: Math.random().toString(36).substr(2, 9),
       name,
@@ -320,8 +324,7 @@ export default function Home() {
                   <span>Real-time Availability</span>
                 </div>
                 <h3 className="text-5xl md:text-6xl font-black text-gray-900 dark:text-white tracking-tighter leading-tight">
-                  Stock <br />
-                  <span className="text-orange-500 italic">Found.</span>
+                  Stock <span className="text-orange-500 italic">Found.</span>
                 </h3>
                 <p className="text-sm font-bold text-gray-400 uppercase tracking-[0.2em]">Aggregated from {suppliers.length} distributors • {totalResults.toLocaleString()} Items Synchronized</p>
               </div>
