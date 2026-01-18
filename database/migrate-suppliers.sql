@@ -8,7 +8,7 @@ VALUES ('Mustek', 'mustek',
   COALESCE(
     (SELECT value FROM settings WHERE key = 'MUSTEK_CUSTOMER_TOKEN'),
     'f49294f4-cf6b-429c-895f-d27d539cdac4'
-  ), 
+  ),
   'csv', true)
 ON CONFLICT (slug) DO UPDATE SET 
   url = EXCLUDED.url,
