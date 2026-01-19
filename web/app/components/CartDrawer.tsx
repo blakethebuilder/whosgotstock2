@@ -11,8 +11,9 @@ type QuoteDrawerProps = {
     onClose: () => void;
     items: CartItem[];
     projects: Project[];
-    addProject: (name: string) => string | null;
+    addProject: (name: string, slug?: string) => string | null;
     removeProject: (id: string) => void;
+    updateProject: (id: string, name: string, slug?: string) => void;
     updateItemProject: (itemId: number, projectId?: string) => void;
     updateQuantity: (id: number, delta: number) => void;
     removeItem: (id: number) => void;
@@ -27,6 +28,7 @@ export default function CartDrawer({
     projects,
     addProject,
     removeProject,
+    updateProject,
     updateItemProject,
     updateQuantity,
     removeItem,
@@ -300,7 +302,14 @@ export default function CartDrawer({
                 totalIncVat={totalIncVat}
                 userRole={userRole}
             />
-
+            <SiteManagementModal
+                isOpen={isSiteManagerOpen}
+                onClose={() => setShowSiteManager(false)}
+                projects={projects}
+                addProject={addProject}
+                removeProject={removeProject}
+                updateProject={updateProject}
+            />
         </>
     );
 }

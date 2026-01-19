@@ -146,6 +146,12 @@ export default function Home() {
     setCart(prev => prev.map(item => item.projectId === id ? { ...item, projectId: undefined } : item));
   };
 
+  const updateProject = (id: string, name: string, slug?: string) => {
+    setProjects(prev => prev.map(p => 
+      p.id === id ? { ...p, name, slug: slug || p.slug } : p
+    ));
+  };
+
   const updateItemProject = (itemId: number, projectId?: string) => {
     setCart(prev => prev.map(item => item.id === itemId ? { ...item, projectId } : item));
   };
@@ -404,6 +410,7 @@ export default function Home() {
         projects={projects}
         addProject={addProject}
         removeProject={removeProject}
+        updateProject={updateProject}
         updateItemProject={updateItemProject}
         updateQuantity={updateCartQuantity}
         removeItem={removeCartItem}
