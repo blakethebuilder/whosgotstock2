@@ -32,7 +32,10 @@ export default function Navbar({
   searchQuery,
   onSearchChange,
   compareCount,
-  onCompareOpen
+  onCompareOpen,
+  projects,
+  currentProjectId,
+  onProjectChange
 }: NavbarProps) {
   const { user, logout } = useAuth();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);

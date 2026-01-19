@@ -303,7 +303,7 @@ export default function Home() {
         onCompareOpen={() => setIsCompareModalOpen(true)}
         projects={projects}
         currentProjectId={currentProjectId}
-        onProjectChange={setCurrentProjectId}
+        onProjectChange={(projectId) => setCurrentProjectId(projectId || '')}
       />
 
       <div className="max-w-[1400px] mx-auto px-6 pt-32">
