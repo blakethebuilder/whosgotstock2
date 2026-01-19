@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import OrderModal from './OrderModal';
-import SiteManagementModal from './SiteManagementModal';
 import { CartItem, UserRole, Project } from '../types';
 import { calculatePrice, formatPrice, PricingSettings } from '@/lib/pricing';
 
@@ -11,9 +10,8 @@ type QuoteDrawerProps = {
     onClose: () => void;
     items: CartItem[];
     projects: Project[];
-    addProject: (name: string, slug?: string) => string | null;
+    addProject: (name: string) => string | null;
     removeProject: (id: string) => void;
-    updateProject: (id: string, name: string, slug?: string) => void;
     updateItemProject: (itemId: number, projectId?: string) => void;
     updateQuantity: (id: number, delta: number) => void;
     removeItem: (id: number) => void;
@@ -28,7 +26,6 @@ export default function CartDrawer({
     projects,
     addProject,
     removeProject,
-    updateProject,
     updateItemProject,
     updateQuantity,
     removeItem,
@@ -37,7 +34,6 @@ export default function CartDrawer({
 }: QuoteDrawerProps) {
     const [mounted, setMounted] = useState(false);
     const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
-    const [isSiteManagerOpen, setShowSiteManager] = useState(false);
     const [newProjectName, setNewProjectName] = useState('');
     const [showProjectAdd, setShowProjectAdd] = useState(false);
 
@@ -172,34 +168,54 @@ export default function CartDrawer({
                             </button>
                         </div>
 
-                        {/* Sites Reference Section */}
+                        {/* Sites Component Section */}
                         <div className="bg-gray-50 rounded-3xl p-5 border border-gray-100 relative group">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-2">
-                                    <h3 className="text-[10px] font-black text-gray-900 uppercase tracking-widest leading-none">Assigned Sites / Projects</h3>
+                                    <h3 className="text-[10px] font-black text-gray-900 uppercase tracking-widest leading-none">Your Sites / Projects</h3>
                                     <span className="px-2 py-0.5 bg-orange-100 text-orange-600 rounded-md text-[8px] font-black uppercase">{projects.length}/3</span>
                                 </div>
-                                <button
-                                    onClick={() => setShowSiteManager(true)}
-                                    className="text-[9px] font-black text-orange-600 hover:text-orange-700 uppercase tracking-widest flex items-center gap-1.5 transition-colors"
-                                >
-                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                                    Manage Sites
-                                </button>
+                                {projects.length < 3 && !showProjectAdd && (
+                                    <button
+                                        onClick={() => setShowProjectAdd(true)}
+                                        className="text-[9px] font-black text-orange-600 hover:text-orange-700 uppercase tracking-widest flex items-center gap-1.5 transition-colors"
+                                    >
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
+                                        New Site
+                                    </button>
+                                )}
                             </div>
 
-                            {projects.length === 0 ? (
-                                <p className="text-[9px] font-bold text-gray-400 italic">No sites created yet. Click "Manage Sites" to create locations for organizing your hardware.</p>
+                            {showProjectAdd ? (
+                                <form onSubmit={handleAddProject} className="flex gap-2 animate-in slide-in-from-top-2 duration-300">
+                                    <input
+                                        autoFocus
+                                        type="text"
+                                        placeholder="Site Name (e.g. Building A)"
+                                        className="flex-1 bg-white border-2 border-orange-500 rounded-xl px-4 py-2.5 text-xs font-bold text-gray-900 focus:outline-none"
+                                        value={newProjectName}
+                                        onChange={(e) => setNewProjectName(e.target.value)}
+                                    />
+                                    <button type="submit" className="bg-orange-600 text-white px-5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-orange-200 hover:bg-orange-700 transition-colors">Add</button>
+                                    <button type="button" onClick={() => setShowProjectAdd(false)} className="bg-white text-gray-400 px-4 rounded-xl border border-gray-200 text-[10px] font-black uppercase tracking-widest">X</button>
+                                </form>
                             ) : (
                                 <div className="flex flex-wrap gap-2">
-                                    {projects.map(p => (
-                                        <div key={p.id} className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2 shadow-sm">
-                                            <span className="text-[10px] font-black text-gray-700 uppercase tracking-tighter">{p.name}</span>
-                                            {p.slug && (
-                                                <span className="text-[8px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded text-nowrap">Slug: {p.slug}</span>
-                                            )}
-                                        </div>
-                                    ))}
+                                    {projects.length === 0 ? (
+                                        <p className="text-[9px] font-bold text-gray-400 italic">No custom sites created yet. Use sites to group hardware for specific locations.</p>
+                                    ) : (
+                                        projects.map(p => (
+                                            <div key={p.id} className="group relative flex items-center gap-2 bg-white border border-orange-100 rounded-xl px-4 py-2.5 shadow-sm hover:border-orange-300 transition-all">
+                                                <span className="text-[10px] font-black text-gray-700 uppercase tracking-tighter">{p.name}</span>
+                                                <button
+                                                    onClick={() => removeProject(p.id)}
+                                                    className="w-4 h-4 rounded-full bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                                                >
+                                                    <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                                                </button>
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -301,14 +317,6 @@ export default function CartDrawer({
                 totalExVat={totalExVat}
                 totalIncVat={totalIncVat}
                 userRole={userRole}
-            />
-            <SiteManagementModal
-                isOpen={isSiteManagerOpen}
-                onClose={() => setShowSiteManager(false)}
-                projects={projects}
-                addProject={addProject}
-                removeProject={removeProject}
-                updateProject={updateProject}
             />
         </>
     );

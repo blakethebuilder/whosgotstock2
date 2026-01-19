@@ -32,7 +32,6 @@ export type Supplier = {
 export type Project = {
     id: string;
     name: string;
-    slug?: string;
     description?: string;
     createdAt: number;
 };

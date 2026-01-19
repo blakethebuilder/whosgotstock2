@@ -63,7 +63,7 @@ export default function Navbar({
           >
             <div className="bg-gray-900 dark:bg-white px-1.5 sm:px-5 h-8 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105 active:scale-95 shadow-lg shadow-gray-200 dark:shadow-none border border-white/10">
               <span className="text-white dark:text-gray-900 font-black text-[9px] sm:text-sm tracking-tighter uppercase whitespace-nowrap">
-                <span className="hidden xs:inline">WHOSGOT</span><span className="text-orange-500 inline ml-0.5 sm:ml-1">STOCK</span>
+                 <span className="inline">WHOSGOT</span><span className="text-orange-500 inline ml-0.5 sm:ml-1">STOCK</span>
               </span>
             </div>
           </button>

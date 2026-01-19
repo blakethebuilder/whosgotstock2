@@ -5,15 +5,14 @@ import CategoryBrowser from './components/CategoryBrowser';
 import CartDrawer from './components/CartDrawer';
 import ProductDetailModal from './components/ProductDetailModal';
 import ComparisonModal from './components/ComparisonModal';
-import ProductGrid from './components/ProductGrid';
-import ProductTable from './components/ProductTable';
+import AccessPortalModal from './components/AccessPortalModal';
 import Navbar from './components/Navbar';
 import BentoDashboard from './components/BentoDashboard';
 import FilterPanel from './components/FilterPanel';
 import ResultsSkeleton from './components/ResultsSkeleton';
 import EmptySearchResults from './components/EmptySearchResults';
-import AccessPortalModal from './components/AccessPortalModal';
-import SiteManagementModal from './components/SiteManagementModal';
+import ProductGrid from './components/ProductGrid';
+import ProductTable from './components/ProductTable';
 import { Product, Supplier, CartItem, UserRole, UsageStats, Project } from './types';
 import { debounce } from '@/lib/debounce';
 import { calculatePrice, formatPrice } from '@/lib/pricing';
@@ -73,7 +72,6 @@ export default function Home() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [currentProjectId, setCurrentProjectId] = useState<string>('');
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isSiteManagerOpen, setIsSiteManagerOpen] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -125,7 +123,7 @@ export default function Home() {
   useEffect(() => { localStorage.setItem('whosgotstock_projects', JSON.stringify(projects)); }, [projects]);
   useEffect(() => { localStorage.setItem('whosgotstock_user_role', userRole); }, [userRole]);
 
-  const addProject = (name: string, slug?: string) => {
+  const addProject = (name: string) => {
     if (projects.length >= 3) {
       alert("Maximum of 3 sites/projects allowed. Please remove a site to add a new one.");
       return null;
@@ -133,7 +131,6 @@ export default function Home() {
     const newProject: Project = {
       id: Math.random().toString(36).substr(2, 9),
       name,
-      slug: slug || name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
       createdAt: Date.now()
     };
     setProjects(prev => [...prev, newProject]);
@@ -144,12 +141,6 @@ export default function Home() {
     setProjects(prev => prev.filter(p => p.id !== id));
     // Also move items in this project back to "General" (null)
     setCart(prev => prev.map(item => item.projectId === id ? { ...item, projectId: undefined } : item));
-  };
-
-  const updateProject = (id: string, name: string, slug?: string) => {
-    setProjects(prev => prev.map(p => 
-      p.id === id ? { ...p, name, slug: slug || p.slug } : p
-    ));
   };
 
   const updateItemProject = (itemId: number, projectId?: string) => {
@@ -410,7 +401,6 @@ export default function Home() {
         projects={projects}
         addProject={addProject}
         removeProject={removeProject}
-        updateProject={updateProject}
         updateItemProject={updateItemProject}
         updateQuantity={updateCartQuantity}
         removeItem={removeCartItem}
@@ -448,33 +438,6 @@ export default function Home() {
         passphraseError={passphraseError}
         onVerify={verifyPassphrase}
         isAuthenticating={isAuthenticating}
-      />
-      <SiteManagementModal
-        isOpen={isSiteManagerOpen}
-        onClose={() => setIsSiteManagerOpen(false)}
-        projects={projects}
-        addProject={(name, slug) => {
-          const newProject = {
-            id: Date.now().toString(),
-            name,
-            slug: slug || name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
-            createdAt: Date.now()
-          };
-          setProjects([...projects, newProject]);
-          return newProject.id;
-        }}
-        removeProject={(id) => {
-          const updatedProjects = projects.filter(p => p.id !== id);
-          setProjects(updatedProjects);
-          // Note: Items assigned to this project will need to be updated separately
-          // This could be done by calling a function to clean up orphaned project assignments
-        }}
-        updateProject={(id, name, slug) => {
-          const updatedProjects = projects.map(p => 
-            p.id === id ? { ...p, name, slug: slug || p.slug } : p
-          );
-          setProjects(updatedProjects);
-        }}
       />
     </main>
   );
