@@ -70,6 +70,7 @@ export default function Home() {
   // Cart & Project State
   const [cart, setCart] = useState<CartItem[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [currentProjectId, setCurrentProjectId] = useState<string>('');
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   useEffect(() => {
@@ -300,6 +301,9 @@ export default function Home() {
         onSearchChange={setQuery}
         compareCount={compareList.length}
         onCompareOpen={() => setIsCompareModalOpen(true)}
+        projects={projects}
+        currentProjectId={currentProjectId}
+        onProjectChange={setCurrentProjectId}
       />
 
       <div className="max-w-[1400px] mx-auto px-6 pt-32">
