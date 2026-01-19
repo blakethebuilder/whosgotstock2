@@ -28,16 +28,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = async () => {
     try {
-      const response = await fetch('/api/auth/me');
+      const response = await fetch('/api/auth/me', {
+        credentials: 'include' // Ensure cookies are sent with the request
+      });
       if (response.ok) {
         const data = await response.json();
         setUser(data.data.user);
       } else {
         // Handle 401 or other auth errors gracefully
+        console.log('Auth check failed:', response.status);
         setUser(null);
       }
     } catch (error) {
-      console.log('Auth check failed, user not logged in');
+      console.error('Auth check failed, user not logged in:', error);
       setUser(null);
     } finally {
       setLoading(false);
@@ -52,6 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
+        credentials: 'include'
       });
 
       if (response.ok) {
@@ -60,13 +64,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       return false;
     } catch (error) {
+      console.error('Login failed:', error);
       return false;
     }
   };
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
     } catch (error) {
       // Handle error silently
     } finally {

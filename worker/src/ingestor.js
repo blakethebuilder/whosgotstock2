@@ -182,4 +182,26 @@ async function ingestData(client) {
     }
 }
 
-module.exports = { ingestData };
+// Test connection function for Docker health checks
+async function testConnection() {
+  const { Client } = require('pg');
+  
+  try {
+    const client = new Client({
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false
+    });
+    
+    await client.connect();
+    await client.query('SELECT 1');
+    await client.end();
+    
+    console.log('Worker health check: Database connection successful');
+    process.exit(0);
+  } catch (error) {
+    console.error('Worker health check failed:', error.message);
+    process.exit(1);
+  }
+}
+
+module.exports = { ingestData, testConnection };

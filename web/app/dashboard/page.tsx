@@ -32,10 +32,14 @@ export default function DashboardPage() {
 
   const fetchUsageData = async () => {
     try {
-      const response = await fetch('/api/user/usage');
+      const response = await fetch('/api/user/usage', {
+        credentials: 'include'
+      });
       if (response.ok) {
         const data = await response.json();
         setUsageData(data.data);
+      } else {
+        console.error('Failed to fetch usage data:', response.status);
       }
     } catch (error) {
       console.error('Failed to fetch usage data:', error);

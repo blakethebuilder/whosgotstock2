@@ -74,9 +74,9 @@ export default function Home() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/suppliers').then(r => r.json()),
-      fetch('/api/admin/settings').then(r => r.json()),
-      fetch('/api/user/usage').then(r => r.json()).catch(() => ({ searchesThisMonth: 0, searchLimit: 25, quotesGenerated: 0, isLimitReached: false }))
+      fetch('/api/suppliers', { credentials: 'include' }).then(r => r.json()),
+      fetch('/api/admin/settings', { credentials: 'include' }).then(r => r.json()),
+      fetch('/api/user/usage', { credentials: 'include' }).then(r => r.json()).catch(() => ({ searchesThisMonth: 0, searchLimit: 25, quotesGenerated: 0, isLimitReached: false }))
     ]).then(([suppliersData, settingsData, usageData]) => {
       if (Array.isArray(suppliersData)) setSuppliers(suppliersData);
       if (settingsData) {
@@ -198,7 +198,7 @@ export default function Home() {
       if (userRole === 'public' && !isLoadMore) {
         const newSearchCount = usageStats.searchesThisMonth + 1;
         setUsageStats(prev => ({ ...prev, searchesThisMonth: newSearchCount, isLimitReached: newSearchCount >= prev.searchLimit }));
-        fetch('/api/user/track-usage', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'search' }) }).catch(console.error);
+        fetch('/api/user/track-usage', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'search' }), credentials: 'include' }).catch(console.error);
       }
     } catch (err) { console.error(err); } finally {
       setLoading(false);
@@ -249,7 +249,7 @@ export default function Home() {
     const roles = ['team', 'management', 'admin'];
     for (const role of roles) {
       try {
-        const response = await fetch('/api/auth/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ passphrase, role }) });
+        const response = await fetch('/api/auth/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ passphrase, role }), credentials: 'include' });
         const data = await response.json();
         if (data.success) {
           setUserRole(data.role as UserRole);
