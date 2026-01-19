@@ -6,6 +6,7 @@ interface ComparisonModalProps {
     isOpen: boolean;
     onClose: () => void;
     onRemove: (id: number) => void;
+    onClearAll: () => void;
     onAddToCart: (product: Product) => void;
     formatPrice: (amount: string) => string;
     displayPrice: (product: Product) => { exVat: string; incVat: string; isPOR: boolean };
@@ -18,6 +19,7 @@ export default function ComparisonModal({
     isOpen,
     onClose,
     onRemove,
+    onClearAll,
     onAddToCart,
     formatPrice,
     displayPrice,
@@ -61,12 +63,24 @@ export default function ComparisonModal({
                             <p className="text-sm text-gray-500">Comparing {products.length} item{products.length !== 1 ? 's' : ''}. Max 4 items.</p>
                         </div>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="p-3 hover:bg-red-500/10 hover:text-red-500 text-gray-400 rounded-2xl transition-all active:scale-95"
-                    >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
+                     <div className="flex gap-2">
+                         {products.length > 0 && (
+                             <button
+                                 onClick={onClearAll}
+                                 className="p-3 hover:bg-orange-500/10 hover:text-orange-500 text-gray-400 rounded-2xl transition-all active:scale-95"
+                                 title="Clear All Items"
+                             >
+                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                             </button>
+                         )}
+                         <button
+                             onClick={onClose}
+                             className="p-3 hover:bg-red-500/10 hover:text-red-500 text-gray-400 rounded-2xl transition-all active:scale-95"
+                             title="Close Comparison"
+                         >
+                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+                         </button>
+                     </div>
                 </div>
 
                 {/* Content Area */}
