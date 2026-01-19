@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from './AuthProvider';
-import { CartItem, UserRole, UsageStats } from '../types';
+import { CartItem, UserRole, UsageStats, Project } from '../types';
 import ThemeToggle from './ThemeToggle';
 
 interface NavbarProps {
