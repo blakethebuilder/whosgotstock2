@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from './AuthProvider';
 import { CartItem, UserRole, UsageStats, Project } from '../types';
@@ -40,7 +40,15 @@ export default function Navbar({
   const { user, logout } = useAuth();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-  // Mobile search toggle for better visibility on small screens
+  // Mobile detection for responsive UI tweaks
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 640);
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  // Mobile search visibility state (legacy toggle kept for non-mobile)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   const getRoleColor = (role: string) => {
@@ -102,18 +110,10 @@ export default function Navbar({
           </div>
           </div>
 
-        {/* Mobile: quick access to search (toggle) */}
-        <div className="sm:hidden flex items-center">
-          <button
-            onClick={() => setMobileSearchOpen((v) => !v)}
-            className="p-2 text-gray-600 dark:text-gray-400 hover:text-orange-500 rounded-xl hover:bg-gray-100/60 dark:hover:bg-gray-800/60 transition-colors"
-            aria-label="Toggle mobile search"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 3a7.5 7.5 0 006.15 13.65z"/></svg>
-          </button>
-        </div>
-        {/* Mobile search input (collapsible) */}
-        {mobileSearchOpen && (
+        {/* Mobile: search UI
+            - If mobile, show a full-width search input by default
+            - If not mobile, show a toggle button to reveal/hide input (legacy) */}
+        {isMobile ? (
           <div className="sm:hidden w-full px-3 pb-2">
             <input
               type="text"
@@ -122,6 +122,16 @@ export default function Navbar({
               onChange={(e) => onSearchChange(e.target.value)}
               className="w-full bg-gray-100 dark:bg-gray-800 border border-gray-300 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none focus:border-orange-500"
             />
+          </div>
+        ) : (
+          <div className="sm:hidden flex items-center">
+            <button
+              onClick={() => setMobileSearchOpen((v) => !v)}
+              className="p-2 text-gray-600 dark:text-gray-400 hover:text-orange-500 rounded-xl hover:bg-gray-100/60 dark:hover:bg-gray-800/60 transition-colors"
+              aria-label="Toggle mobile search"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 3a7.5 7.5 0 006.15 13.65z"/></svg>
+            </button>
           </div>
         )}
 
