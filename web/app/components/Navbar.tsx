@@ -40,6 +40,8 @@ export default function Navbar({
   const { user, logout } = useAuth();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  // Mobile search toggle for better visibility on small screens
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -69,8 +71,8 @@ export default function Navbar({
           </button>
         </div>
 
-        {/* Centered Search - Integrated into Navbar like inspiration */}
-        <div className="flex-1 min-w-0 flex relative group">
+        {/* Centered Search - Integrated into Navbar like inspiration (desktop/tablet) */}
+        <div className="flex-1 min-w-0 flex relative group hidden sm:flex">
           <div className="absolute inset-y-0 left-0 pl-2 sm:pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-orange-500 transition-colors">
             <svg className="w-3.5 h-3.5 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
           </div>
@@ -98,7 +100,30 @@ export default function Navbar({
               <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
             </div>
           </div>
+          </div>
+
+        {/* Mobile: quick access to search (toggle) */}
+        <div className="sm:hidden flex items-center">
+          <button
+            onClick={() => setMobileSearchOpen((v) => !v)}
+            className="p-2 text-gray-600 dark:text-gray-400 hover:text-orange-500 rounded-xl hover:bg-gray-100/60 dark:hover:bg-gray-800/60 transition-colors"
+            aria-label="Toggle mobile search"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 3a7.5 7.5 0 006.15 13.65z"/></svg>
+          </button>
         </div>
+        {/* Mobile search input (collapsible) */}
+        {mobileSearchOpen && (
+          <div className="sm:hidden w-full px-3 pb-2">
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="w-full bg-gray-100 dark:bg-gray-800 border border-gray-300 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none focus:border-orange-500"
+            />
+          </div>
+        )}
 
         {/* Right Side Actions */}
         <div className="flex items-center gap-2">
