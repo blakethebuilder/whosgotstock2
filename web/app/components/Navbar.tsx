@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAuth } from './AuthProvider';
 import { CartItem, UserRole, UsageStats, Project } from '../types';
 import ThemeToggle from './ThemeToggle';
+import Modal from './Modal';
 
 interface NavbarProps {
   cart: CartItem[];
@@ -114,23 +115,21 @@ export default function Navbar({
         </div>
 
         {mobileSearchOpen && (
-          <div role="dialog" aria-label="Mobile search dialog" className="fixed inset-0 z-50 flex items-start justify-center bg-black/60" onClick={() => setMobileSearchOpen(false)}>
-            <div className="mt-8 w-11/12 max-w-md bg-white dark:bg-gray-900 rounded-lg shadow-xl p-4" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-lg font-semibold">Search</span>
-                <button aria-label="Close mobile search" onClick={() => setMobileSearchOpen(false)} className="text-gray-500 hover:text-gray-700">✕</button>
-              </div>
-              <input
-                aria-label="Mobile search input inside modal"
-                type="text"
-                placeholder="Search..."
-                autoFocus
-                value={searchQuery}
-                onChange={(e) => onSearchChange(e.target.value)}
-                className="w-full px-3 py-3 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-lg font-semibold"
-              />
+          <Modal isOpen={true} onClose={() => setMobileSearchOpen(false)} size="md" className="dark:bg-gray-900">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-lg font-semibold">Search</span>
+              <button aria-label="Close mobile search" onClick={() => setMobileSearchOpen(false)} className="text-gray-500 hover:text-gray-700">✕</button>
             </div>
-          </div>
+            <input
+              aria-label="Mobile search input inside modal"
+              type="text"
+              placeholder="Search..."
+              autoFocus
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="w-full px-3 py-3 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-lg font-semibold"
+            />
+          </Modal>
         )}
 
         {/* Right Side Actions */}
