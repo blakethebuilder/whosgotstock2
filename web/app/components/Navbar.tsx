@@ -40,14 +40,6 @@ export default function Navbar({
   const { user, logout } = useAuth();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-  // Mobile detection for responsive UI tweaks
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const onResize = () => setIsMobile(window.innerWidth < 640);
-    onResize();
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
   // Mobile search visibility state (legacy toggle kept for non-mobile)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
@@ -110,28 +102,34 @@ export default function Navbar({
           </div>
           </div>
 
-        {/* Mobile: search UI
-            - If mobile, show a full-width search input by default
-            - If not mobile, show a toggle button to reveal/hide input (legacy) */}
-        {isMobile ? (
-          <div className="sm:hidden w-full px-3 pb-2">
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full bg-gray-100 dark:bg-gray-800 border border-gray-300 rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none focus:border-orange-500"
-            />
-          </div>
-        ) : (
-          <div className="sm:hidden flex items-center">
-            <button
-              onClick={() => setMobileSearchOpen((v) => !v)}
-              className="p-2 text-gray-600 dark:text-gray-400 hover:text-orange-500 rounded-xl hover:bg-gray-100/60 dark:hover:bg-gray-800/60 transition-colors"
-              aria-label="Toggle mobile search"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 3a7.5 7.5 0 006.15 13.65z"/></svg>
-            </button>
+        {/* Mobile: replace inline search with a dedicated modal-based search for reliability on small screens */}
+        <div className="sm:hidden flex items-center justify-end w-full pr-2">
+          <button
+            onClick={() => setMobileSearchOpen(true)}
+            aria-label="Open mobile search"
+            className="p-2 text-gray-600 dark:text-gray-400 hover:text-orange-500 rounded-xl hover:bg-gray-100/60 dark:hover:bg-gray-800/60 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 3a7.5 7.5 0 006.15 13.65z"/></svg>
+          </button>
+        </div>
+
+        {mobileSearchOpen && (
+          <div role="dialog" aria-label="Mobile search dialog" className="fixed inset-0 z-50 flex items-start justify-center bg-black/60" onClick={() => setMobileSearchOpen(false)}>
+            <div className="mt-8 w-11/12 max-w-md bg-white dark:bg-gray-900 rounded-lg shadow-xl p-4" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-lg font-semibold">Search</span>
+                <button aria-label="Close mobile search" onClick={() => setMobileSearchOpen(false)} className="text-gray-500 hover:text-gray-700">✕</button>
+              </div>
+              <input
+                aria-label="Mobile search input inside modal"
+                type="text"
+                placeholder="Search..."
+                autoFocus
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                className="w-full px-3 py-3 rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-lg font-semibold"
+              />
+            </div>
           </div>
         )}
 
