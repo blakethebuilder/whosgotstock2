@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import OrderModal from './OrderModal';
 import { CartItem, UserRole, Project } from '../types';
 import { calculatePrice, formatPrice, PricingSettings } from '@/lib/pricing';
@@ -36,12 +36,21 @@ export default function CartDrawer({
     const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
     const [newProjectName, setNewProjectName] = useState('');
     const [showProjectAdd, setShowProjectAdd] = useState(false);
+    const [activeTab, setActiveTab] = useState<string>('all');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    if (!mounted) return null;
+    useEffect(() => {
+        if (!isOpen) {
+            setActiveTab('all');
+            setSearchQuery('');
+            setCollapsedSections(new Set());
+        }
+    }, [isOpen]);
 
     const totalExVat = items.reduce((sum, item) => {
         const price = calculatePrice(item.price_ex_vat, userRole, pricingSettings);
@@ -80,138 +89,181 @@ export default function CartDrawer({
         setIsOrderModalOpen(true);
     };
 
+    const toggleSection = (sectionId: string) => {
+        const newCollapsed = new Set(collapsedSections);
+        if (newCollapsed.has(sectionId)) {
+            newCollapsed.delete(sectionId);
+        } else {
+            newCollapsed.add(sectionId);
+        }
+        setCollapsedSections(newCollapsed);
+    };
+
+    const unassignedCount = items.filter(i => !i.projectId).length;
+    const getProjectItemCount = (projectId: string) => items.filter(i => i.projectId === projectId).length;
+
+    const filteredItems = useMemo(() => {
+        let filtered = items;
+
+        if (activeTab !== 'all') {
+            if (activeTab === 'unassigned') {
+                filtered = filtered.filter(i => !i.projectId);
+            } else {
+                filtered = filtered.filter(i => i.projectId === activeTab);
+            }
+        }
+
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase();
+            filtered = filtered.filter(i =>
+                i.name.toLowerCase().includes(query) ||
+                i.brand.toLowerCase().includes(query) ||
+                i.supplier_name.toLowerCase().includes(query)
+            );
+        }
+
+        return filtered;
+    }, [items, activeTab, searchQuery]);
+
+    const tabs = useMemo(() => {
+        const result = [{ id: 'all', label: 'All', count: items.length }];
+        if (unassignedCount > 0) {
+            result.push({ id: 'unassigned', label: 'Main', count: unassignedCount });
+        }
+        projects.forEach(p => {
+            const count = getProjectItemCount(p.id);
+            if (count > 0) {
+                result.push({ id: p.id, label: p.name, count });
+            }
+        });
+        return result;
+    }, [items, projects, unassignedCount]);
+
     const renderItem = (item: CartItem) => {
         const itemPrice = calculatePrice(item.price_ex_vat, userRole, pricingSettings);
+        const lineTotal = parseFloat(itemPrice.exVat) * item.quantity;
 
         return (
-            <div key={item.id} className="flex gap-4 p-4 rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow group">
-                <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start mb-1">
-                        <h3 className="text-sm font-bold text-gray-900 line-clamp-2 leading-tight pr-2">{item.name}</h3>
+            <div key={item.id} className="group flex flex-col gap-2 p-3 rounded-xl border border-gray-100 bg-white hover:border-orange-200 hover:shadow-sm transition-all">
+                <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                        <h3 className="text-xs font-semibold text-gray-900 line-clamp-2 leading-snug">{item.name}</h3>
+                        <p className="text-[10px] text-gray-400 mt-0.5">{item.brand} • {item.supplier_name}</p>
+                    </div>
+                    <button
+                        onClick={() => removeItem(item.id)}
+                        className="shrink-0 w-6 h-6 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-md transition-all opacity-0 group-hover:opacity-100"
+                    >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center bg-gray-50 rounded-lg border border-gray-100">
                         <button
-                            onClick={() => removeItem(item.id)}
-                            className="text-gray-300 hover:text-red-500 transition-colors p-1"
+                            onClick={() => updateQuantity(item.id, -1)}
+                            className="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-orange-600 hover:bg-white rounded-l-lg transition-all text-sm font-medium"
                         >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+                            −
+                        </button>
+                        <span className="w-8 text-center text-xs font-semibold text-gray-900 tabular-nums">{item.quantity}</span>
+                        <button
+                            onClick={() => updateQuantity(item.id, 1)}
+                            className="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-orange-600 hover:bg-white rounded-r-lg transition-all text-sm font-medium"
+                        >
+                            +
                         </button>
                     </div>
-                    <p className="text-[10px] text-gray-500 mb-3 uppercase tracking-widest font-black flex items-center gap-2">
-                        <span className="text-orange-500">{item.brand}</span>
-                        <span className="w-1 h-1 rounded-full bg-gray-300" />
-                        <span>{item.supplier_name}</span>
-                    </p>
-
-                    <div className="flex items-center gap-2 mb-4">
-                        <div className="flex-1">
-                            <label className="text-[7px] font-black text-gray-400 uppercase tracking-widest mb-1 block">Assigned Site</label>
-                            <select
-                                value={item.projectId || ''}
-                                onChange={(e) => updateItemProject(item.id, e.target.value || undefined)}
-                                className="text-[10px] font-bold bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-gray-700 focus:outline/none focus:border-orange-500 transition-all w-full appearance-none cursor-pointer"
-                            >
-                                <option value="">Main Quote (Unassigned)</option>
-                                {projects.map(p => (
-                                    <option key={p.id} value={p.id}>{p.name.toUpperCase()}</option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="flex justify-between items-center bg-gray-50/50 p-2 rounded-xl border border-gray-50">
-                        <div className="flex items-center gap-4">
-                            <button
-                                onClick={() => updateQuantity(item.id, -1)}
-                                className="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-orange-600 hover:bg-white rounded-lg transition-all font-black text-lg border border-transparent hover:border-orange-100"
-                            >
-                                -
-                            </button>
-                            <span className="text-sm font-black w-4 text-center text-gray-900 tabular-nums">{item.quantity}</span>
-                            <button
-                                onClick={() => updateQuantity(item.id, 1)}
-                                className="w-7 h-7 flex items-center justify-center text-gray-400 hover:text-orange-600 hover:bg-white rounded-lg transition-all font-black text-lg border border-transparent hover:border-orange-100"
-                            >
-                                +
-                            </button>
-                        </div>
-                        <div className="text-right">
-                            <p className="text-sm font-black text-gray-900 italic">R {formatPrice(parseFloat(itemPrice.exVat))}</p>
-                            <p className="text-[8px] font-black text-gray-400 uppercase tracking-tighter">Per Item (Ex VAT)</p>
-                        </div>
+                    <div className="text-right min-w-[70px]">
+                        <p className="text-xs font-semibold text-gray-900 tabular-nums">R {formatPrice(lineTotal)}</p>
+                        <p className="text-[9px] text-gray-400">R {formatPrice(parseFloat(itemPrice.exVat))} ea</p>
                     </div>
                 </div>
+
+                {projects.length > 0 && (
+                    <div className="flex items-center gap-1.5 pt-1 border-t border-gray-50">
+                        <svg className="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                        <select
+                            value={item.projectId || ''}
+                            onChange={(e) => updateItemProject(item.id, e.target.value || undefined)}
+                            className="flex-1 text-xs font-medium bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 focus:outline-none focus:border-orange-400 cursor-pointer"
+                        >
+                            <option value="">Main Quote</option>
+                            {projects.map(p => (
+                                <option key={p.id} value={p.id}>{p.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                )}
             </div>
         );
     };
 
+    if (!mounted) return null;
+
     return (
         <>
             <div
-                className={`fixed inset-0 bg-black/60 backdrop-blur-md z-[150] transition-opacity duration-500 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-[150] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                 onClick={onClose}
             />
 
-            <div className={`fixed right-0 top-0 h-full w-full max-w-lg bg-white shadow-2xl z-[200] transform transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1) ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-                <div className="flex flex-col h-full bg-gray-50">
-                    {/* Header Section */}
-                    <div className="bg-white p-8 border-b border-gray-100 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-12 opacity-[0.03] rotate-12">
-                            <svg className="w-32 h-32" fill="currentColor" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" /></svg>
-                        </div>
-
-                        <div className="relative z-10 flex justify-between items-center mb-8">
+            <div className={`fixed right-0 top-0 h-full w-full max-w-md bg-gray-50 shadow-xl z-[200] transform transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                <div className="flex flex-col h-full">
+                    {/* Header */}
+                    <div className="bg-white border-b border-gray-100 px-5 py-4 shrink-0">
+                        <div className="flex items-center justify-between mb-4">
                             <div>
-                                <h2 className="text-3xl font-black text-gray-900 tracking-tighter italic">Quote Builder</h2>
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mt-1">Multi-Site Hardware Aggregator</p>
+                                <h2 className="text-lg font-bold text-gray-900">Quote Builder</h2>
+                                <p className="text-xs text-gray-400">{items.length} item{items.length !== 1 ? 's' : ''}</p>
                             </div>
-                            <button onClick={onClose} className="w-12 h-12 flex items-center justify-center bg-gray-50 hover:bg-gray-100 rounded-2xl transition-all active:scale-90 border border-gray-100">
-                                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+                            <button onClick={onClose} className="w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-lg transition-colors">
+                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
                         </div>
 
-                        {/* Sites Component Section */}
-                        <div className="bg-gray-50 rounded-3xl p-5 border border-gray-100 relative group">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-2">
-                                    <h3 className="text-[10px] font-black text-gray-900 uppercase tracking-widest leading-none">Your Sites / Projects</h3>
-                                    <span className="px-2 py-0.5 bg-orange-100 text-orange-600 rounded-md text-[8px] font-black uppercase">{projects.length}/3</span>
-                                </div>
+                        {/* Sites */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-medium text-gray-500">Sites / Projects</span>
                                 {projects.length < 3 && !showProjectAdd && (
                                     <button
                                         onClick={() => setShowProjectAdd(true)}
-                                        className="text-[9px] font-black text-orange-600 hover:text-orange-700 uppercase tracking-widest flex items-center gap-1.5 transition-colors"
+                                        className="text-xs font-medium text-orange-600 hover:text-orange-700 flex items-center gap-1"
                                     >
-                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" /></svg>
-                                        New Site
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
+                                        Add Site
                                     </button>
                                 )}
                             </div>
 
                             {showProjectAdd ? (
-                                <form onSubmit={handleAddProject} className="flex gap-2 animate-in slide-in-from-top-2 duration-300">
+                                <form onSubmit={handleAddProject} className="flex gap-2">
                                     <input
                                         autoFocus
                                         type="text"
-                                        placeholder="Site Name (e.g. Building A)"
-                                        className="flex-1 bg-white border-2 border-orange-500 rounded-xl px-4 py-2.5 text-xs font-bold text-gray-900 focus:outline-none"
+                                        placeholder="Site name..."
+                                        className="flex-1 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-100"
                                         value={newProjectName}
                                         onChange={(e) => setNewProjectName(e.target.value)}
                                     />
-                                    <button type="submit" className="bg-orange-600 text-white px-5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-orange-200 hover:bg-orange-700 transition-colors">Add</button>
-                                    <button type="button" onClick={() => setShowProjectAdd(false)} className="bg-white text-gray-400 px-4 rounded-xl border border-gray-200 text-[10px] font-black uppercase tracking-widest">X</button>
+                                    <button type="submit" className="px-3 py-1.5 bg-orange-600 text-white text-xs font-medium rounded-lg hover:bg-orange-700 transition-colors">Add</button>
+                                    <button type="button" onClick={() => setShowProjectAdd(false)} className="px-2 py-1.5 text-gray-400 hover:text-gray-600 text-xs">Cancel</button>
                                 </form>
                             ) : (
-                                <div className="flex flex-wrap gap-2">
+                                <div className="flex flex-wrap gap-1.5">
                                     {projects.length === 0 ? (
-                                        <p className="text-[9px] font-bold text-gray-400 italic">No custom sites created yet. Use sites to group hardware for specific locations.</p>
+                                        <p className="text-xs text-gray-400 italic">No sites yet</p>
                                     ) : (
                                         projects.map(p => (
-                                            <div key={p.id} className="group relative flex items-center gap-2 bg-white border border-orange-100 rounded-xl px-4 py-2.5 shadow-sm hover:border-orange-300 transition-all">
-                                                <span className="text-[10px] font-black text-gray-700 uppercase tracking-tighter">{p.name}</span>
+                                            <div key={p.id} className="group flex items-center gap-1.5 bg-orange-50 border border-orange-100 rounded-lg px-2.5 py-1">
+                                                <span className="text-xs font-medium text-gray-700">{p.name}</span>
+                                                <span className="text-[10px] text-gray-400">({getProjectItemCount(p.id)})</span>
                                                 <button
                                                     onClick={() => removeProject(p.id)}
-                                                    className="w-4 h-4 rounded-full bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all opacity-0 group-hover:opacity-100"
+                                                    className="w-4 h-4 flex items-center justify-center text-orange-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
                                                 >
-                                                    <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg>
+                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
                                                 </button>
                                             </div>
                                         ))
@@ -221,89 +273,137 @@ export default function CartDrawer({
                         </div>
                     </div>
 
-                    {/* Items Section */}
-                    <div className="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar">
+                    {/* Search & Tabs */}
+                    {items.length > 0 && (
+                        <div className="bg-white border-b border-gray-100 px-5 py-3 shrink-0 space-y-3">
+                            {items.length > 3 && (
+                                <div className="relative">
+                                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                                    <input
+                                        type="text"
+                                        placeholder="Search items..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full text-sm pl-9 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-100"
+                                    />
+                                </div>
+                            )}
+
+                            <div className="flex gap-1 overflow-x-auto scrollbar-hide -mx-1 px-1">
+                                {tabs.map(tab => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                                            activeTab === tab.id
+                                                ? 'bg-orange-100 text-orange-700'
+                                                : 'text-gray-500 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        <span className="truncate max-w-[100px]">{tab.label}</span>
+                                        <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${
+                                            activeTab === tab.id ? 'bg-orange-200 text-orange-800' : 'bg-gray-100 text-gray-400'
+                                        }`}>{tab.count}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Items */}
+                    <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
                         {items.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-40 grayscale">
-                                <div className="p-8 bg-white rounded-full border-4 border-dashed border-gray-100 animate-pulse">
-                                    <svg className="w-16 h-16 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-                                </div>
-                                <div>
-                                    <p className="text-gray-900 font-black text-xl tracking-tighter italic">Aggregator is Idle</p>
-                                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mt-2">Add items from search to build your quote</p>
-                                </div>
+                            <div className="flex flex-col items-center justify-center h-full text-center text-gray-400">
+                                <svg className="w-12 h-12 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                                <p className="text-sm font-medium">No items yet</p>
+                                <p className="text-xs mt-1">Add items from search to build your quote</p>
+                            </div>
+                        ) : filteredItems.length === 0 ? (
+                            <div className="text-center py-8 text-gray-400">
+                                <p className="text-sm">No items match your search</p>
                             </div>
                         ) : (
                             <>
-                                {/* Unassigned Section */}
-                                {items.filter(i => !i.projectId).length > 0 && (
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Main Quote Bundle</span>
-                                            <div className="h-0.5 flex-1 bg-gray-100" />
-                                        </div>
-                                        <div className="space-y-4">
-                                            {items.filter(i => !i.projectId).map(renderItem)}
-                                        </div>
+                                {activeTab === 'all' ? (
+                                    <>
+                                        {unassignedCount > 0 && (
+                                            <div className="space-y-2">
+                                                <button
+                                                    onClick={() => toggleSection('unassigned')}
+                                                    className="flex items-center gap-2 w-full text-left"
+                                                >
+                                                    <svg className={`w-4 h-4 text-gray-400 transition-transform ${collapsedSections.has('unassigned') ? '-rotate-90' : 'rotate-0'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                                    <span className="text-xs font-semibold text-gray-600">Main Quote</span>
+                                                    <span className="text-[10px] text-gray-400">({unassignedCount})</span>
+                                                </button>
+                                                {!collapsedSections.has('unassigned') && (
+                                                    <div className="space-y-2 pl-1">
+                                                        {items.filter(i => !i.projectId).map(item => (
+                                                            renderItem(item)
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {projects.map(project => {
+                                            const projectItems = items.filter(i => i.projectId === project.id);
+                                            if (projectItems.length === 0) return null;
+                                            const isCollapsed = collapsedSections.has(project.id);
+
+                                            return (
+                                                <div key={project.id} className="space-y-2">
+                                                    <button
+                                                        onClick={() => toggleSection(project.id)}
+                                                        className="flex items-center gap-2 w-full text-left"
+                                                    >
+                                                        <svg className={`w-4 h-4 text-gray-400 transition-transform ${isCollapsed ? '-rotate-90' : 'rotate-0'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                                        <span className="text-xs font-semibold text-gray-600">{project.name}</span>
+                                                        <span className="text-[10px] text-gray-400">({projectItems.length})</span>
+                                                    </button>
+                                                    {!isCollapsed && (
+                                                        <div className="space-y-2 pl-1">
+                                                            {projectItems.map(item => (
+                                                                renderItem(item)
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </>
+                                ) : (
+                                    <div className="space-y-2">
+                                        {filteredItems.map(item => (
+                                            renderItem(item)
+                                        ))}
                                     </div>
                                 )}
-
-                                {/* Site Groupings */}
-                                {projects.map(project => {
-                                    const projectItems = items.filter(i => i.projectId === project.id);
-                                    if (projectItems.length === 0) return null;
-
-                                    return (
-                                        <div key={project.id} className="space-y-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-orange-500 shadow-sm shadow-orange-200" />
-                                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-900 italic">Site: {project.name}</span>
-                                                <div className="h-0.5 flex-1 bg-orange-100/50" />
-                                            </div>
-                                            <div className="grid gap-4">
-                                                {projectItems.map(renderItem)}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
                             </>
                         )}
                     </div>
 
-                    {/* Pricing Footer */}
+                    {/* Footer */}
                     {items.length > 0 && (
-                        <div className="bg-white p-8 border-t border-gray-100 shadow-[0_-15px_40px_rgba(0,0,0,0.03)] space-y-6">
-                            <div className="space-y-3">
-                                <div className="flex justify-between items-center text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                    <span>Procurement Subtotal</span>
-                                    <span className="text-gray-900 font-mono tracking-tighter">R {formatPrice(totalExVat)}</span>
+                        <div className="bg-white border-t border-gray-100 px-5 py-4 shrink-0 space-y-4">
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-500">Subtotal (ex VAT)</span>
+                                <span className="text-sm font-semibold tabular-nums">R {formatPrice(totalExVat)}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <span className="text-sm font-medium text-gray-900">Total (inc VAT)</span>
                                 </div>
-                                <div className="flex justify-between items-end">
-                                    <div>
-                                        <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest block mb-1 leading-none">Estimated Total</span>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded-lg uppercase tracking-widest">Inc. VAT</span>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-4xl font-black text-gray-900 tracking-tighter italic leading-none">R {formatPrice(totalIncVat)}</p>
-                                    </div>
-                                </div>
+                                <span className="text-xl font-bold tabular-nums">R {formatPrice(totalIncVat)}</span>
                             </div>
 
                             <button
                                 onClick={generateEmailTemplate}
-                                className="w-full bg-gray-900 hover:bg-orange-600 text-white font-black py-6 rounded-3xl shadow-2xl shadow-gray-400/20 active:scale-[0.98] transition-all flex items-center justify-center gap-4 group"
+                                className="w-full bg-gray-900 hover:bg-orange-600 text-white font-medium py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
                             >
-                                <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                                </div>
-                                <span className="uppercase tracking-[0.2em] text-xs">Generate Detailed Site Packages</span>
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                Generate Site Packages
                             </button>
-
-                            <p className="text-[8px] text-center text-gray-400 font-black uppercase tracking-[0.3em] opacity-40">
-                                Global Supply Network • Built in South Africa
-                            </p>
                         </div>
                     )}
                 </div>

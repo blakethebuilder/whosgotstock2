@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import DistributorImport from '../components/DistributorImport';
 import GenericScraper from '../components/GenericScraper';
+import Link from 'next/link';
+import AdminPanel from '../components/admin/AdminPanel';
 
 export default function AdminPage() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -21,6 +23,15 @@ export default function AdminPage() {
         admin_markup: '0'
     });
     const [loading, setLoading] = useState(true);
+    // Evetech quick link to admin page
+    // (evetechLink rendered in the main admin header area for visibility)
+
+    // Quick access card for Evetech virtual API in admin portal
+    const evetechLink = (
+      <Link href="/admin/evetech">
+        <a className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">View Evetech Data</a>
+      </Link>
+    );
 
     // Component visibility state
     const [showScraper, setShowScraper] = useState(false);
@@ -304,6 +315,10 @@ export default function AdminPage() {
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* Quick Evetech access tile in admin portal */}
+            <AdminPanel title="Evetech Integration" subtitle="Virtual API surface" className="mb-6" >
+              {evetechLink}
+            </AdminPanel>
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     {/* Left Sidebar - Settings & Quick Actions */}
                     <div className="lg:col-span-1 space-y-6">
