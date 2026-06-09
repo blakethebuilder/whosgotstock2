@@ -66,6 +66,11 @@ export default function PricingPage() {
               </p>
             </div>
 
+            {/* ICT Restricted access warning */}
+            <div className="p-3.5 bg-orange-500/10 border border-orange-500/20 text-orange-400 rounded-2xl text-xs font-black text-center flex items-center justify-center gap-2">
+              🔒 Only registered ICT companies can see unmasked dealer costs.
+            </div>
+
             {/* Features */}
             <div className="space-y-4 py-2">
               <h3 className="text-xs font-black uppercase tracking-wider text-gray-300">What's included:</h3>
@@ -96,9 +101,9 @@ export default function PricingPage() {
               >
                 Log In to Activate Direct Access
               </Link>
-              <p className="text-[10px] text-gray-500 font-bold leading-normal">
-                To setup or register a new reseller organization, please contact your account manager or email <span className="text-orange-400">info@whosgotstock.co.za</span>.
-              </p>
+              <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-3.5 text-[10px] text-orange-400 font-bold leading-relaxed text-left">
+                ⚠️ IMPORTANT: Only registered ICT companies can see unmasked dealer costs. To setup or register a new reseller organization, please contact your account manager or email <span className="underline text-white">info@whosgotstock.co.za</span>.
+              </div>
             </div>
           </div>
         </div>
