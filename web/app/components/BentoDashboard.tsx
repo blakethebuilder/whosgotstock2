@@ -181,70 +181,154 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
                 </div>
             </div>
 
-            {/* CHANNEL INTELLIGENCE / HOW IT WORKS */}
-            <div className="md:col-span-12 mt-8 py-16 px-10 bg-gray-900 dark:bg-gray-800/20 rounded-[4rem] text-center relative overflow-hidden border border-white/10 shadow-2xl">
-                <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
-                    <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(30deg, #f97316 12%, transparent 12.5%, transparent 87%, #f97316 87.5%, #f97316), linear-gradient(150deg, #f97316 12%, transparent 12.5%, transparent 87%, #f97316 87.5%, #f97316), linear-gradient(30deg, #f97316 12%, transparent 12.5%, transparent 87%, #f97316 87.5%, #f97316), linear-gradient(150deg, #f97316 12%, transparent 12.5%, transparent 87%, #f97316 87.5%, #f97316), linear-gradient(60deg, #f97316 25%, transparent 25.5%, transparent 75%, #f97316 75%, #f97316), linear-gradient(60deg, #f97316 25%, transparent 25.5%, transparent 75%, #f97316 75%, #f97316)', backgroundSize: '80px 140px' }} />
-                </div>
-
-                <div className="relative z-10 max-w-5xl mx-auto space-y-16">
-                    <div className="space-y-4">
-                        <h3 className="text-4xl md:text-5xl font-black text-white tracking-tighter italic">One Search. Complete Clarity.</h3>
-                        <p className="text-gray-400 text-lg font-medium max-w-2xl mx-auto uppercase tracking-widest text-xs">A sophisticated aggregation engine built on live data connections.</p>
+            {/* INVENTORY FLOW PIPELINE DIAGRAM */}
+            <div className="md:col-span-12 mt-8 bg-gray-900 dark:bg-gray-900/60 rounded-[3rem] border border-gray-800 p-8 sm:p-12 relative overflow-hidden shadow-2xl">
+                <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
+                <div className="relative z-10 space-y-12">
+                    <div className="text-center max-w-2xl mx-auto space-y-2">
+                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-500 bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/20">Live Channel Aggregator</span>
+                        <h3 className="text-3xl sm:text-4xl font-black text-white tracking-tighter italic">One Search. Complete Clarity.</h3>
+                        <p className="text-gray-400 text-xs font-semibold leading-relaxed">How WhosGotStock maps feeds from multiple B2B distributors into one instantaneous query index.</p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {/* CSS Diagram Grid */}
+                    <div className="grid grid-cols-1 lg:grid-cols-11 items-center gap-6 py-6 border-y border-gray-800 bg-gray-950/30 rounded-[2.5rem] p-6">
+                        {/* Column 1: Supplier Nodes (4 cols) */}
+                        <div className="lg:col-span-4 space-y-3">
+                            <span className="text-[8px] font-black uppercase text-gray-500 tracking-wider block text-center lg:text-left mb-2">Ingestion Sources</span>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-2">
+                                {[
+                                    { name: 'Esquire', type: 'XML API' },
+                                    { name: 'Scoop', type: 'JSON API' },
+                                    { name: 'Pinnacle', type: 'XML Feed' },
+                                    { name: 'Syntech', type: 'JSON API' },
+                                    { name: 'Mustek', type: 'XML Feed' },
+                                    { name: 'Even Flow', type: 'Paginated JSON' },
+                                    { name: 'Linkqage', type: 'JSON API' }
+                                ].map(s => (
+                                    <div key={s.name} className="flex items-center gap-2 px-3 py-2 bg-gray-900/80 border border-gray-800 rounded-xl">
+                                        <div className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse shrink-0" />
+                                        <div className="min-w-0 flex-1 text-left">
+                                            <div className="text-[10px] font-black text-white uppercase tracking-wider leading-none">{s.name}</div>
+                                            <div className="text-[8px] font-bold text-gray-500 uppercase mt-0.5 tracking-tight">{s.type}</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Column 2: Pipelines & Flows (3 cols) */}
+                        <div className="lg:col-span-3 flex flex-row lg:flex-col items-center justify-center gap-4 py-4 lg:py-0">
+                            <div className="h-[2px] w-12 lg:w-[2px] lg:h-12 bg-gradient-to-r lg:bg-gradient-to-b from-orange-500 to-transparent animate-pulse" />
+                            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 text-center max-w-[180px] shadow-xl">
+                                <span className="text-[8px] font-black uppercase text-gray-400 tracking-widest block mb-1">Scraper Engines</span>
+                                <div className="text-[11px] font-black text-orange-500 uppercase tracking-wider animate-bounce">Concurrently Syncing</div>
+                                <span className="text-[8px] text-gray-500 block mt-1 font-semibold">Every 60 Mins</span>
+                            </div>
+                            <div className="h-[2px] w-12 lg:w-[2px] lg:h-12 bg-gradient-to-r lg:bg-gradient-to-b from-transparent to-orange-500 animate-pulse" />
+                        </div>
+
+                        {/* Column 3: Unified Index Hub (4 cols) */}
+                        <div className="lg:col-span-4 bg-gray-900/60 border border-orange-500/20 rounded-3xl p-6 text-center space-y-4 shadow-2xl shadow-orange-500/5 relative overflow-hidden group">
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-orange-300" />
+                            <div className="mx-auto w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center border border-orange-500/30">
+                                <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" /></svg>
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-black text-white uppercase tracking-widest">Unified Query Index</h4>
+                                <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mt-1">Trigram Search (pg_trgm)</p>
+                            </div>
+                            <div className="space-y-1 text-left text-[9px] font-semibold text-gray-405 border-t border-gray-800 pt-3 max-w-[200px] mx-auto">
+                                <div className="flex justify-between">
+                                    <span>Search Speed:</span>
+                                    <span className="text-green-500 font-bold">&lt; 15ms</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Sync Status:</span>
+                                    <span className="text-green-500 font-bold">Online</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Step descriptions */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
                         {[
                             {
                                 step: "01",
-                                title: "Search Instantly",
-                                desc: `Type any SKU or brand in the global search bar. We query live inventory across all ${usageStats.totalSuppliers || suppliers.length || 6} major distributors simultaneously.`,
-                                icon: (
-                                    <svg className="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                )
+                                title: "Query Live Stock",
+                                desc: "Run a single keyword search. The unified query index instantly matches name, SKU, and brands across all synchronized nodes."
                             },
                             {
                                 step: "02",
-                                title: "Assemble Your Order",
-                                desc: "Select and add products to your cart. Compare pricing from 2+ suppliers per item to ensure you're getting the best margin.",
-                                icon: (
-                                    <svg className="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                                    </svg>
-                                )
+                                title: "Compare & Assign",
+                                desc: "Assemble multiple supplier items, assign them to custom sites, and compare distributor costs directly within the drawer."
                             },
                             {
                                 step: "03",
-                                title: "Generate Quote",
-                                desc: "Convert your cart into a professional PDF quote or a direct supplier procurement request in one click.",
-                                icon: (
-                                    <svg className="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                )
+                                title: "Generate Orders",
+                                desc: "Compile structured supplier email templates grouped by site packages for instant B2B order placements."
                             }
                         ].map((item, i) => (
-                            <div key={i} className="group p-8 rounded-[2.5rem] bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-left relative overflow-hidden">
-                                <div className="absolute -right-4 -top-4 opacity-10 group-hover:scale-110 transition-transform">
-                                    <span className="text-8xl font-black italic">{item.step}</span>
+                            <div key={i} className="p-6 rounded-2xl bg-gray-950/40 border border-gray-800/80 text-left relative overflow-hidden group hover:border-gray-700 transition-colors">
+                                <div className="absolute -right-2 -top-2 opacity-5">
+                                    <span className="text-6xl font-black italic">{item.step}</span>
                                 </div>
-                                <div className="mb-6 bg-white/10 w-16 h-16 rounded-2xl flex items-center justify-center group-hover:bg-orange-500/20 transition-colors">
-                                    {item.icon}
-                                </div>
-                                <h4 className="text-xl font-black text-white mb-3 uppercase tracking-tighter">{item.title}</h4>
-                                <p className="text-gray-400 text-sm leading-relaxed font-medium relative z-10">{item.desc}</p>
+                                <h4 className="text-xs font-black text-orange-500 uppercase tracking-widest mb-2">{item.title}</h4>
+                                <p className="text-gray-400 text-xs font-medium leading-relaxed">{item.desc}</p>
                             </div>
                         ))}
                     </div>
-
-                    <div className="pt-8 flex flex-col items-center gap-6">
-                        <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.3em]">Built for the modern MSP workflow</p>
-                        <div className="w-px h-16 bg-gradient-to-b from-orange-500 to-transparent" />
-                    </div>
                 </div>
             </div>
+
+            {/* PROFESSIONAL FOOTER */}
+            <footer className="md:col-span-12 mt-16 pt-12 border-t border-gray-200 dark:border-gray-800 text-center sm:text-left">
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-8 mb-12">
+                    <div className="space-y-4">
+                        <span className="text-gray-900 dark:text-white font-black text-sm tracking-tighter uppercase">
+                            WHOSGOT<span className="text-orange-500 ml-0.5">STOCK</span>
+                        </span>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 font-medium leading-relaxed max-w-xs">
+                            South Africa's premier unified IT hardware sourcing aggregator. Instant pricing, inventory matching, and multi-supplier quote packaging.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Channel Suppliers</h4>
+                        <ul className="space-y-2 text-xs font-bold text-gray-500 dark:text-gray-400">
+                            <li>Esquire Technologies</li>
+                            <li>Pinnacle Micro</li>
+                            <li>Syntech Distribution</li>
+                            <li>Mustek Limited</li>
+                            <li>Scoop Distribution</li>
+                            <li>Linkqage / Even Flow</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Platform Info</h4>
+                        <ul className="space-y-2 text-xs font-bold text-gray-500 dark:text-gray-400">
+                            <li>Real-time Live Sync</li>
+                            <li>Dynamic Site Packages</li>
+                            <li>Role-Based Markup Tiers</li>
+                            <li>Developer API Sourcing</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Access & Support</h4>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 font-medium leading-relaxed">
+                            Authorized IT reseller channel access only. Reseller registration verified via ICASA / company credentials.
+                        </p>
+                    </div>
+                </div>
+                <div className="pt-6 border-t border-gray-100 dark:border-gray-850 flex flex-col sm:flex-row justify-between items-center gap-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                    <span>© {new Date().getFullYear()} WhosGotStock. All rights reserved.</span>
+                    <div className="flex gap-4">
+                        <a href="/login" className="hover:text-orange-500 transition-colors">Reseller Access</a>
+                        <span>•</span>
+                        <a href="/admin" className="hover:text-orange-500 transition-colors">Console Link</a>
+                    </div>
+                </div>
+            </footer>
         </div>
     );
 };
