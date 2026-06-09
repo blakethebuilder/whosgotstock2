@@ -3,7 +3,7 @@ import path from "path";
 
 const nextConfig: NextConfig = {
   output: 'standalone',
-  outputFileTracingRoot: path.join(__dirname, '../'),
+  outputFileTracingRoot: __dirname,
   // Explicitly set empty turbopack config to use webpack instead
   // This silences the Next.js 16 warning about webpack config without turbopack config
   turbopack: {},
