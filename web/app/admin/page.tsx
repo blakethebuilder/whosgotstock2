@@ -434,7 +434,16 @@ export default function AdminPage() {
                             <span>{tab.label}</span>
                         </button>
                     ))}
+                    {/* External link tab for Channel Intelligence */}
+                    <a
+                        href="/admin/intelligence"
+                        className="flex items-center gap-2 px-6 py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all text-orange-500 hover:text-white hover:bg-orange-500 border border-orange-500/20 hover:border-orange-500"
+                    >
+                        <span>🧠</span>
+                        <span>Channel Intelligence</span>
+                    </a>
                 </div>
+
 
                 {/* TAB CONTENT: OVERVIEW */}
                 {activeTab === 'overview' && (

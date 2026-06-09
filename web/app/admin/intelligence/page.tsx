@@ -42,6 +42,18 @@ export default function ChannelIntelligencePage() {
   const [drafts, setDrafts] = useState<string[]>([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
+  // Snapshot table health state
+  const [snapshotStats, setSnapshotStats] = useState<{
+    total_rows: number;
+    oldest_snapshot: string | null;
+    newest_snapshot: string | null;
+    distinct_days: number;
+    table_size: string;
+  } | null>(null);
+  const [cleanupRetainDays, setCleanupRetainDays] = useState(90);
+  const [cleaning, setCleaning] = useState(false);
+  const [cleanupResult, setCleanupResult] = useState<string | null>(null);
+
   // Default header token matching route authentication
   const HERMES_TOKEN = 'hermes_sec_auth_token_2026';
 
@@ -72,7 +84,38 @@ export default function ChannelIntelligencePage() {
 
   useEffect(() => {
     fetchSnapshot();
+    fetchSnapshotStats();
   }, []);
+
+  const fetchSnapshotStats = async () => {
+    try {
+      const res = await fetch('/api/admin/snapshot-cleanup');
+      if (res.ok) setSnapshotStats(await res.json());
+    } catch { /* non-critical */ }
+  };
+
+  const runCleanup = async () => {
+    setCleaning(true);
+    setCleanupResult(null);
+    try {
+      const res = await fetch('/api/admin/snapshot-cleanup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ retain_days: cleanupRetainDays })
+      });
+      const result = await res.json();
+      if (res.ok) {
+        setCleanupResult(`✅ Pruned ${result.deleted.toLocaleString()} rows. ${result.remaining.toLocaleString()} remain (${result.distinct_days ?? '—'} days of history).`);
+        fetchSnapshotStats();
+      } else {
+        setCleanupResult(`❌ ${result.error || 'Cleanup failed'}`);
+      }
+    } catch (err: any) {
+      setCleanupResult(`❌ ${err.message}`);
+    } finally {
+      setCleaning(false);
+    }
+  };
 
   const generateSocialDrafts = (snapshot: SnapshotData) => {
     setDrafting(true);
@@ -485,6 +528,84 @@ export default function ChannelIntelligencePage() {
             </div>
           </div>
 
+        </div>
+
+        {/* Snapshot Database Health & Cleanup Panel */}
+        <div className="bg-slate-900/40 border border-slate-800/60 rounded-3xl p-6 mt-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-6">
+            <div className="space-y-0.5">
+              <h2 className="text-sm font-black uppercase tracking-wider text-slate-200">🗄️ Snapshot Database Health</h2>
+              <p className="text-[11px] text-slate-400">Manage historical channel_snapshots table size. Analytics require a minimum of 14 days of history.</p>
+            </div>
+            <button
+              onClick={fetchSnapshotStats}
+              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-[10px] font-bold text-slate-300 transition-all"
+            >
+              Refresh Stats
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+            {[
+              { label: 'Total Rows', value: snapshotStats ? snapshotStats.total_rows.toLocaleString() : '—', color: 'text-white' },
+              { label: 'Days of History', value: snapshotStats ? `${snapshotStats.distinct_days} days` : '—', color: 'text-blue-400' },
+              { label: 'Table Size', value: snapshotStats?.table_size ?? '—', color: 'text-orange-400' },
+              { label: 'Oldest Snapshot', value: snapshotStats?.oldest_snapshot ? new Date(snapshotStats.oldest_snapshot).toLocaleDateString('en-ZA') : '—', color: 'text-slate-400' },
+            ].map(stat => (
+              <div key={stat.label} className="bg-slate-950/60 border border-slate-800 rounded-2xl p-4">
+                <div className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-1">{stat.label}</div>
+                <div className={`text-lg font-black ${stat.color}`}>{stat.value}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+            <div className="flex-1 space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                Retain last <span className="text-orange-400">{cleanupRetainDays} days</span> of history
+              </label>
+              <input
+                type="range"
+                min={30}
+                max={365}
+                step={15}
+                value={cleanupRetainDays}
+                onChange={(e) => setCleanupRetainDays(parseInt(e.target.value))}
+                className="w-full accent-orange-500 cursor-pointer"
+              />
+              <div className="flex justify-between text-[9px] text-slate-600 font-bold">
+                <span>30 days (min)</span>
+                <span>90 days (recommended)</span>
+                <span>365 days</span>
+              </div>
+            </div>
+
+            <button
+              onClick={runCleanup}
+              disabled={cleaning}
+              className="px-6 py-3 bg-red-900/40 hover:bg-red-800/50 border border-red-700/40 hover:border-red-600/60 text-red-400 hover:text-red-300 font-black text-xs uppercase tracking-widest rounded-2xl transition-all active:scale-95 disabled:opacity-50 whitespace-nowrap flex items-center gap-2"
+            >
+              {cleaning ? (
+                <><span className="w-3 h-3 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />Pruning...</>
+              ) : (
+                <>🗑️ Prune Old Snapshots</>
+              )}
+            </button>
+          </div>
+
+          {cleanupResult && (
+            <div className={`mt-4 px-4 py-3 rounded-xl text-xs font-semibold border ${
+              cleanupResult.startsWith('✅')
+                ? 'bg-green-500/10 border-green-500/20 text-green-400'
+                : 'bg-red-500/10 border-red-500/20 text-red-400'
+            }`}>
+              {cleanupResult}
+            </div>
+          )}
+
+          <p className="text-[10px] text-slate-600 mt-4 font-medium">
+            ⚠️ Rows older than the retention window will be permanently deleted. The velocity (7d) and resurrection (14d) analytics will continue to work as long as you retain at least 30 days of history.
+          </p>
         </div>
 
       </div>
