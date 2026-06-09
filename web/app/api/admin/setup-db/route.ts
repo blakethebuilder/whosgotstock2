@@ -117,6 +117,14 @@ export async function POST() {
         await client.query(`CREATE INDEX IF NOT EXISTS idx_fetch_log_supplier ON supplier_fetch_log(supplier_slug);`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_fetch_log_started ON supplier_fetch_log(started_at DESC);`);
 
+        // Fix existing Linkqage relative image URLs in the database
+        await client.query(`
+            UPDATE products 
+            SET image_url = raw_data->'attributes'->'metadata'->>'primary_image_tenancy_url' 
+            WHERE supplier_name = 'Linkqage' 
+              AND (image_url LIKE 'product_primary%' OR image_url IS NULL OR image_url = '');
+        `);
+
         client.release();
         
         return NextResponse.json({ 
