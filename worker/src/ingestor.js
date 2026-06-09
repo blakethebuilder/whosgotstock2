@@ -328,9 +328,66 @@ async function ingestData(client) {
             }
         }
     }
+
+    // Write a daily channel snapshot (once per UTC day, idempotent)
+    await writeChannelSnapshot(client);
 }
 
+// ---------------------------------------------------------------------------
+// Channel Snapshot Writer
+// Aggregates the live products table into channel_snapshots once per UTC day.
+// Idempotent: skips if a snapshot row already exists for today's date.
+// ---------------------------------------------------------------------------
+async function writeChannelSnapshot(client) {
+    if (!client) return;
+
+    try {
+        // Check if we've already written a snapshot today (UTC date)
+        const todayCheck = await client.query(`
+            SELECT 1 FROM channel_snapshots
+            WHERE captured_at >= CURRENT_DATE
+              AND captured_at <  CURRENT_DATE + INTERVAL '1 day'
+            LIMIT 1;
+        `);
+
+        if (todayCheck.rows.length > 0) {
+            console.log('[Snapshot] Daily channel snapshot already written for today. Skipping.');
+            return;
+        }
+
+        console.log('[Snapshot] Writing daily channel_snapshots aggregation...');
+
+        // Aggregate live products table: one row per unique SKU (master_sku, falling back to supplier_sku)
+        // Groups across all suppliers so total_channel_stock = sum of all distributor qty for that SKU
+        const result = await client.query(`
+            INSERT INTO channel_snapshots
+                (captured_at, sku, category, min_dealer_cost, max_dealer_cost, total_channel_stock, supplier_count)
+            SELECT
+                NOW()                                          AS captured_at,
+                COALESCE(NULLIF(master_sku, ''), supplier_sku) AS sku,
+                MAX(category)                                  AS category,
+                MIN(price_ex_vat)                              AS min_dealer_cost,
+                MAX(price_ex_vat)                              AS max_dealer_cost,
+                SUM(qty_on_hand)                               AS total_channel_stock,
+                COUNT(DISTINCT supplier_name)                  AS supplier_count
+            FROM products
+            WHERE price_ex_vat IS NOT NULL
+              AND price_ex_vat > 0
+            GROUP BY COALESCE(NULLIF(master_sku, ''), supplier_sku)
+            HAVING SUM(qty_on_hand) >= 0;  -- include zero-stock rows so resurrections can be detected
+        `);
+
+        console.log(`[Snapshot] Done. Wrote ${result.rowCount} SKU snapshot rows for ${new Date().toISOString().split('T')[0]}.`);
+
+    } catch (err) {
+        // Non-fatal: analytics will still work on existing data; log and continue.
+        console.error('[Snapshot] Failed to write channel snapshot:', err.message);
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Test connection function for Docker health checks
+// ---------------------------------------------------------------------------
 async function testConnection() {
   const { Client } = require('pg');
   
@@ -352,4 +409,4 @@ async function testConnection() {
   }
 }
 
-module.exports = { ingestData, testConnection };
+module.exports = { ingestData, writeChannelSnapshot, testConnection };
