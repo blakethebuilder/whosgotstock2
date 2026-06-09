@@ -128,9 +128,9 @@ async function linkqageDriver(supplier, feedData, helpers) {
                     });
                 }
 
-                // Extract images
-                const imageUrl = attrs.metadata?.primary_image_url || 
-                                 attrs.metadata?.primary_image_tenancy_url || '';
+                // Extract images - prioritize tenancy URL since it provides the full absolute CDN path
+                const imageUrl = attrs.metadata?.primary_image_tenancy_url || 
+                                 attrs.metadata?.primary_image_url || '';
 
                 // Safely extract category as a string (API may return objects)
                 let rawCategory = attrs.category?.name || attrs.type || 'Networking';
