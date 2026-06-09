@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo } from 'react';
 import OrderModal from './OrderModal';
 import { CartItem, UserRole, Project } from '../types';
 import { calculatePrice, formatPrice, PricingSettings } from '@/lib/pricing';
+import CartItemRow from './cart/CartItemRow';
+import CartCostSummary from './cart/CartCostSummary';
 
 type QuoteDrawerProps = {
     isOpen: boolean;
@@ -159,71 +161,7 @@ export default function CartDrawer({
         return Object.entries(breakdown).map(([name, total]) => ({ name, total }));
     }, [items, userRole, pricingSettings]);
 
-    const renderItem = (item: CartItem) => {
-        const itemPrice = calculatePrice(item.price_ex_vat, userRole, pricingSettings);
-        const lineTotal = parseFloat(itemPrice.exVat) * item.quantity;
-
-        return (
-            <div key={item.id} className="group flex flex-col gap-2 p-3 rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-orange-200 dark:hover:border-orange-900/50 hover:shadow-sm transition-all duration-300">
-                <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                        <h3 className="text-xs font-bold text-gray-900 dark:text-white line-clamp-1 leading-snug tracking-tight hover:text-orange-500 transition-colors" title={item.name}>{item.name}</h3>
-                        <div className="flex flex-wrap items-center gap-1.5 mt-1 text-[9px] text-gray-400 font-bold uppercase tracking-wider">
-                            <span>{item.brand}</span>
-                            <span>•</span>
-                            <span className="text-orange-600/90 dark:text-orange-400">{item.supplier_name}</span>
-                            <span>•</span>
-                            <span className="font-mono text-[8px]">{item.supplier_sku}</span>
-                        </div>
-                    </div>
-                    <button
-                        onClick={() => removeItem(item.id)}
-                        className="shrink-0 w-6 h-6 flex items-center justify-center text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-md transition-all opacity-0 group-hover:opacity-100"
-                    >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                </div>
-
-                <div className="flex items-center justify-between gap-4 pt-1.5 border-t border-gray-50 dark:border-gray-800">
-                    <div className="flex items-center bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200/50 dark:border-gray-700">
-                        <button
-                            onClick={() => updateQuantity(item.id, -1)}
-                            className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-orange-600 hover:bg-white dark:hover:bg-gray-700 rounded-l-lg transition-all text-xs font-bold"
-                        >
-                            −
-                        </button>
-                        <span className="w-7 text-center text-[10px] font-black text-gray-900 dark:text-white tabular-nums">{item.quantity}</span>
-                        <button
-                            onClick={() => updateQuantity(item.id, 1)}
-                            className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-orange-600 hover:bg-white dark:hover:bg-gray-700 rounded-r-lg transition-all text-xs font-bold"
-                        >
-                            +
-                        </button>
-                    </div>
-                    <div className="text-right flex flex-col items-end">
-                        <span className="text-[11px] font-black text-gray-900 dark:text-white tabular-nums">R {formatPrice(lineTotal)}</span>
-                        <span className="text-[8px] font-bold text-gray-450 dark:text-gray-500">R {formatPrice(parseFloat(itemPrice.exVat))} ea</span>
-                    </div>
-                </div>
-
-                {projects.length > 0 && (
-                    <div className="flex items-center gap-1.5 pt-1.5 border-t border-gray-50 dark:border-gray-800 mt-0.5">
-                        <span className="text-[8px] font-black uppercase text-gray-400 tracking-wider">Site Assignment:</span>
-                        <select
-                            value={item.projectId || ''}
-                            onChange={(e) => updateItemProject(item.id, e.target.value || undefined)}
-                            className="flex-1 text-[9px] font-bold bg-gray-50/50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md px-2 py-1 text-gray-700 dark:text-gray-300 focus:outline-none focus:border-orange-500 cursor-pointer"
-                        >
-                            <option value="">Main Quote</option>
-                            {projects.map(p => (
-                                <option key={p.id} value={p.id}>{p.name}</option>
-                            ))}
-                        </select>
-                    </div>
-                )}
-            </div>
-        );
-    };
+    // Individual items are rendered using the CartItemRow component.
 
     if (!mounted) return null;
 
@@ -391,7 +329,16 @@ export default function CartDrawer({
                                                 {!collapsedSections.has('unassigned') && (
                                                     <div className="space-y-2 pl-1">
                                                         {items.filter(i => !i.projectId).map(item => (
-                                                            renderItem(item)
+                                                            <CartItemRow
+                                                                key={item.id}
+                                                                item={item}
+                                                                projects={projects}
+                                                                updateQuantity={updateQuantity}
+                                                                removeItem={removeItem}
+                                                                updateItemProject={updateItemProject}
+                                                                userRole={userRole}
+                                                                pricingSettings={pricingSettings}
+                                                            />
                                                         ))}
                                                     </div>
                                                 )}
@@ -416,7 +363,16 @@ export default function CartDrawer({
                                                     {!isCollapsed && (
                                                         <div className="space-y-2 pl-1">
                                                             {projectItems.map(item => (
-                                                                renderItem(item)
+                                                                <CartItemRow
+                                                                    key={item.id}
+                                                                    item={item}
+                                                                    projects={projects}
+                                                                    updateQuantity={updateQuantity}
+                                                                    removeItem={removeItem}
+                                                                    updateItemProject={updateItemProject}
+                                                                    userRole={userRole}
+                                                                    pricingSettings={pricingSettings}
+                                                                />
                                                             ))}
                                                         </div>
                                                     )}
@@ -427,7 +383,16 @@ export default function CartDrawer({
                                 ) : (
                                     <div className="space-y-2">
                                         {filteredItems.map(item => (
-                                            renderItem(item)
+                                            <CartItemRow
+                                                key={item.id}
+                                                item={item}
+                                                projects={projects}
+                                                updateQuantity={updateQuantity}
+                                                removeItem={removeItem}
+                                                updateItemProject={updateItemProject}
+                                                userRole={userRole}
+                                                pricingSettings={pricingSettings}
+                                            />
                                         ))}
                                     </div>
                                 )}
@@ -437,43 +402,12 @@ export default function CartDrawer({
 
                     {/* Footer & Supplier Subtotals */}
                     {items.length > 0 && (
-                        <div className="bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-850 px-5 py-4 shrink-0 space-y-4">
-                            {/* Supplier cost breakdown */}
-                            {supplierBreakdowns.length > 1 && (
-                                <div className="bg-gray-50 dark:bg-gray-800/40 p-3 rounded-xl border border-gray-100 dark:border-gray-800 space-y-1.5">
-                                    <span className="text-[8px] font-black uppercase text-gray-400 tracking-widest block">Distributor Subtotals (Ex VAT)</span>
-                                    <div className="grid grid-cols-2 gap-2 text-[9px] font-bold text-gray-600 dark:text-gray-300">
-                                        {supplierBreakdowns.map(sb => (
-                                            <div key={sb.name} className="flex justify-between border-b border-gray-100/50 dark:border-gray-800/30 pb-0.5">
-                                                <span className="truncate pr-1">{sb.name}</span>
-                                                <span className="text-gray-900 dark:text-white tabular-nums">R {formatPrice(sb.total)}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="space-y-2">
-                                <div className="flex justify-between items-center text-xs">
-                                    <span className="text-gray-400 font-bold uppercase tracking-wider">Subtotal (Ex VAT)</span>
-                                    <span className="font-bold text-gray-700 dark:text-gray-350 tabular-nums">R {formatPrice(totalExVat)}</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <span className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-widest">Total (Inc VAT)</span>
-                                    </div>
-                                    <span className="text-xl font-black text-orange-600 dark:text-orange-500 tabular-nums">R {formatPrice(totalIncVat)}</span>
-                                </div>
-                            </div>
-
-                            <button
-                                onClick={generateEmailTemplate}
-                                className="w-full bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-100 text-white dark:text-gray-900 font-black uppercase tracking-widest py-3 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                                Generate Packages
-                            </button>
-                        </div>
+                        <CartCostSummary
+                            supplierBreakdowns={supplierBreakdowns}
+                            totalExVat={totalExVat}
+                            totalIncVat={totalIncVat}
+                            generateEmailTemplate={generateEmailTemplate}
+                        />
                     )}
                 </div>
             </div>

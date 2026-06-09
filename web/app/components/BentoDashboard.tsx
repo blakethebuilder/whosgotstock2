@@ -3,6 +3,9 @@
 import React from 'react';
 import CategoryTiles from './CategoryTiles';
 import { Supplier, UserRole, UsageStats } from '../types';
+import DashboardHero from './dashboard/DashboardHero';
+import PipelineFlowDiagram from './dashboard/PipelineFlowDiagram';
+import Footer from '../components/Footer';
 
 interface BentoDashboardProps {
     suppliers: Supplier[];
@@ -32,62 +35,7 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
             <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
 
             {/* HERO FEATURE TILE (LARGE) */}
-            <div className="md:col-span-12 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-[3rem] p-8 md:p-12 relative overflow-hidden group shadow-2xl shadow-gray-200/50 dark:shadow-none border border-white dark:border-gray-800 flex flex-col justify-center min-h-[400px]">
-                {/* Subtle Grid Pattern Overlay */}
-                <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-
-                <div className="relative z-10 space-y-6 max-w-4xl mx-auto text-center">
-                    <div className="inline-flex items-center gap-3 px-5 py-2 bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 border border-white/50 dark:border-gray-700/50">
-                        <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                        </span>
-                        Unified Supply Intelligence
-                    </div>
-
-                    <div className="space-y-2">
-                        <h2 className="text-orange-500 font-black text-lg md:text-xl tracking-tighter italic">Instant Channel Visibility.</h2>
-                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-gray-900 dark:text-white leading-[0.9] tracking-tighter">
-                            Whos Got <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-orange-300">Stock?</span>
-                        </h1>
-                    </div>
-
-                    <div className="space-y-4">
-                        <p className="text-base md:text-lg font-medium text-gray-400 leading-relaxed max-w-3xl mx-auto">
-                            The ultimate search engine for South Africa's IT channel. Aggregated live inventory from <span className="text-gray-900 dark:text-white font-bold">{usageStats.totalSuppliers} Major Distributors.</span> Stop switching tabs. Just ask: Whos Got Stock?
-                        </p>
-
-                        <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 text-[10px] font-black uppercase tracking-widest text-gray-400/80">
-                            <div className="flex items-center gap-2">
-                                <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                Live B2B Pricing
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                Instant Comparisons
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                Automated Procurement
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="pt-6 flex flex-col sm:flex-row items-center gap-5 justify-center">
-                        <button
-                            onClick={onViewAllProducts}
-                            className="group relative bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-10 py-5 rounded-2xl font-black text-sm hover:scale-105 transition-all active:scale-95 shadow-2xl shadow-gray-400/20 flex items-center gap-4 overflow-hidden"
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                            <span className="relative">Explore All Hardware</span>
-                            <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                            </svg>
-                        </button>
-
-                    </div>
-                </div>
-            </div>
+            <DashboardHero usageStats={usageStats} onViewAllProducts={onViewAllProducts} />
 
             {/* INTEGRATED SUPPLIERS TILE */}
             <div className="md:col-span-4 bg-gradient-to-br from-[#D8E698] to-[#C5D67A] rounded-[3rem] p-10 flex flex-col justify-between group cursor-pointer hover:shadow-2xl hover:shadow-[#D8E698]/30 transition-all border border-white/20">
@@ -193,164 +141,10 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
             </div>
 
             {/* INVENTORY FLOW PIPELINE DIAGRAM */}
-            <div className="md:col-span-12 mt-8 bg-gray-900 dark:bg-gray-900/60 rounded-[3rem] border border-gray-800 p-8 sm:p-12 relative overflow-hidden shadow-2xl">
-                <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
-                <div className="relative z-10 space-y-12">
-                    <div className="text-center max-w-2xl mx-auto space-y-2">
-                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-500 bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/20">Unified Search Pipeline</span>
-                        <h3 className="text-3xl sm:text-4xl font-black text-white tracking-tighter italic">One Search. Complete Clarity.</h3>
-                        <p className="text-gray-400 text-xs font-semibold leading-relaxed">How WhosGotStock maps and aggregates live channel inventories into one instantaneous sourcing results page.</p>
-                    </div>
-
-                    {/* CSS Diagram Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch py-8 border-y border-gray-800 bg-gray-950/30 rounded-[2.5rem] p-8">
-                        {/* Step 1: Input / Search Query */}
-                        <div className="bg-gray-900/60 border border-gray-800 rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-4 opacity-[0.03]">
-                                <svg className="w-24 h-24 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                            </div>
-                            <div className="space-y-4">
-                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-orange-500/10 border border-orange-500/20 text-[9px] font-black uppercase text-orange-500 tracking-wider rounded-full">
-                                    Step 01
-                                </div>
-                                <h4 className="text-base font-black text-white uppercase tracking-wider">1. Enter Query</h4>
-                                <p className="text-gray-400 text-xs font-semibold leading-relaxed">
-                                    Type a brand name, category, SKU, or generic hardware keyword in the search bar.
-                                </p>
-                            </div>
-                            <div className="mt-6 pt-4 border-t border-gray-800/60 space-y-2">
-                                <div className="bg-gray-950 rounded-xl px-3 py-2 text-[10px] text-gray-500 font-mono flex items-center gap-2 border border-gray-800">
-                                    <span className="text-orange-500 font-bold">$</span> search "cat6 cable"
-                                </div>
-                                <div className="bg-gray-950 rounded-xl px-3 py-2 text-[10px] text-gray-500 font-mono flex items-center gap-2 border border-gray-800">
-                                    <span className="text-orange-500 font-bold">$</span> SKU "core-i7-12700"
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Step 2: Concurrently Querying Feeds & Fuzzy Match */}
-                        <div className="bg-gray-900/60 border border-orange-500/20 rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden group shadow-2xl shadow-orange-500/5">
-                            <div className="absolute top-0 right-0 p-4 opacity-[0.03]">
-                                <svg className="w-24 h-24 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
-                            </div>
-                            <div className="space-y-4">
-                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-500/10 border border-green-500/20 text-[9px] font-black uppercase text-green-500 tracking-wider rounded-full">
-                                    Step 02
-                                </div>
-                                <h4 className="text-base font-black text-white uppercase tracking-wider">2. Search Pipeline</h4>
-                                <p className="text-gray-400 text-xs font-semibold leading-relaxed">
-                                    The engine concurrently queries live stock levels and pricing, matching descriptions, SKU variants, and brand alignments.
-                                </p>
-                            </div>
-                            <div className="mt-6 pt-4 border-t border-gray-800/60 space-y-2">
-                                <div className="flex justify-between items-center text-[10px] font-bold text-gray-500">
-                                    <span>Sync Status:</span>
-                                    <span className="text-green-500 flex items-center gap-1 font-bold">
-                                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                                        Live
-                                    </span>
-                                </div>
-                                <div className="flex justify-between items-center text-[10px] font-bold text-gray-500">
-                                    <span>Trigram Match Speed:</span>
-                                    <span className="text-orange-500 font-bold">&lt; 15ms</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Step 3: Compare & Build Quote */}
-                        <div className="bg-gray-900/60 border border-gray-800 rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-4 opacity-[0.03]">
-                                <svg className="w-24 h-24 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                            </div>
-                            <div className="space-y-4">
-                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 text-[9px] font-black uppercase text-blue-500 tracking-wider rounded-full">
-                                    Step 03
-                                </div>
-                                <h4 className="text-base font-black text-white uppercase tracking-wider">3. Compare & Quote</h4>
-                                <p className="text-gray-400 text-xs font-semibold leading-relaxed">
-                                    Select the lowest price or best stock location, add to your site quotes, and generate procurement emails.
-                                </p>
-                            </div>
-                            <div className="mt-6 pt-4 border-t border-gray-800/60 space-y-2">
-                                <div className="flex justify-between items-center text-[10px] font-bold text-gray-400">
-                                    <span>Multi-Supplier:</span>
-                                    <span className="text-white font-black">Active</span>
-                                </div>
-                                <div className="flex justify-between items-center text-[10px] font-bold text-gray-400">
-                                    <span>Markup Engine:</span>
-                                    <span className="text-white font-black">Automated</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Step descriptions */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
-                        {[
-                            {
-                                step: "01",
-                                title: "Query Live Stock",
-                                desc: "Run a single keyword search. The unified query index instantly matches name, SKU, and brands across all synchronized nodes."
-                            },
-                            {
-                                step: "02",
-                                title: "Compare & Assign",
-                                desc: "Assemble multiple supplier items, assign them to custom sites, and compare distributor costs directly within the drawer."
-                            },
-                            {
-                                step: "03",
-                                title: "Generate Orders",
-                                desc: "Compile structured supplier email templates grouped by site packages for instant B2B order placements."
-                            }
-                        ].map((item, i) => (
-                            <div key={i} className="p-6 rounded-2xl bg-gray-950/40 border border-gray-800/80 text-left relative overflow-hidden group hover:border-gray-700 transition-colors">
-                                <div className="absolute -right-2 -top-2 opacity-5">
-                                    <span className="text-6xl font-black italic">{item.step}</span>
-                                </div>
-                                <h4 className="text-xs font-black text-orange-500 uppercase tracking-widest mb-2">{item.title}</h4>
-                                <p className="text-gray-400 text-xs font-medium leading-relaxed">{item.desc}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
+            <PipelineFlowDiagram />
 
             {/* PROFESSIONAL FOOTER */}
-            <footer className="md:col-span-12 mt-16 pt-12 border-t border-gray-200 dark:border-gray-800 text-center sm:text-left">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mb-12">
-                    <div className="space-y-4">
-                        <span className="text-gray-900 dark:text-white font-black text-sm tracking-tighter uppercase">
-                            WHOSGOT<span className="text-orange-500 ml-0.5">STOCK</span>
-                        </span>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 font-medium leading-relaxed max-w-xs">
-                            South Africa's premier unified IT hardware sourcing aggregator. Instant pricing, inventory matching, and multi-supplier quote packaging.
-                        </p>
-                    </div>
-                    <div>
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Platform Info</h4>
-                        <ul className="space-y-2 text-xs font-bold text-gray-500 dark:text-gray-400">
-                            <li>Real-time Live Sync</li>
-                            <li>Dynamic Site Packages</li>
-                            <li>Role-Based Markup Tiers</li>
-                            <li>Developer API Sourcing</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Access & Support</h4>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 font-medium leading-relaxed">
-                            Public visitors can browse general hardware listings. Live stock warehouse levels, custom pricing markups, and purchase builder options require a verified reseller channel login.
-                        </p>
-                    </div>
-                </div>
-                <div className="pt-6 border-t border-gray-100 dark:border-gray-850 flex flex-col sm:flex-row justify-between items-center gap-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                    <span>© {new Date().getFullYear()} WhosGotStock. All rights reserved.</span>
-                    <div className="flex gap-4">
-                        <a href="/login" className="hover:text-orange-500 transition-colors">Reseller Access</a>
-                        <span>•</span>
-                        <a href="/admin" className="hover:text-orange-500 transition-colors">Console Link</a>
-                    </div>
-                </div>
-            </footer>
+            <Footer />
         </div>
     );
 };
