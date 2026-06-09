@@ -1,275 +1,192 @@
-# WhosGotStock - IT Sourcing Platform
+# WhosGotStock - Unified IT Sourcing Platform
 
-A comprehensive IT sourcing platform built for South African IT companies and MSPs, aggregating product data from multiple suppliers to provide real-time pricing comparison and stock checking.
+A comprehensive IT sourcing and stock-checking platform built for South African IT providers, MSPs, and resellers. It aggregates real-time inventory levels, live dealer pricing, and product attributes from South Africa's major IT distributors into a single searchable dashboard.
 
-## 🚀 Features
+---
 
-### 🔍 **Unified Product Search**
-- Search across 10,000+ IT products from 5 major suppliers
-- Real-time stock level checking
-- Advanced filtering (price range, supplier, stock status)
-- Intelligent search with synonyms and brand matching
+## 🚀 Key Features
 
-### 📊 **Supplier Integration**
-- **Scoop**: IT hardware and components (XML feed)
-- **Esquire**: Networking and enterprise equipment (XML feed)
-- **Pinnacle**: General IT supplies (XML feed)
-- **Syntech**: Specialized IT products (XML feed)
-- **Mustek**: Hardware and consumer electronics (CSV API) ✨ *NEW*
+### 🔍 Unified Search & Live Inventory
+- Real-time search across 15,000+ items from all major distributors.
+- Instant stock breakdown by warehouse (specifically Cape Town and Johannesburg).
+- Deep filtering by price ranges, stock status, category hierarchy, and brands.
+- Interactive side-by-side product comparison (up to 4 products).
 
-### 💰 **Tiered Pricing System**
-- **Free Tier**: 25 searches/month, 15% markup, watermarked quotes
-- **Professional**: R399/month, unlimited searches, 5% handling fee
-- **Enterprise**: R1599/month, white-labeled, no markup
-- **Staff**: Internal Smart Integrate tier, 10% markup
-- **Partner**: Admin access with cost pricing
+### 💰 Tiered Markup & Pricing
+- Dynamic pricing display based on user roles and custom markups:
+  - **Public**: Retail prices with a standard default markup (e.g., 15%).
+  - **Team**: Standard staff-discounts markup (e.g., 10%).
+  - **Management**: Internal management tier markup (e.g., 5%).
+  - **Admin / Partner**: Raw distributor cost prices.
+- Dual-pricing components showing both **Ex VAT** and **Inc VAT** values throughout the UI.
 
-### 🛠 **Technical Stack**
-- **Frontend**: Next.js 16.1.1, TypeScript, Tailwind CSS
-- **Backend**: Node.js, PostgreSQL
-- **Worker Services**: Automated data ingestion
-- **APIs**: RESTful with standardized responses
+### 📋 Cart, Site Organization & Quotes
+- Organizes selected inventory items into custom projects or specific job sites (up to 3 active projects).
+- Instant PDF quote generation for clients with markup configurations.
 
-## 🏗 Architecture
+---
+
+## 🏗 System Architecture
+
+The application is split into three decoupled service layers:
 
 ```
-├── web/                    # Next.js frontend application
-│   ├── app/               # App Router pages and API routes
-│   ├── components/        # Reusable UI components
-│   ├── lib/              # Utility functions and database
-│   └── public/           # Static assets
-├── worker/               # Background data processing
-│   ├── src/             # Data ingestion logic
-│   └── suppliers.json   # Supplier configurations
-├── database/            # Database schema and initialization
-└── docker-compose.yml   # Container orchestration
+├── web/                    # Next.js 16.1.1 Frontend & Search API
+│   ├── app/                # App Router pages, admin dashboard & API endpoints
+│   ├── components/         # Modular UI (BentoDashboard, FilterPanel, Cart, etc.)
+│   ├── lib/                # Database pool connection (with SSL support) and utility functions
+│   └── public/             # Static brand assets and icons
+│
+├── worker/                 # Background Node.js Ingestion Engine
+│   ├── src/                # Ingest logic and mapping middleware
+│   ├── index.js            # Ingestion scheduler loop
+│   └── src/drivers/        # Supplier-specific parser plugins
+│
+└── database/               # Relational Database Layer
+    ├── init.sql            # Core database schema
+    ├── migrations/         # Versioned schema updates and supplier migrations
+    └── run-migrations.sh   # Automated migration runner script
 ```
 
-## 🚀 Quick Start
+---
 
-### Prerequisites
-- Node.js 18+
-- PostgreSQL 15+
-- npm or yarn
+## 🔌 Integrated Suppliers & Drivers
 
-### Local Development
+Each supplier has a dedicated parsing driver located in `worker/src/drivers/`:
 
-1. **Clone repository**
+| Supplier | Slug | Type | Authentication / Feed Format | Location Stock Logic |
+| :--- | :--- | :--- | :--- | :--- |
+| **Scoop** | `scoop` | XML | HTTP XML feed (Anonymous) | National aggregate |
+| **Esquire** | `esquire` | XML | HTTP XML feed with email & password | National aggregate |
+| **Pinnacle** | `pinnacle` | XML | HTTP XML feed with API keys | National aggregate |
+| **Syntech** | `syntech` | XML | HTTP XML feed with API keys | National aggregate |
+| **Mustek** | `mustek` | CSV | HTTP CSV API with Customer Token | National aggregate |
+| **Even Flow** | `evenflow` | JSON | Axios API fetch with bearer auth | National aggregate |
+| **Linkqage** | `linkqage` | JSON | FTGDrop JSON API with pagination & token | Segmented (JHB / CPT) |
+
+---
+
+## ⚙️ Configuration & Environment Variables
+
+Create a `.env` file in the root directory (based on `.env.example`):
+
 ```bash
-git clone https://github.com/blakethebuilder/whosgotstock2.git
-cd whosgotstock
+# Database Configuration
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/whosgotstock
+DATABASE_SSL=false                       # Set to 'true' for production with SSL
+
+# Authentication & Access Control
+JWT_SECRET=your-super-secret-jwt-key
+TEAM_ACCESS_CODE=your-team-code
+MANAGEMENT_ACCESS_CODE=your-management-code
+ADMIN_ACCESS_CODE=your-admin-code
+
+# Supplier Credentials
+ESQUIRE_EMAIL=your-email@example.com
+ESQUIRE_PASSWORD=your-password
+MUSTEK_CUSTOMER_TOKEN=your-mustek-token
+SYNTECH_API_KEY=your-syntech-key
+PINNACLE_UID=your-pinnacle-uid
+PINNACLE_API_KEY=your-pinnacle-key
+EVENFLOW_API_URL=https://api.evenflow.com/v1
+EVENFLOW_API_KEY=your-evenflow-key
+LINKQAGE_TOKEN=your-linkqage-token
+
+# Ingestion Settings
+UPDATE_INTERVAL_MINUTES=60
 ```
 
-2. **Install dependencies**
+---
+
+## 🚀 Quick Start (Local Development)
+
+### 1. Install Dependencies
 ```bash
-# Frontend
+# Install web app packages
 cd web
 npm install
 
-# Worker
+# Install worker packages
 cd ../worker
 npm install
 ```
 
-3. **Setup database**
+### 2. Database Ingestion & Schema Setup
+Make sure you have a running PostgreSQL instance locally, then:
 ```bash
-# Create database
-createdb whosgotstock
-
-# Run initialization script
-psql -d whosgotstock -f database/init.sql
-
-# Run supplier migration (IMPORTANT for Mustek API)
-psql -d whosgotstock -f database/migrate-suppliers.sql
+# Run the migrations runner to create the tables, supplier rows, and settings
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/whosgotstock ./database/run-migrations.sh
 ```
 
-4. **Configure environment**
+### 3. Start Development Servers
 ```bash
-# Worker environment
-cd worker
-echo "DATABASE_URL=postgresql://username@localhost:5432/whosgotstock" > .env
-
-# Web environment
-cd ../web
-echo "DATABASE_URL=postgresql://username@localhost:5432/whosgotstock" > .env.local
-```
-
-5. **Start services**
-```bash
-# Start worker (in one terminal)
-cd worker
-node index.js
-
-# Start web app (in another terminal)
+# Run Frontend (localhost:3000)
 cd web
 npm run dev
-```
 
-6. **Access the application**
-- Web App: http://localhost:3000
-- API: http://localhost:3000/api/search
-
-### Production Deployment
-
-#### Database Setup
-```bash
-# 1. Run database initialization
-psql -d whosgotstock -f database/init.sql
-
-# 2. Run supplier migration (CRITICAL for Mustek)
-psql -d whosgotstock -f database/migrate-suppliers.sql
-
-# 3. Set environment variables
-export DATABASE_URL="postgresql://user@host:5432/whosgotstock"
-export MUSTEK_CUSTOMER_TOKEN="your-production-token"
-export ESQUIRE_EMAIL="your-production-email"
-export ESQUIRE_PASSWORD="your-production-password"
-```
-
-#### Environment Variables Required for Production
-```bash
-# Copy and configure environment
-cp .env.example .env
-# Edit .env with production values
-
-# Required variables:
-DATABASE_URL=postgresql://user@host:5432/whosgotstock
-MUSTEK_CUSTOMER_TOKEN=your-mustek-token
-ESQUIRE_EMAIL=your-esquire-email
-ESQUIRE_PASSWORD=your-esquire-password
-SYNTECH_API_KEY=your-syntech-key
-PINNACLE_API_KEY=your-pinnacle-key
-```
-
-### Docker Deployment
-
-```bash
-docker-compose up -d
-```
-
-## 📡 API Documentation
-
-### Search API
-```bash
-GET /api/search?q=iphone&supplier=mustek&min_price=1000&max_price=20000
-```
-
-**Parameters:**
-- `q`: Search query
-- `supplier`: Filter by supplier (scoop, esquire, pinnacle, syntech, mustek)
-- `brand`: Filter by brand
-- `min_price`/`max_price`: Price range
-- `in_stock`: Only show items with stock
-- `sort`: relevance, price_asc, price_desc, newest
-
-**Response:**
-```json
-{
-  "results": [...],
-  "total": 34,
-  "page": 1,
-  "limit": 50,
-  "searchTerms": ["iphone"]
-}
-```
-
-## 🔧 Configuration
-
-### Adding New Suppliers
-
-1. **Add to database:**
-```sql
-INSERT INTO suppliers (name, slug, url, type, enabled) 
-VALUES ('NewSupplier', 'newsupplier', 'https://api.example.com/feed', 'xml', true);
-```
-
-2. **Configure in worker:**
-```json
-{
-  "id": "newsupplier",
-  "name": "NewSupplier", 
-  "url": "https://api.example.com/feed",
-  "type": "xml",
-  "enabled": true
-}
-```
-
-3. **Implement parser in `worker/src/ingestor.js`**
-
-### Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | Required |
-| `NODE_ENV` | Environment | development |
-| `NEXT_TELEMETRY_DISABLED` | Disable Next.js telemetry | 1 |
-
-## 🔄 Data Ingestion
-
-The worker service automatically:
-1. Fetches data from all enabled suppliers
-2. Parses XML/CSV feeds
-3. Normalizes product data
-4. Updates PostgreSQL database
-5. Saves fallback JSON file
-
-**Manual ingestion:**
-```bash
+# Run Worker (in another terminal window)
 cd worker
-node -e "require('./src/ingestor.js').ingestData().then(() => process.exit(0))"
+node index.js
 ```
-
-## 🧪 Testing
-
-### API Testing
-```bash
-# Test search
-curl "http://localhost:3000/api/search?q=laptop"
-
-# Test supplier filter
-curl "http://localhost:3000/api/search?q=iphone&supplier=mustek"
-```
-
-### Database Testing
-```bash
-# Check product counts
-psql -d whosgotstock -c "SELECT supplier_name, COUNT(*) FROM products GROUP BY supplier_name;"
-```
-
-## 📊 Performance
-
-- **Search Response**: < 500ms for product queries
-- **Page Load**: < 2s for initial page load
-- **Database**: Optimized with proper indexing
-- **Mobile**: 90+ Lighthouse score
-
-## 🔒 Security
-
-- **Authentication**: Passphrase-based tier access
-- **Input Validation**: Sanitized user inputs
-- **Rate Limiting**: API endpoint protection
-- **Database**: Parameterized queries, connection pooling
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## 📝 License
-
-This project is proprietary to Smart Integrate. All rights reserved.
-
-## 🆘 Support
-
-For support and questions:
-- Create an issue in the repository
-- Contact the Smart Integrate development team
 
 ---
 
-**Last Updated**: January 2025  
-**Version**: 2.2.0 (Mustek Integration)  
+## 🐳 Docker Deployment
+
+The application is completely containerized. You can launch the frontend, worker, migrations runner, and database with:
+
+```bash
+docker-compose up -d --build
+```
+
+- **Next.js Web Client**: Exposed on port `3000`.
+- **Database Migrations**: Automatically runs `run-migrations.sh` on startup before the worker starts.
+- **Data Persistence**: Postgres data is saved inside the `postgres_data` volume.
+
+---
+
+## 🌐 Production VPS / PaaS Deployment Guide
+
+To deploy onto a production VPS or PaaS engine (like Render, DigitalOcean, or Dockploy):
+
+1. **Database Set Up**: Point `DATABASE_URL` to your production PostgreSQL database. Set `DATABASE_SSL=true`.
+2. **Setup DB Schema**:
+   - Deploy your application code.
+   - Access the **Admin Control Center** inside the web app and click the **Setup Database** button in the **Maintenance** section. This executes `/api/admin/setup-db` to create all required tables, indexes, and default settings.
+   - Alternatively, SSH into your VPS and run `DATABASE_URL=... ./database/run-migrations.sh`.
+3. **Configure Environment Variables**: Supply all credentials and tokens inside your host environment dashboard.
+4. **Ingestion Scheduling**: The background worker service will fetch automatically in the background based on the `UPDATE_INTERVAL_MINUTES` setting in the DB.
+
+---
+
+## 🧪 Testing & Diagnostics
+
+### Test Database Connection
+```bash
+export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/whosgotstock"
+node database/test-connection.js
+```
+
+### Verify Supplier Product Ingest Counts
+```bash
+psql $DATABASE_URL -c "SELECT supplier_name, COUNT(*) FROM products GROUP BY supplier_name;"
+```
+
+### Run Web Production Build
+```bash
+cd web
+npm run build
+```
+
+---
+
+## 🛡️ Security & Access Control
+- **Database Safety**: Parameterized SQL queries block SQL injection.
+- **Passphrase Portal**: Standard users view retail prices. Staff enters role-based passphrases inside the portal modal to unlock cost prices and dashboard metrics.
+- **Session Tokens**: JWT-based session tokens with HTTP-only cookies prevent token stealing.
+- **Ingestion Failures**: Driver errors are isolated so that if one supplier feed fails, it does not stop the ingestion of other suppliers.
+
+---
+
+**Last Updated**: June 2026  
 **Maintainer**: Smart Integrate Development Team
