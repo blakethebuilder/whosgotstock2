@@ -7,7 +7,7 @@ import pool from './db';
 export interface User {
   id: number;
   email: string;
-  role: 'public' | 'team' | 'management' | 'admin';
+  role: 'public' | 'guest' | 'team' | 'reseller' | 'admin';
   company_name?: string;
   first_name?: string;
   last_name?: string;
@@ -199,6 +199,19 @@ export async function getUserFromRequest(request: NextRequest): Promise<User | n
   const payload = verifyToken(token);
   if (!payload) return null;
   
+  if (payload.userId === 0) {
+    return {
+      id: 0,
+      email: payload.email || `${payload.role}@system.local`,
+      role: payload.role as any,
+      first_name: 'System',
+      last_name: payload.role.toUpperCase(),
+      created_at: new Date().toISOString(),
+      is_active: true,
+      email_verified: true
+    };
+  }
+  
   return getUserById(payload.userId);
 }
 
@@ -232,9 +245,10 @@ export function validatePassword(password: string): { valid: boolean; message?: 
 export function hasPermission(userRole: string, requiredRole: string): boolean {
   const roleHierarchy = {
     'public': 0,
-    'team': 1,
-    'management': 2,
-    'admin': 3
+    'guest': 1,
+    'team': 2,
+    'reseller': 3,
+    'admin': 4
   };
   
   return (roleHierarchy[userRole as keyof typeof roleHierarchy] || 0) >= 

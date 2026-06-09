@@ -79,6 +79,25 @@ CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
 DROP TRIGGER IF EXISTS update_user_subscriptions_updated_at ON user_subscriptions;
 CREATE TRIGGER update_user_subscriptions_updated_at BEFORE UPDATE ON user_subscriptions
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Create search logs
+CREATE TABLE IF NOT EXISTS search_logs (
+    id SERIAL PRIMARY KEY,
+    query TEXT,
+    filters JSONB,
+    results_count INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create quote logs
+CREATE TABLE IF NOT EXISTS quote_logs (
+    id SERIAL PRIMARY KEY,
+    items JSONB NOT NULL,
+    total_ex_vat DECIMAL(12, 2) NOT NULL,
+    total_inc_vat DECIMAL(12, 2) NOT NULL,
+    user_role VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 `;
 
 export async function POST(request: NextRequest) {

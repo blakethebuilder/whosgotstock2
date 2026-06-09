@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUserFromRequest } from '@/lib/auth';
+import { getUserFromRequest, generateToken } from '@/lib/auth';
+import pool from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -60,12 +61,46 @@ export async function POST(request: NextRequest) {
       userRole = 'guest';
     }
     
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: isValid,
       role: isValid ? userRole : 'public',
       message: isValid ? 'Access granted' : 'Invalid access code',
       legacy: isValid // Indicate this is legacy auth
     });
+
+    if (isValid) {
+      // Find a user with this role or default to a system token
+      let userId = 0;
+      let email = `${userRole}@system.local`;
+      
+      const client = await pool.connect();
+      try {
+        const result = await client.query('SELECT id, email FROM users WHERE role = $1 LIMIT 1', [userRole]);
+        if (result.rows.length > 0) {
+          userId = result.rows[0].id;
+          email = result.rows[0].email;
+        }
+      } catch (err) {
+        console.error('Failed to find user for session:', err);
+      } finally {
+        client.release();
+      }
+
+      const token = generateToken({
+        userId,
+        email,
+        role: userRole
+      });
+
+      response.cookies.set('auth-token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 // 7 days
+      });
+    }
+
+    return response;
     
   } catch (error) {
     console.error('Auth verification error:', error);

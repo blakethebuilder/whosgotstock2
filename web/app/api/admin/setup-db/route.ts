@@ -82,6 +82,29 @@ export async function POST() {
             );
         `);
 
+        // Create search_logs table
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS search_logs (
+                id SERIAL PRIMARY KEY,
+                query TEXT,
+                filters JSONB,
+                results_count INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Create quote_logs table
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS quote_logs (
+                id SERIAL PRIMARY KEY,
+                items JSONB NOT NULL,
+                total_ex_vat DECIMAL(12, 2) NOT NULL,
+                total_inc_vat DECIMAL(12, 2) NOT NULL,
+                user_role VARCHAR(100),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
         // Insert default settings
         await client.query(`
             INSERT INTO settings (key, value) VALUES
