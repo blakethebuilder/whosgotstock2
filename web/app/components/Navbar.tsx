@@ -209,9 +209,16 @@ export default function Navbar({
                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/></svg>
                  </div>
                </div>
+               {userRole === 'public' && (
+                 <Link
+                   href="/pricing"
+                   className="px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-[10px] sm:text-xs font-black rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 whitespace-nowrap"
+                 >
+                   Direct Tier (R699)
+                 </Link>
+               )}
+               <div className="h-8 w-[1px] bg-gray-200 dark:bg-gray-700 mx-1 hidden sm:block" />
              </div>
-
-             <div className="h-8 w-[1px] bg-gray-200 dark:bg-gray-700 mx-1 hidden sm:block" />
 
              {/* Role / Profile Area */}
              <div className="flex items-center gap-1">
