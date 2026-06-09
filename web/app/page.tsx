@@ -34,6 +34,7 @@ export default function Home() {
   // Search
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Product[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [totalResults, setTotalResults] = useState(0);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -169,6 +170,22 @@ export default function Home() {
     if (isLoadMore) setLoadingMore(true); else setLoading(true);
     if (!isLoadMore) setHasSearched(true);
 
+    // Sync parameters to browser URL query parameters
+    if (typeof window !== 'undefined' && isInitialized) {
+      const urlParams = new URLSearchParams();
+      if (currentQuery) urlParams.append('q', currentQuery);
+      if (selectedSuppliers.length > 0) urlParams.append('suppliers', selectedSuppliers.join(','));
+      if (selectedCategories.length > 0) urlParams.append('categories', selectedCategories.join(','));
+      if (selectedBrand) urlParams.append('brand', selectedBrand);
+      if (minPrice) urlParams.append('min_price', minPrice);
+      if (maxPrice) urlParams.append('max_price', maxPrice);
+      if (inStockOnly) urlParams.append('in_stock', 'true');
+      if (searchInDescription) urlParams.append('search_description', 'true');
+      if (sortBy) urlParams.append('sort', sortBy);
+      const newUrl = urlParams.toString() ? `/?${urlParams.toString()}` : '/';
+      window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl);
+    }
+
     try {
       const params = new URLSearchParams();
       if (currentQuery) params.append('q', currentQuery);
@@ -215,9 +232,69 @@ export default function Home() {
     [selectedSuppliers, selectedCategories, minPrice, maxPrice, inStockOnly, sortBy, searchInDescription, selectedBrand]
   );
 
+  // Initialize filter state from URL query parameters on mount
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get('q') || '';
+    const suppliersParam = params.get('suppliers') || '';
+    const categoriesParam = params.get('categories') || '';
+    const brand = params.get('brand') || '';
+    const minPriceVal = params.get('min_price') || '';
+    const maxPriceVal = params.get('max_price') || '';
+    const inStock = params.get('in_stock') === 'true';
+    const searchDesc = params.get('search_description') === 'true';
+    const sort = params.get('sort') || 'relevance';
+    const pageVal = parseInt(params.get('page') || '1', 10);
+
+    if (q) setQuery(q);
+    if (suppliersParam) setSelectedSuppliers(suppliersParam.split(','));
+    if (categoriesParam) setSelectedCategories(categoriesParam.split(','));
+    if (brand) setSelectedBrand(brand);
+    if (minPriceVal) setMinPrice(minPriceVal);
+    if (maxPriceVal) setMaxPrice(maxPriceVal);
+    if (inStock) setInStockOnly(true);
+    if (searchDesc) setSearchInDescription(true);
+    if (sort) setSortBy(sort);
+    if (pageVal) setPage(pageVal);
+
+    setIsInitialized(true);
+
+    if (q || suppliersParam || categoriesParam || brand || minPriceVal || maxPriceVal || inStock || searchDesc) {
+      const initialSearch = async () => {
+        setLoading(true);
+        setHasSearched(true);
+        try {
+          const apiParams = new URLSearchParams();
+          if (q) apiParams.append('q', q);
+          if (suppliersParam) apiParams.append('suppliers', suppliersParam);
+          if (categoriesParam) apiParams.append('categories', categoriesParam);
+          if (brand) apiParams.append('brand', brand);
+          if (minPriceVal) apiParams.append('min_price', minPriceVal);
+          if (maxPriceVal) apiParams.append('max_price', maxPriceVal);
+          if (inStock) apiParams.append('in_stock', 'true');
+          if (searchDesc) apiParams.append('search_description', 'true');
+          if (sort) apiParams.append('sort', sort);
+          apiParams.append('page', pageVal.toString());
+
+          const res = await fetch(`/api/search?${apiParams.toString()}`);
+          const data = await res.json();
+          setResults(data.results || []);
+          setTotalResults(data.total || 0);
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      initialSearch();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isInitialized) return;
     if (query.length > 2 || query.length === 0) debouncedSearch(query);
-  }, [query, debouncedSearch]);
+  }, [query, debouncedSearch, isInitialized]);
 
   const clearSearch = () => {
     setQuery('');
@@ -234,6 +311,9 @@ export default function Home() {
     setShowCategoryBrowser(false);
     setSortBy('relevance');
     setPage(1);
+    if (typeof window !== 'undefined') {
+      window.history.replaceState({ ...window.history.state, as: '/', url: '/' }, '', '/');
+    }
   };
 
   const calculatePriceWithDiscount = (basePrice: string) => {

@@ -87,8 +87,8 @@ export default function AdminPage() {
         }
     };
 
-    const refreshData = async () => {
-        setLoading(true);
+    const refreshData = async (quiet = false) => {
+        if (!quiet) setLoading(true);
         try {
             const [supRes, setRes, statsRes, logsRes, quoteRes, fetchRes] = await Promise.all([
                 fetch('/api/admin/suppliers').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve([]) })),
@@ -236,6 +236,10 @@ export default function AdminPage() {
     useEffect(() => {
         if (isAuthenticated) {
             refreshData();
+            const interval = setInterval(() => {
+                refreshData(true);
+            }, 10000);
+            return () => clearInterval(interval);
         }
     }, [isAuthenticated]);
 
@@ -404,7 +408,7 @@ export default function AdminPage() {
                                     const log = lastFetchBySupplier[s.slug];
                                     const status = log ? log.status : 'never';
                                     return (
-                                        <div key={s.slug} className={`p-4 rounded-[2rem] border transition-all ${
+                                        <div key={s.slug} className={`p-4 rounded-[2rem] border transition-all relative group cursor-help ${
                                             status === 'success' ? 'bg-green-500/5 border-green-200/50 dark:border-green-950/50' : 
                                             status === 'error' ? 'bg-red-500/5 border-red-200/50 dark:border-red-950/50' : 
                                             'bg-gray-500/5 border-gray-200 dark:border-gray-800'
@@ -424,6 +428,38 @@ export default function AdminPage() {
                                                     {timeAgo(log.started_at)}
                                                 </div>
                                             )}
+                                            
+                                            {/* Premium Tooltip */}
+                                            <div className="absolute z-50 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-300 bg-slate-900 text-white text-[11px] p-4 rounded-2xl shadow-2xl border border-slate-800 w-64 pointer-events-none bottom-[105%] left-1/2 -translate-x-1/2 mb-2">
+                                                <div className="font-bold text-slate-200 mb-2 border-b border-slate-800 pb-1 flex justify-between items-center">
+                                                    <span>Telemetry Run Details</span>
+                                                    <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">{s.type}</span>
+                                                </div>
+                                                {log ? (
+                                                    <div className="space-y-1.5 font-medium text-left text-slate-300">
+                                                        <div className="flex justify-between">
+                                                            <span className="text-slate-450">Duration:</span>
+                                                            <span className="text-slate-100 font-bold">{formatDuration(log.duration_seconds)}</span>
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                            <span className="text-slate-450">Fetched:</span>
+                                                            <span className="text-slate-100 font-bold">{(log.products_fetched || 0).toLocaleString()}</span>
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                            <span className="text-slate-450">Ingested:</span>
+                                                            <span className="text-green-400 font-bold">{(log.products_ingested || 0).toLocaleString()}</span>
+                                                        </div>
+                                                        {log.error_message && (
+                                                            <div className="mt-2 text-red-400 text-[10px] font-mono line-clamp-3 leading-relaxed border-t border-slate-800 pt-1.5 text-left">
+                                                                {log.error_message}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-slate-450 italic">No telemetry data recorded.</span>
+                                                )}
+                                                <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-slate-900"></div>
+                                            </div>
                                         </div>
                                     );
                                 })}
@@ -608,7 +644,7 @@ export default function AdminPage() {
                                     <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Historical trace log of scraper runs</p>
                                 </div>
                                 <button
-                                    onClick={refreshData}
+                                    onClick={() => refreshData(false)}
                                     className="px-4 py-2 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 border border-gray-150 dark:border-gray-800 text-gray-500 text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1.5 transition-all"
                                 >
                                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
