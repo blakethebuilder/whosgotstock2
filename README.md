@@ -185,6 +185,119 @@ npm run build
 - **Passphrase Portal**: Standard users view retail prices. Staff enters role-based passphrases inside the portal modal to unlock cost prices and dashboard metrics.
 - **Session Tokens**: JWT-based session tokens with HTTP-only cookies prevent token stealing.
 - **Ingestion Failures**: Driver errors are isolated so that if one supplier feed fails, it does not stop the ingestion of other suppliers.
+- **API Key Auth**: The `/api/search` endpoint and all analytics APIs support both session cookies and static API keys for programmatic access.
+
+---
+
+## 🧠 Channel Intelligence & Social Engine
+
+An internal analytics layer that surfaces market anomalies from live distributor data and auto-generates LinkedIn-optimised B2B social copy for South African procurement channels.
+
+### Accessing the Dashboard
+
+Navigate to `/admin` → click the orange **🧠 Channel Intelligence** tab in the navigation bar, or go directly to `/admin/intelligence`.
+
+### How It Works
+
+```
+Daily (once per UTC day, idempotent):
+  Ingestor run completes
+  └── writeChannelSnapshot() aggregates products table
+        → One row per SKU written to channel_snapshots
+        → Captures: min_dealer_cost, max_dealer_cost,
+                    total_channel_stock (all distributors),
+                    supplier_count, category
+
+Weekly (or on-demand via dashboard):
+  Hermes agent calls GET /api/v1/marketing-snapshot
+  └── 3 parallel Postgres queries run:
+        A. Price Arbitrage    → SKUs with ≥2 suppliers, ranked by cost variance %
+        B. Supply Velocity    → 7-day stock drop leaders (Power/Networking/Storage/Wireless)
+        C. Resurrection Alerts → Items returning from 14+ day zero-stock dry spells
+  └── Dashboard generates 3 LinkedIn B2B copy drafts from the anomaly data
+```
+
+### Analytics API
+
+**Endpoint:** `GET /api/v1/marketing-snapshot`
+
+**Authentication:** Bearer token via `Authorization` header.
+
+```bash
+curl -H "Authorization: Bearer <HERMES_API_TOKEN>" \
+     https://yourdomain.com/api/v1/marketing-snapshot
+```
+
+**Response structure:**
+```json
+{
+  "price_arb":   [{ "sku", "name", "min_p", "max_p", "v_pct", "low_s", "high_s" }],
+  "sc_velocity": [{ "sku", "name", "cat", "qty_sold", "cur_stk" }],
+  "resurrect":   [{ "sku", "name", "cur_stk" }],
+  "ts": "ISO-8601 timestamp"
+}
+```
+
+**Test/Seed Endpoint (dev & staging only):**
+```bash
+POST /api/v1/marketing-snapshot/test
+```
+Seeds mock data for all three anomaly scenarios so the dashboard can be tested before real history accumulates.
+
+### Environment Variable
+
+```bash
+# Required for the marketing snapshot API (set a strong secret in production)
+HERMES_API_TOKEN=your-hermes-api-token
+```
+
+> **Note:** Falls back to `hermes_sec_auth_token_2026` in development if not set. Always override this in production.
+
+---
+
+## 📊 Channel Snapshots — Historical Ledger
+
+The `channel_snapshots` table is a time-series ledger that powers the velocity and resurrection analytics. It is populated **automatically** by the ingestor — no manual intervention required.
+
+### How history accumulates
+
+| Timeframe | State |
+| :--- | :--- |
+| Day 1 | Table receives first ~16,000 rows. Price Arbitrage works immediately. |
+| Day 7+ | Supply Chain Velocity (7-day window) begins returning real data. |
+| Day 14+ | Resurrection Alerts (14-day dry-spell detection) begin firing. |
+| Month 1+ | All three analytics fully operational with real SA channel movement data. |
+
+### Database growth estimate
+
+With ~16,000 active SKUs ingested once per day:
+
+| Retention | Approx. Rows | Approx. Size |
+| :--- | :--- | :--- |
+| 30 days | ~480,000 | ~4 MB |
+| 90 days | ~1.4M | ~12 MB |
+| 365 days | ~5.8M | ~50 MB |
+
+### Snapshot Cleanup Tool
+
+A built-in pruning tool is available on the Channel Intelligence dashboard (bottom of the page) and via API:
+
+```bash
+# View current table stats (no deletions)
+GET /api/admin/snapshot-cleanup
+
+# Prune rows older than N days (30–365, default 90)
+POST /api/admin/snapshot-cleanup
+Content-Type: application/json
+{ "retain_days": 90 }
+```
+
+**Recommended retention policy:**
+- **First 3 months:** Keep 90 days — data is still warming up.
+- **Ongoing:** Keep 60 days — covers all analytics windows with comfortable headroom.
+- **Constrained DB:** Keep 30 days minimum — all three analytics queries still function.
+
+> ⚠️ Never prune below 30 days. The resurrection query requires 14 days of zero-stock history to detect dry spells correctly.
 
 ---
 
