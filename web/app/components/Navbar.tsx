@@ -214,7 +214,7 @@ export default function Navbar({
                    href="/pricing"
                    className="px-2.5 py-1.5 sm:px-3.5 sm:py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-[10px] sm:text-xs font-black rounded-xl transition-all shadow-md hover:shadow-lg active:scale-95 whitespace-nowrap"
                  >
-                   Direct Tier (R699)
+                   Pricing
                  </Link>
                )}
                <div className="h-8 w-[1px] bg-gray-200 dark:bg-gray-700 mx-1 hidden sm:block" />

@@ -66,9 +66,14 @@ export default function PricingPage() {
               </p>
             </div>
 
-            {/* ICT Restricted access warning */}
-            <div className="p-3.5 bg-orange-500/10 border border-orange-500/20 text-orange-400 rounded-2xl text-xs font-black text-center flex items-center justify-center gap-2">
-              🔒 Only registered ICT companies can see unmasked dealer costs.
+            {/* Channel Ecosystem Compliance Alert */}
+            <div className="p-4 bg-orange-500/5 border border-orange-500/20 rounded-2xl space-y-2 text-xs text-left">
+              <div className="text-orange-500 font-black flex items-center gap-2">
+                🔒 Vetted B2B Channel Protection
+              </div>
+              <p className="text-gray-400 font-semibold leading-relaxed text-[11px]">
+                Access to unmasked dealer cost feeds is restricted exclusively to genuine, registered IT businesses, MSPs, and trade resellers. To safeguard our distributor partners' ecosystem, all applications undergo manual vetting of company registrations and active trade account numbers prior to approval.
+              </p>
             </div>
 
             {/* Features */}
