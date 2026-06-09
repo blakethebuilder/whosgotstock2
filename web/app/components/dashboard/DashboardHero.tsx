@@ -23,16 +23,16 @@ export default function DashboardHero({ usageStats, onViewAllProducts }: Dashboa
           Unified Supply Intelligence
         </div>
 
-        <div className="space-y-2">
-          <h2 className="text-orange-500 font-black text-lg md:text-xl tracking-tighter italic">Instant Channel Visibility.</h2>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-gray-900 dark:text-white leading-[0.9] tracking-tighter">
+        <div className="space-y-3">
+          <h2 className="text-orange-500 font-black text-xl md:text-2xl tracking-tighter italic">Instant Supplier Visibility.</h2>
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-gray-900 dark:text-white leading-[0.9] tracking-tighter">
             Whos Got <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-orange-300">Stock?</span>
           </h1>
         </div>
 
         <div className="space-y-4">
-          <p className="text-base md:text-lg font-medium text-gray-400 leading-relaxed max-w-3xl mx-auto">
-            The ultimate search engine for South Africa's IT channel. Aggregated live inventory from <span className="text-gray-900 dark:text-white font-bold">{usageStats.totalSuppliers} Major Distributors.</span> Stop switching tabs. Just ask: Whos Got Stock?
+          <p className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white leading-relaxed max-w-4xl mx-auto">
+            The ultimate search engine for South Africa's IT and electronics channel. Aggregated live inventory from <span className="text-orange-500 font-black">{usageStats.totalSuppliers || 7} Major Distributors.</span> Stop switching tabs. Just ask: <span className="underline decoration-orange-500 decoration-3">Whos Got Stock?</span>
           </p>
 
           <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 text-[10px] font-black uppercase tracking-widest text-gray-400/80">

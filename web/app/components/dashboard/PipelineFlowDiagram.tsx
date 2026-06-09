@@ -329,9 +329,9 @@ export default function PipelineFlowDiagram() {
                   )}
                 </div>
                 <div className="flex justify-between items-center text-gray-400">
-                  <span>Custom Margin Applied:</span>
+                  <span>Pricing Normalization:</span>
                   {pipelineState === 'matching' || pipelineState === 'complete' ? (
-                    <span className="text-orange-500 font-bold">Automatic Markups Active</span>
+                    <span className="text-orange-500 font-bold">Standardized VAT & Feed</span>
                   ) : (
                     <span className="text-gray-600 italic">Waiting...</span>
                   )}
