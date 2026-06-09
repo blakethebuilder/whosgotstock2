@@ -60,25 +60,18 @@ export default function ComparisonModal({
             <div className={`fixed left-0 top-0 h-full w-full ${isExpanded ? 'md:max-w-[60vw] sm:max-w-3xl' : 'max-w-md'} bg-gray-50 dark:bg-gray-950 shadow-2xl z-[200] transform transition-transform duration-300 ease-out border-r border-white dark:border-gray-900 ${isOpen && !isMinimized ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="flex flex-col h-full">
                     {/* Header */}
-                    <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-850 px-4 py-2.5 shrink-0 shadow-sm">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 bg-orange-500/10 dark:bg-orange-500/20 text-orange-500 rounded-lg flex items-center justify-center shadow-inner">
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h2 className="text-sm font-black text-gray-900 dark:text-white tracking-tighter leading-none">Compare Products</h2>
-                                    <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Comparing {products.length} item{products.length !== 1 ? 's' : ''} (Max 4)</p>
-                                </div>
+                    <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-850 px-5 py-4 shrink-0 shadow-sm">
+                        <div className="flex items-center justify-between mb-3">
+                            <div>
+                                <h2 className="text-lg font-black text-gray-900 dark:text-white tracking-tighter">Compare Products</h2>
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Comparing {products.length} item{products.length !== 1 ? 's' : ''} (Max 4)</p>
                             </div>
 
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-2">
                                 {products.length > 0 && (
                                     <button
                                         onClick={onClearAll}
-                                        className="text-[8px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 px-2 py-1 rounded-md transition-all"
+                                        className="text-[9px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 px-3 py-2 rounded-lg transition-all"
                                         title="Clear all compared products"
                                     >
                                         Clear
@@ -86,28 +79,28 @@ export default function ComparisonModal({
                                 )}
                                 <button
                                     onClick={() => setIsMinimized(true)}
-                                    className="p-1 hover:bg-gray-150 dark:hover:bg-gray-800 text-gray-450 hover:text-gray-700 dark:hover:text-white rounded-md transition-colors"
+                                    className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-450 hover:text-gray-700 dark:hover:text-gray-250 rounded-lg transition-colors"
                                     title="Minimize to side dock"
                                 >
-                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M18 12H6" /></svg>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M18 12H6" /></svg>
                                 </button>
                                 <button
                                     onClick={() => setIsExpanded(!isExpanded)}
-                                    className="hidden sm:flex p-1 hover:bg-gray-150 dark:hover:bg-gray-800 text-gray-450 hover:text-gray-700 dark:hover:text-white rounded-md transition-colors"
+                                    className="hidden sm:flex w-8 h-8 items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-450 hover:text-gray-700 dark:hover:text-gray-250 rounded-lg transition-colors"
                                     title={isExpanded ? "Collapse to single view" : "Expand side-by-side view"}
                                 >
                                     {isExpanded ? (
-                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 19l-7-7 7-7M18 19l-7-7 7-7" /></svg>
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 19l-7-7 7-7M18 19l-7-7 7-7" /></svg>
                                     ) : (
-                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5l7 7-7 7M6 5l7 7-7 7" /></svg>
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5l7 7-7 7M6 5l7 7-7 7" /></svg>
                                     )}
                                 </button>
                                 <button 
                                     onClick={onClose} 
-                                    className="p-1 hover:bg-gray-150 dark:hover:bg-gray-800 text-gray-450 hover:text-gray-700 dark:hover:text-white rounded-md transition-colors"
+                                    className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-gray-700"
                                     title="Close Comparison"
                                 >
-                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                                 </button>
                             </div>
                         </div>
@@ -257,9 +250,7 @@ export default function ComparisonModal({
             >
                 <div className="flex flex-col items-center gap-1">
                     <div className="w-5 h-5 rounded bg-orange-500/10 dark:bg-orange-500/20 flex items-center justify-center text-orange-500">
-                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                        </svg>
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" /></svg>
                     </div>
                     <span className="text-[8px] font-black text-orange-600 bg-orange-100 dark:bg-orange-950 px-1 rounded-full leading-none">
                         {products.length}
