@@ -213,8 +213,8 @@ export default function Navbar({
 
              {/* Role / Profile Area */}
              <div className="flex items-center gap-1">
-               <button
-                 onClick={onRoleSwitch}
+               <Link
+                 href="/login"
                  className="flex items-center gap-2 p-1 sm:px-3 sm:py-1.5 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 rounded-2xl transition-all group"
                >
                  <div className="text-right hidden md:block">
@@ -243,7 +243,7 @@ export default function Navbar({
                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white/70" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>
                    )}
                  </div>
-               </button>
+               </Link>
 
                {userRole === 'admin' && (
                  <a
@@ -257,8 +257,9 @@ export default function Navbar({
 
                {userRole !== 'public' && (
                  <button
-                   onClick={() => {
+                   onClick={async () => {
                      localStorage.removeItem('whosgotstock_user_role');
+                     await logout();
                      window.location.reload();
                    }}
                    className="p-2 text-gray-400 hover:text-red-500 transition-colors"
