@@ -43,12 +43,13 @@ export default function AdminPage() {
     const [passphrase, setPassphrase] = useState('');
     const [authError, setAuthError] = useState('');
 
-    const [activeTab, setActiveTab] = useState<'overview' | 'suppliers' | 'settings' | 'activity' | 'import'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'suppliers' | 'settings' | 'activity' | 'import' | 'resellers'>('overview');
     const [suppliers, setSuppliers] = useState<any[]>([]);
     const [supplierStats, setSupplierStats] = useState<any[]>([]);
     const [searchLogs, setSearchLogs] = useState<any[]>([]);
     const [quoteLogs, setQuoteLogs] = useState<any[]>([]);
     const [fetchLogs, setFetchLogs] = useState<FetchLog[]>([]);
+    const [users, setUsers] = useState<any[]>([]);
     const [settings, setSettings] = useState({
         update_interval_minutes: '60',
         public_markup: '15',
@@ -57,6 +58,16 @@ export default function AdminPage() {
         admin_markup: '0'
     });
     const [loading, setLoading] = useState(true);
+
+    // New User Form State
+    const [newUserEmail, setNewUserEmail] = useState('');
+    const [newUserPassword, setNewUserPassword] = useState('');
+    const [newUserRole, setNewUserRole] = useState('public');
+    const [newUserCompany, setNewUserCompany] = useState('');
+    const [newUserFirstName, setNewUserFirstName] = useState('');
+    const [newUserLastName, setNewUserLastName] = useState('');
+    const [userFormError, setUserFormError] = useState('');
+    const [userFormSuccess, setUserFormSuccess] = useState('');
 
     // New Supplier Form
     const [newName, setNewName] = useState('');
@@ -90,13 +101,14 @@ export default function AdminPage() {
     const refreshData = async (quiet = false) => {
         if (!quiet) setLoading(true);
         try {
-            const [supRes, setRes, statsRes, logsRes, quoteRes, fetchRes] = await Promise.all([
+            const [supRes, setRes, statsRes, logsRes, quoteRes, fetchRes, usersRes] = await Promise.all([
                 fetch('/api/admin/suppliers').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve([]) })),
                 fetch('/api/admin/settings').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve({}) })),
                 fetch('/api/admin/supplier-stats').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve([]) })),
                 fetch('/api/admin/search-logs').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve([]) })),
                 fetch('/api/admin/quote-logs').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve([]) })),
-                fetch('/api/admin/fetch-logs').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve([]) }))
+                fetch('/api/admin/fetch-logs').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve([]) })),
+                fetch('/api/admin/users').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve({ users: [] }) }))
             ]);
 
             let supData: any[] = [];
@@ -117,11 +129,15 @@ export default function AdminPage() {
             let fetchData: any[] = [];
             if (fetchRes.ok) fetchData = await fetchRes.json();
 
+            let usersData: any = { users: [] };
+            if (usersRes.ok) usersData = await usersRes.json();
+
             setSuppliers(Array.isArray(supData) ? supData : []);
             setSupplierStats(Array.isArray(statsData) ? statsData : []);
             setSearchLogs(Array.isArray(logsData) ? logsData : []);
             setQuoteLogs(Array.isArray(quotesData) ? quotesData : []);
             setFetchLogs(Array.isArray(fetchData) ? fetchData : []);
+            setUsers(Array.isArray(usersData.users) ? usersData.users : []);
             setSettings({
                 update_interval_minutes: (setData as any)?.update_interval_minutes || '60',
                 public_markup: (setData as any)?.public_markup || '15',
@@ -134,8 +150,72 @@ export default function AdminPage() {
             setSuppliers([]);
             setSupplierStats([]);
             setFetchLogs([]);
+            setUsers([]);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleCreateUser = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setUserFormError('');
+        setUserFormSuccess('');
+
+        if (!newUserEmail || !newUserPassword) {
+            setUserFormError('Email and Password are required.');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/admin/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: newUserEmail,
+                    password: newUserPassword,
+                    role: newUserRole,
+                    company_name: newUserCompany,
+                    first_name: newUserFirstName,
+                    last_name: newUserLastName
+                })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                setUserFormSuccess(`User ${newUserEmail} created successfully.`);
+                setNewUserEmail('');
+                setNewUserPassword('');
+                setNewUserCompany('');
+                setNewUserFirstName('');
+                setNewUserLastName('');
+                setNewUserRole('public');
+                refreshData(true);
+            } else {
+                setUserFormError(data.error || 'Failed to create user.');
+            }
+        } catch (err) {
+            setUserFormError('An error occurred during user creation.');
+        }
+    };
+
+    const handleDeleteUser = async (id: number, email: string) => {
+        if (!confirm(`Are you sure you want to delete user ${email}?`)) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/admin/users?id=${id}`, {
+                method: 'DELETE'
+            });
+
+            if (res.ok) {
+                refreshData(true);
+            } else {
+                const data = await res.json();
+                alert(data.error || 'Failed to delete user.');
+            }
+        } catch (err) {
+            alert('An error occurred while deleting the user.');
         }
     };
 
@@ -339,7 +419,8 @@ export default function AdminPage() {
                         { id: 'suppliers', label: 'Supplier Integrations', icon: '🚚' },
                         { id: 'settings', label: 'System Settings', icon: '⚙️' },
                         { id: 'activity', label: 'Activity Logs', icon: '📈' },
-                        { id: 'import', label: 'Manual Import', icon: '📤' }
+                        { id: 'import', label: 'Manual Import', icon: '📤' },
+                        { id: 'resellers', label: 'Reseller Access', icon: '👤' }
                     ].map(tab => (
                         <button
                             key={tab.id}
@@ -930,6 +1011,182 @@ export default function AdminPage() {
                             <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Import custom pricing catalogs manually (Excel/CSV)</p>
                         </div>
                         <DistributorImport />
+                    </div>
+                )}
+
+                {/* TAB CONTENT: RESELLERS & USER ACCOUNTS */}
+                {activeTab === 'resellers' && (
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-in fade-in duration-500">
+                        {/* Create User Form Tile */}
+                        <div className="lg:col-span-5 bg-white dark:bg-gray-900 rounded-[2.5rem] p-6 sm:p-8 border border-white dark:border-gray-800 shadow-xl">
+                            <div className="mb-6">
+                                <h2 className="text-2xl font-black text-gray-955 dark:text-white tracking-tighter leading-none mb-1">Create Reseller / Account</h2>
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Add new verified resellers or system access roles</p>
+                            </div>
+
+                            <form onSubmit={handleCreateUser} className="space-y-4">
+                                {userFormError && (
+                                    <div className="p-4 bg-red-50 dark:bg-red-955/20 text-red-600 dark:text-red-400 text-xs font-bold rounded-2xl border border-red-100 dark:border-red-900/40">
+                                        ⚠️ {userFormError}
+                                    </div>
+                                )}
+                                {userFormSuccess && (
+                                    <div className="p-4 bg-emerald-50 dark:bg-emerald-955/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-2xl border border-emerald-100 dark:border-emerald-900/40">
+                                        ✅ {userFormSuccess}
+                                    </div>
+                                )}
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-[9px] font-black uppercase text-gray-450 tracking-wider mb-1">First Name</label>
+                                        <input
+                                            type="text"
+                                            value={newUserFirstName}
+                                            onChange={e => setNewUserFirstName(e.target.value)}
+                                            className="w-full bg-gray-50 dark:bg-gray-850 border border-gray-150 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-orange-500 dark:text-white"
+                                            placeholder="e.g. John"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-black uppercase text-gray-450 tracking-wider mb-1">Last Name</label>
+                                        <input
+                                            type="text"
+                                            value={newUserLastName}
+                                            onChange={e => setNewUserLastName(e.target.value)}
+                                            className="w-full bg-gray-50 dark:bg-gray-850 border border-gray-150 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-orange-500 dark:text-white"
+                                            placeholder="e.g. Doe"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-[9px] font-black uppercase text-gray-450 tracking-wider mb-1">Company / Reseller Name</label>
+                                    <input
+                                        type="text"
+                                        value={newUserCompany}
+                                        onChange={e => setNewUserCompany(e.target.value)}
+                                        className="w-full bg-gray-50 dark:bg-gray-850 border border-gray-150 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-orange-500 dark:text-white"
+                                        placeholder="e.g. Smart Reseller Ltd"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-[9px] font-black uppercase text-gray-450 tracking-wider mb-1">Email Address</label>
+                                    <input
+                                        type="email"
+                                        required
+                                        value={newUserEmail}
+                                        onChange={e => setNewUserEmail(e.target.value)}
+                                        className="w-full bg-gray-50 dark:bg-gray-850 border border-gray-150 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-orange-500 dark:text-white"
+                                        placeholder="e.g. partner@reseller.com"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-[9px] font-black uppercase text-gray-450 tracking-wider mb-1">Passphrase / Password</label>
+                                    <input
+                                        type="password"
+                                        required
+                                        value={newUserPassword}
+                                        onChange={e => setNewUserPassword(e.target.value)}
+                                        className="w-full bg-gray-50 dark:bg-gray-850 border border-gray-150 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs font-semibold focus:outline-none focus:border-orange-500 dark:text-white"
+                                        placeholder="Password (min 8 chars)"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-[9px] font-black uppercase text-gray-450 tracking-wider mb-1">Access Role / Tier</label>
+                                    <select
+                                        value={newUserRole}
+                                        onChange={e => setNewUserRole(e.target.value)}
+                                        className="w-full bg-gray-50 dark:bg-gray-850 border border-gray-150 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs font-bold focus:outline-none focus:border-orange-500 dark:text-white cursor-pointer"
+                                    >
+                                        <option value="public">Free / Public Tier</option>
+                                        <option value="team">Reseller / Team Tier</option>
+                                        <option value="management">Manager Access Tier</option>
+                                        <option value="admin">System Administrator</option>
+                                    </select>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    className="w-full mt-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black py-3 px-4 rounded-xl text-xs uppercase tracking-widest transition-all active:scale-[0.98]"
+                                >
+                                    Create Account
+                                </button>
+                            </form>
+                        </div>
+
+                        {/* User List Matrix Tile */}
+                        <div className="lg:col-span-7 bg-white dark:bg-gray-900 rounded-[2.5rem] p-6 sm:p-8 border border-white dark:border-gray-800 shadow-xl flex flex-col h-full">
+                            <div className="mb-6">
+                                <h2 className="text-2xl font-black text-gray-955 dark:text-white tracking-tighter leading-none mb-1">Registered Resellers</h2>
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Active reseller profiles ({users.length} accounts)</p>
+                            </div>
+
+                            <div className="overflow-x-auto flex-1">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="border-b border-gray-100 dark:border-gray-805">
+                                            <th className="py-3 px-2 text-[9px] font-black uppercase tracking-widest text-gray-450">Reseller Details</th>
+                                            <th className="py-3 px-2 text-[9px] font-black uppercase tracking-widest text-gray-450">Company</th>
+                                            <th className="py-3 px-2 text-[9px] font-black uppercase tracking-widest text-gray-450">Role Tier</th>
+                                            <th className="py-3 px-2 text-[9px] font-black uppercase tracking-widest text-gray-450 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-50 dark:divide-gray-850">
+                                        {users.map(u => (
+                                            <tr key={u.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors">
+                                                <td className="py-3 px-2">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-black uppercase text-gray-600 dark:text-gray-300">
+                                                            {u.first_name ? u.first_name.charAt(0) : u.email.charAt(0)}
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-xs font-black text-gray-900 dark:text-white leading-none">
+                                                                {u.first_name || u.last_name ? `${u.first_name || ''} ${u.last_name || ''}`.trim() : 'Unknown Name'}
+                                                            </p>
+                                                            <p className="text-[9px] text-gray-405 mt-0.5">{u.email}</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="py-3 px-2">
+                                                    <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">
+                                                        {u.company_name || 'Individual Reseller'}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3 px-2">
+                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-tighter ${
+                                                        u.role === 'admin' 
+                                                            ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20' 
+                                                            : u.role === 'management'
+                                                                ? 'bg-indigo-50 text-indigo-650 dark:bg-indigo-950/20'
+                                                                : u.role === 'team'
+                                                                    ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/20'
+                                                                    : 'bg-gray-100 text-gray-500 dark:bg-gray-800'
+                                                    }`}>
+                                                        {u.role}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3 px-2 text-right">
+                                                    <button
+                                                        onClick={() => handleDeleteUser(u.id, u.email)}
+                                                        className="text-[9px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 px-2.5 py-1.5 rounded-lg transition-all"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {users.length === 0 && (
+                                            <tr>
+                                                <td colSpan={4} className="py-8 text-center text-gray-400 italic">No registered user accounts found.</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
