@@ -317,7 +317,7 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
 
             {/* PROFESSIONAL FOOTER */}
             <footer className="md:col-span-12 mt-16 pt-12 border-t border-gray-200 dark:border-gray-800 text-center sm:text-left">
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-8 mb-12">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mb-12">
                     <div className="space-y-4">
                         <span className="text-gray-900 dark:text-white font-black text-sm tracking-tighter uppercase">
                             WHOSGOT<span className="text-orange-500 ml-0.5">STOCK</span>
@@ -325,17 +325,6 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
                         <p className="text-xs text-gray-400 dark:text-gray-500 font-medium leading-relaxed max-w-xs">
                             South Africa's premier unified IT hardware sourcing aggregator. Instant pricing, inventory matching, and multi-supplier quote packaging.
                         </p>
-                    </div>
-                    <div>
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Channel Suppliers</h4>
-                        <ul className="space-y-2 text-xs font-bold text-gray-500 dark:text-gray-400">
-                            <li>Esquire Technologies</li>
-                            <li>Pinnacle Micro</li>
-                            <li>Syntech Distribution</li>
-                            <li>Mustek Limited</li>
-                            <li>Scoop Distribution</li>
-                            <li>Linkqage / Even Flow</li>
-                        </ul>
                     </div>
                     <div>
                         <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Platform Info</h4>
@@ -349,7 +338,7 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
                     <div>
                         <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Access & Support</h4>
                         <p className="text-xs text-gray-400 dark:text-gray-500 font-medium leading-relaxed">
-                            Authorized IT reseller channel access only. Reseller registration verified via ICASA / company credentials.
+                            Public visitors can browse general hardware listings. Live stock warehouse levels, custom pricing markups, and purchase builder options require a verified reseller channel login.
                         </p>
                     </div>
                 </div>
