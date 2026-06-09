@@ -86,6 +86,24 @@ async function ingestData(client) {
 
     for (const supplier of suppliers) {
         console.log(`\n>>> Ingesting ${supplier.name} via Driver Plugin...`);
+        const startedAt = new Date();
+        let logId = null;
+
+        // Insert a fetch log entry (if table exists)
+        try {
+            const logRes = await client.query(
+                `INSERT INTO supplier_fetch_log (supplier_slug, supplier_name, started_at, status)
+                 VALUES ($1, $2, $3, 'running') RETURNING id`,
+                [supplier.id, supplier.name, startedAt]
+            );
+            logId = logRes.rows[0].id;
+        } catch (logErr) {
+            // Table may not exist yet on first deploy — skip logging silently
+            if (!logErr.message.includes('does not exist')) {
+                console.warn(`Fetch log insert warning: ${logErr.message}`);
+            }
+        }
+
         try {
             // Determine driver: Prioritize specific supplier driver, fallback to generic type driver
             let driverKey = supplier.id;
@@ -98,12 +116,19 @@ async function ingestData(client) {
 
             if (!fs.existsSync(driverPath)) {
                 console.error(`Driver missing: ${driverKey} at ${driverPath}`);
+                if (logId) {
+                    await client.query(
+                        `UPDATE supplier_fetch_log SET status = 'error', finished_at = NOW(), error_message = $1,
+                         duration_seconds = EXTRACT(EPOCH FROM (NOW() - started_at)) WHERE id = $2`,
+                        [`Driver missing: ${driverKey}`, logId]
+                    ).catch(() => {});
+                }
                 continue;
             }
 
             const driver = require(driverPath);
 
-            // For JSON APIs (like Evenflow), let the driver handle HTTP requests itself
+            // For JSON APIs (like Evenflow, Linkqage), let the driver handle HTTP requests itself
             // For traditional APIs, fetch the data first
             let products;
             if (supplier.type === 'json') {
@@ -112,6 +137,8 @@ async function ingestData(client) {
                 const feedData = await fetchFeed(supplier.url, supplier);
                 products = await driver(supplier, feedData, driverHelpers);
             }
+
+            const productsFetched = products ? products.length : 0;
 
             if (products && products.length > 0) {
                 // Deduplication and Normalization Step
@@ -173,11 +200,40 @@ async function ingestData(client) {
                     await client.query(query, values);
                 }
                 console.log(`Success: Ingested ${finalProducts.length} products for ${supplier.name}.`);
+
+                // Update fetch log with success
+                if (logId) {
+                    await client.query(
+                        `UPDATE supplier_fetch_log SET status = 'success', finished_at = NOW(),
+                         products_fetched = $1, products_ingested = $2,
+                         duration_seconds = EXTRACT(EPOCH FROM (NOW() - started_at)) WHERE id = $3`,
+                        [productsFetched, finalProducts.length, logId]
+                    ).catch(() => {});
+                }
             } else {
                 console.log(`Warning: 0 products found for ${supplier.name}. Check driver or feed status.`);
+
+                // Update fetch log with zero results
+                if (logId) {
+                    await client.query(
+                        `UPDATE supplier_fetch_log SET status = 'success', finished_at = NOW(),
+                         products_fetched = 0, products_ingested = 0,
+                         duration_seconds = EXTRACT(EPOCH FROM (NOW() - started_at)) WHERE id = $1`,
+                        [logId]
+                    ).catch(() => {});
+                }
             }
         } catch (err) {
             console.error(`Driver Error for ${supplier.name}:`, err.message);
+
+            // Update fetch log with error
+            if (logId) {
+                await client.query(
+                    `UPDATE supplier_fetch_log SET status = 'error', finished_at = NOW(),
+                     error_message = $1, duration_seconds = EXTRACT(EPOCH FROM (NOW() - started_at)) WHERE id = $2`,
+                    [err.message, logId]
+                ).catch(() => {});
+            }
         }
     }
 }

@@ -2,9 +2,42 @@
 
 import { useState, useEffect } from 'react';
 import DistributorImport from '../components/DistributorImport';
-import GenericScraper from '../components/GenericScraper';
-import Link from 'next/link';
 import AdminPanel from '../components/admin/AdminPanel';
+
+interface FetchLog {
+    id: number;
+    supplier_slug: string;
+    supplier_name: string;
+    started_at: string;
+    finished_at: string | null;
+    status: 'running' | 'success' | 'error';
+    products_fetched: number;
+    products_ingested: number;
+    error_message: string | null;
+    duration_seconds: number | null;
+}
+
+function timeAgo(dateStr: string): string {
+    const now = new Date();
+    const date = new Date(dateStr);
+    const diffMs = now.getTime() - date.getTime();
+    const diffSecs = Math.floor(diffMs / 1000);
+    if (diffSecs < 60) return `${diffSecs}s ago`;
+    const diffMins = Math.floor(diffSecs / 60);
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays}d ago`;
+}
+
+function formatDuration(seconds: number | null): string {
+    if (seconds === null || seconds === undefined) return '—';
+    if (seconds < 60) return `${Math.round(seconds)}s`;
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.round(seconds % 60);
+    return `${mins}m ${secs}s`;
+}
 
 export default function AdminPage() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -15,6 +48,7 @@ export default function AdminPage() {
     const [supplierStats, setSupplierStats] = useState<any[]>([]);
     const [searchLogs, setSearchLogs] = useState<any[]>([]);
     const [quoteLogs, setQuoteLogs] = useState<any[]>([]);
+    const [fetchLogs, setFetchLogs] = useState<FetchLog[]>([]);
     const [settings, setSettings] = useState({
         update_interval_minutes: '60',
         public_markup: '15',
@@ -23,24 +57,15 @@ export default function AdminPage() {
         admin_markup: '0'
     });
     const [loading, setLoading] = useState(true);
-    // Evetech quick link to admin page
-    // (evetechLink rendered in the main admin header area for visibility)
-
-    // Quick access card for Evetech virtual API in admin portal
-    const evetechLink = (
-      <Link href="/admin/evetech">
-        <a className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">View Evetech Data</a>
-      </Link>
-    );
-
-    // Component visibility state
-    const [showScraper, setShowScraper] = useState(false);
 
     // New Supplier Form
     const [newName, setNewName] = useState('');
     const [newSlug, setNewSlug] = useState('');
     const [newUrl, setNewUrl] = useState('');
-    const [newType, setNewType] = useState('scoop');
+    const [newType, setNewType] = useState('xml');
+
+    // Expanded error rows in fetch logs
+    const [expandedErrors, setExpandedErrors] = useState<Set<number>>(new Set());
 
     const handleAuth = async () => {
         try {
@@ -65,67 +90,38 @@ export default function AdminPage() {
     const refreshData = async () => {
         setLoading(true);
         try {
-            console.log('Fetching suppliers, settings, stats, search logs, and quote logs...');
-            const [supRes, setRes, statsRes, logsRes, quoteRes] = await Promise.all([
+            const [supRes, setRes, statsRes, logsRes, quoteRes, fetchRes] = await Promise.all([
                 fetch('/api/admin/suppliers').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve([]) })),
                 fetch('/api/admin/settings').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve({}) })),
                 fetch('/api/admin/supplier-stats').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve([]) })),
                 fetch('/api/admin/search-logs').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve([]) })),
-                fetch('/api/admin/quote-logs').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve([]) }))
+                fetch('/api/admin/quote-logs').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve([]) })),
+                fetch('/api/admin/fetch-logs').catch(e => ({ ok: false, status: 500, json: () => Promise.resolve([]) }))
             ]);
-
-            console.log('Suppliers response status:', supRes.status);
-            console.log('Settings response status:', setRes.status);
 
             let supData: any[] = [];
             let setData: any = {};
 
-            if (supRes.ok) {
-                supData = await supRes.json();
-            } else {
-                console.error('Suppliers API error:', supRes.status);
-                supData = []; // Ensure it's an array
-            }
-
-            if (setRes.ok) {
-                setData = await setRes.json();
-            } else {
-                console.error('Settings API error:', setRes.status);
-                setData = {}; // Ensure it's an object
-            }
+            if (supRes.ok) supData = await supRes.json();
+            if (setRes.ok) setData = await setRes.json();
 
             let statsData: any[] = [];
-            if (statsRes.ok) {
-                statsData = await statsRes.json();
-            } else {
-                console.error('Supplier stats API error:', statsRes.status);
-                statsData = [];
-            }
+            if (statsRes.ok) statsData = await statsRes.json();
 
             let logsData: any[] = [];
-            if (logsRes.ok) {
-                logsData = await logsRes.json();
-            } else {
-                console.error('Search logs API error:', logsRes.status);
-                logsData = [];
-            }
+            if (logsRes.ok) logsData = await logsRes.json();
 
             let quotesData: any[] = [];
-            if (quoteRes.ok) {
-                quotesData = await quoteRes.json();
-            } else {
-                console.error('Quote logs API error:', quoteRes.status);
-                quotesData = [];
-            }
+            if (quoteRes.ok) quotesData = await quoteRes.json();
 
-            console.log('Suppliers data:', supData);
-            console.log('Settings data:', setData);
+            let fetchData: any[] = [];
+            if (fetchRes.ok) fetchData = await fetchRes.json();
 
-            // Ensure supData is an array
             setSuppliers(Array.isArray(supData) ? supData : []);
             setSupplierStats(Array.isArray(statsData) ? statsData : []);
             setSearchLogs(Array.isArray(logsData) ? logsData : []);
             setQuoteLogs(Array.isArray(quotesData) ? quotesData : []);
+            setFetchLogs(Array.isArray(fetchData) ? fetchData : []);
             setSettings({
                 update_interval_minutes: (setData as any)?.update_interval_minutes || '60',
                 public_markup: (setData as any)?.public_markup || '15',
@@ -135,9 +131,9 @@ export default function AdminPage() {
             });
         } catch (e) {
             console.error('Error fetching data:', e);
-            // Set safe default values
             setSuppliers([]);
             setSupplierStats([]);
+            setFetchLogs([]);
             setSettings({
                 update_interval_minutes: '60',
                 public_markup: '15',
@@ -217,15 +213,31 @@ export default function AdminPage() {
             setNewName('');
             setNewSlug('');
             setNewUrl('');
-            setNewType('scoop');
+            setNewType('xml');
             refreshData();
         } catch (error) {
             alert('Failed to add supplier');
         }
     };
 
-    const handleManualIngest = async (supplierSlug: string) => {
-        alert(`Manual ingestion for ${supplierSlug} is handled automatically by the worker every 8 hours. Check worker logs for status.`);
+    // Build "last fetch" summary per supplier from fetchLogs
+    const lastFetchBySupplier = (() => {
+        const map: Record<string, FetchLog> = {};
+        for (const log of fetchLogs) {
+            if (!map[log.supplier_slug]) {
+                map[log.supplier_slug] = log;
+            }
+        }
+        return map;
+    })();
+
+    const toggleError = (id: number) => {
+        setExpandedErrors(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
     };
 
     useEffect(() => {
@@ -315,10 +327,6 @@ export default function AdminPage() {
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Quick Evetech access tile in admin portal */}
-            <AdminPanel title="Evetech Integration" subtitle="Virtual API surface" className="mb-6" >
-              {evetechLink}
-            </AdminPanel>
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     {/* Left Sidebar - Settings & Quick Actions */}
                     <div className="lg:col-span-1 space-y-6">
@@ -457,9 +465,9 @@ export default function AdminPage() {
 
                     {/* Main Content Area */}
                     <div className="lg:col-span-3 space-y-6">
-                        {/* XML Suppliers Management - First */}
+                        {/* Supplier Management */}
                         <div className="bg-white rounded-lg shadow-sm p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">XML Suppliers Management</h2>
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Supplier Management</h2>
                             <div className="space-y-4">
                                 <div className="overflow-x-auto">
                                     <table className="min-w-full divide-y divide-gray-200">
@@ -468,52 +476,71 @@ export default function AdminPage() {
                                                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                                                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
                                                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Last Fetch</th>
                                                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white divide-y divide-gray-200">
-                                            {suppliers.map((supplier) => (
-                                                <tr key={supplier.id}>
-                                                    <td className="px-4 py-2 text-sm font-medium text-gray-900">{supplier.name}</td>
-                                                    <td className="px-4 py-2 text-sm text-gray-700">{supplier.type}</td>
-                                                    <td className="px-4 py-2">
-                                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${supplier.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                                            }`}>
-                                                            {supplier.enabled ? 'Active' : 'Inactive'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-4 py-2 text-sm">
-                                                        <div className="flex gap-2">
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.preventDefault();
-                                                                    handleToggleSupplier(supplier.id);
-                                                                }}
-                                                                className="text-blue-600 hover:text-blue-700 font-medium"
-                                                            >
-                                                                {supplier.enabled ? 'Disable' : 'Enable'}
-                                                            </button>
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.preventDefault();
-                                                                    handleDeleteSupplier(supplier.id);
-                                                                }}
-                                                                className="text-red-600 hover:text-red-700 font-medium"
-                                                            >
-                                                                Delete
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                            {suppliers.map((supplier) => {
+                                                const lastFetch = lastFetchBySupplier[supplier.slug];
+                                                return (
+                                                    <tr key={supplier.id}>
+                                                        <td className="px-4 py-2 text-sm font-medium text-gray-900">{supplier.name}</td>
+                                                        <td className="px-4 py-2 text-sm text-gray-700 uppercase">{supplier.type}</td>
+                                                        <td className="px-4 py-2">
+                                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${supplier.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                                                }`}>
+                                                                {supplier.enabled ? 'Active' : 'Inactive'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-4 py-2 text-xs text-gray-600">
+                                                            {lastFetch ? (
+                                                                <div>
+                                                                    <span className={`inline-flex items-center gap-1 ${lastFetch.status === 'success' ? 'text-green-600' : lastFetch.status === 'error' ? 'text-red-600' : 'text-yellow-600'}`}>
+                                                                        <span className={`w-1.5 h-1.5 rounded-full ${lastFetch.status === 'success' ? 'bg-green-500' : lastFetch.status === 'error' ? 'bg-red-500' : 'bg-yellow-500 animate-pulse'}`}></span>
+                                                                        {timeAgo(lastFetch.started_at)}
+                                                                    </span>
+                                                                    {lastFetch.products_ingested > 0 && (
+                                                                        <span className="text-gray-400 ml-1">({lastFetch.products_ingested.toLocaleString()})</span>
+                                                                    )}
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-gray-400 italic">Never</span>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-4 py-2 text-sm">
+                                                            <div className="flex gap-2">
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.preventDefault();
+                                                                        handleToggleSupplier(supplier.id);
+                                                                    }}
+                                                                    className="text-blue-600 hover:text-blue-700 font-medium"
+                                                                >
+                                                                    {supplier.enabled ? 'Disable' : 'Enable'}
+                                                                </button>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.preventDefault();
+                                                                        handleDeleteSupplier(supplier.id);
+                                                                    }}
+                                                                    className="text-red-600 hover:text-red-700 font-medium"
+                                                                >
+                                                                    Delete
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
                                         </tbody>
                                     </table>
                                 </div>
 
                                 {/* Add New Supplier */}
                                 <div className="border-t pt-4">
-                                    <h3 className="text-md font-medium text-gray-900 mb-3">Add New XML Supplier</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                    <h3 className="text-md font-medium text-gray-900 mb-3">Add New Supplier</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
                                         <input
                                             type="text"
                                             placeholder="Name (e.g. MySupplier)"
@@ -530,20 +557,19 @@ export default function AdminPage() {
                                         />
                                         <input
                                             type="url"
-                                            placeholder="XML Feed URL"
+                                            placeholder="Feed URL"
                                             value={newUrl}
                                             onChange={(e) => setNewUrl(e.target.value)}
-                                            className="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-500"
+                                            className="md:col-span-2 px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-500"
                                         />
                                         <select
                                             value={newType}
                                             onChange={(e) => setNewType(e.target.value)}
                                             className="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white"
                                         >
-                                            <option value="scoop">Scoop Parser</option>
-                                            <option value="syntech">Syntech Parser</option>
-                                            <option value="pinnacle">Pinnacle Parser</option>
-                                            <option value="esquire">Esquire Parser</option>
+                                            <option value="xml">XML Feed</option>
+                                            <option value="csv">CSV Feed</option>
+                                            <option value="json">JSON API</option>
                                         </select>
                                     </div>
                                     <button
@@ -553,92 +579,168 @@ export default function AdminPage() {
                                         }}
                                         className="mt-3 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm font-medium"
                                     >
-                                        Add XML Supplier
+                                        Add Supplier
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Supplier Stats & Manual Control - New */}
+                        {/* Supplier Fetch History — NEW */}
                         <div className="bg-white rounded-lg shadow-sm p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Supplier Statistics & Manual Control</h2>
-
-                            {/* Manual Fetch Buttons */}
-                            <div className="mb-6">
-                                <h3 className="text-md font-medium text-gray-900 mb-3">Manual API Fetch</h3>
-                                <p className="text-sm text-gray-600 mb-4">Trigger manual data ingestion for specific suppliers (normally runs automatically every 8 hours)</p>
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                                    {suppliers.map((supplier) => (
-                                        <button
-                                            key={supplier.slug}
-                                            onClick={() => handleManualIngest(supplier.slug)}
-                                            className="flex flex-col items-center p-3 border border-gray-300 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors"
-                                        >
-                                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mb-2">
-                                                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                </svg>
-                                            </div>
-                                            <span className="text-xs font-medium text-gray-900 text-center">{supplier.name}</span>
-                                            <span className="text-xs text-gray-500 mt-1">{supplier.slug}</span>
-                                        </button>
-                                    ))}
+                            <div className="flex items-center justify-between mb-4">
+                                <div>
+                                    <h2 className="text-lg font-semibold text-gray-900">Supplier Fetch History</h2>
+                                    <p className="text-sm text-gray-500">Times and details of the last data fetches for each supplier</p>
                                 </div>
+                                <button
+                                    onClick={refreshData}
+                                    className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                                >
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                    Refresh
+                                </button>
                             </div>
 
-                            {/* Supplier Statistics Table */}
-                            <div>
-                                <h3 className="text-md font-medium text-gray-900 mb-3">Supplier Statistics</h3>
-                                <div className="overflow-x-auto">
-                                    <table className="min-w-full divide-y divide-gray-200 text-xs">
-                                        <thead className="bg-gray-50">
-                                            <tr>
-                                                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
-                                                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                                                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
-                                                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">In Stock</th>
-                                                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Last Updated</th>
-                                                <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Price Range</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {supplierStats.map((stat) => (
-                                                <tr key={stat.supplier_slug}>
-                                                    <td className="px-2 py-2 text-xs font-medium text-gray-900 truncate max-w-[120px]" title={stat.supplier_name}>
-                                                        {stat.supplier_name}
-                                                    </td>
-                                                    <td className="px-2 py-2 text-xs text-gray-600 uppercase">{stat.supplier_type}</td>
-                                                    <td className="px-2 py-2">
-                                                        <span className={`inline-flex px-1.5 py-0.5 text-xs font-medium rounded-full ${stat.enabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                                                            }`}>
-                                                            {stat.enabled ? 'Active' : 'Inactive'}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-2 py-2 text-xs text-gray-900 font-medium">{stat.total_products.toLocaleString()}</td>
-                                                    <td className="px-2 py-2 text-xs text-green-600 font-medium">{stat.products_in_stock.toLocaleString()}</td>
-                                                    <td className="px-2 py-2 text-xs text-gray-600 truncate max-w-[100px]" title={stat.last_updated ? new Date(stat.last_updated).toLocaleString() : 'Never'}>
-                                                        {stat.last_updated ? new Date(stat.last_updated).toLocaleDateString() : 'Never'}
-                                                    </td>
-                                                    <td className="px-2 py-2 text-xs text-gray-600">
-                                                        {stat.min_price !== '0.00' ? `R${stat.min_price}-${stat.max_price}` : 'N/A'}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                            {supplierStats.length === 0 && (
-                                                <tr>
-                                                    <td colSpan={7} className="px-2 py-4 text-center text-xs text-gray-500">
-                                                        No supplier statistics available
-                                                    </td>
-                                                </tr>
+                            {/* Summary Cards — last fetch per supplier */}
+                            {Object.keys(lastFetchBySupplier).length > 0 && (
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+                                    {Object.values(lastFetchBySupplier).map((log) => (
+                                        <div key={log.supplier_slug} className={`p-3 rounded-lg border ${log.status === 'success' ? 'border-green-200 bg-green-50' : log.status === 'error' ? 'border-red-200 bg-red-50' : 'border-yellow-200 bg-yellow-50'}`}>
+                                            <div className="text-xs font-bold text-gray-900 truncate">{log.supplier_name}</div>
+                                            <div className={`text-[10px] font-semibold mt-1 ${log.status === 'success' ? 'text-green-600' : log.status === 'error' ? 'text-red-600' : 'text-yellow-600'}`}>
+                                                {log.status === 'success' ? '✓' : log.status === 'error' ? '✗' : '⟳'} {timeAgo(log.started_at)}
+                                            </div>
+                                            <div className="text-[10px] text-gray-500 mt-0.5">
+                                                {log.products_ingested > 0 ? `${log.products_ingested.toLocaleString()} products` : 'No data'}
+                                            </div>
+                                            {log.duration_seconds !== null && (
+                                                <div className="text-[10px] text-gray-400">{formatDuration(log.duration_seconds)}</div>
                                             )}
-                                        </tbody>
-                                    </table>
+                                        </div>
+                                    ))}
                                 </div>
+                            )}
+
+                            {/* Full fetch log table */}
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200 text-xs">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Started</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Duration</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Fetched</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ingested</th>
+                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Details</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {fetchLogs.map((log) => (
+                                            <tr key={log.id} className="hover:bg-gray-50">
+                                                <td className="px-3 py-2 text-xs font-medium text-gray-900">{log.supplier_name}</td>
+                                                <td className="px-3 py-2 text-[10px] text-gray-500" title={new Date(log.started_at).toLocaleString()}>
+                                                    {timeAgo(log.started_at)}
+                                                    <div className="text-[9px] text-gray-400">{new Date(log.started_at).toLocaleTimeString()}</div>
+                                                </td>
+                                                <td className="px-3 py-2 text-xs text-gray-600">{formatDuration(log.duration_seconds)}</td>
+                                                <td className="px-3 py-2">
+                                                    <span className={`inline-flex px-1.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider ${
+                                                        log.status === 'success' ? 'bg-green-100 text-green-700' :
+                                                        log.status === 'error' ? 'bg-red-100 text-red-700' :
+                                                        'bg-yellow-100 text-yellow-700'
+                                                    }`}>
+                                                        {log.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-3 py-2 text-xs text-gray-600 font-medium">{(log.products_fetched || 0).toLocaleString()}</td>
+                                                <td className="px-3 py-2 text-xs text-green-600 font-bold">{(log.products_ingested || 0).toLocaleString()}</td>
+                                                <td className="px-3 py-2 text-xs">
+                                                    {log.error_message ? (
+                                                        <button
+                                                            onClick={() => toggleError(log.id)}
+                                                            className="text-red-500 hover:text-red-700 text-[10px] font-bold uppercase tracking-wider"
+                                                        >
+                                                            {expandedErrors.has(log.id) ? 'Hide' : 'Error ⚠'}
+                                                        </button>
+                                                    ) : (
+                                                        <span className="text-gray-300 text-[10px]">—</span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {/* Expanded error rows */}
+                                        {fetchLogs.filter(l => l.error_message && expandedErrors.has(l.id)).map(log => (
+                                            <tr key={`err-${log.id}`} className="bg-red-50">
+                                                <td colSpan={7} className="px-3 py-2 text-xs text-red-700 font-mono">
+                                                    <strong>{log.supplier_name}:</strong> {log.error_message}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {fetchLogs.length === 0 && (
+                                            <tr>
+                                                <td colSpan={7} className="px-3 py-8 text-center text-xs text-gray-500">
+                                                    No fetch history yet. Data will appear after the worker runs its first ingestion cycle.
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
-                        {/* Recent Search Logs - New */}
+                        {/* Supplier Statistics */}
+                        <div className="bg-white rounded-lg shadow-sm p-6">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Supplier Statistics</h2>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200 text-xs">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
+                                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">In Stock</th>
+                                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Last Updated</th>
+                                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Price Range</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {supplierStats.map((stat) => (
+                                            <tr key={stat.supplier_slug}>
+                                                <td className="px-2 py-2 text-xs font-medium text-gray-900 truncate max-w-[120px]" title={stat.supplier_name}>
+                                                    {stat.supplier_name}
+                                                </td>
+                                                <td className="px-2 py-2 text-xs text-gray-600 uppercase">{stat.supplier_type}</td>
+                                                <td className="px-2 py-2">
+                                                    <span className={`inline-flex px-1.5 py-0.5 text-xs font-medium rounded-full ${stat.enabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                                        }`}>
+                                                        {stat.enabled ? 'Active' : 'Inactive'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-2 py-2 text-xs text-gray-900 font-medium">{stat.total_products.toLocaleString()}</td>
+                                                <td className="px-2 py-2 text-xs text-green-600 font-medium">{stat.products_in_stock.toLocaleString()}</td>
+                                                <td className="px-2 py-2 text-xs text-gray-600 truncate max-w-[100px]" title={stat.last_updated ? new Date(stat.last_updated).toLocaleString() : 'Never'}>
+                                                    {stat.last_updated ? new Date(stat.last_updated).toLocaleDateString() : 'Never'}
+                                                </td>
+                                                <td className="px-2 py-2 text-xs text-gray-600">
+                                                    {stat.min_price !== '0.00' ? `R${stat.min_price}-${stat.max_price}` : 'N/A'}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {supplierStats.length === 0 && (
+                                            <tr>
+                                                <td colSpan={7} className="px-2 py-4 text-center text-xs text-gray-500">
+                                                    No supplier statistics available
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Recent Search Logs */}
                         <div className="bg-white rounded-lg shadow-sm p-6">
                             <div className="flex items-center justify-between mb-4">
                                 <h2 className="text-lg font-semibold text-gray-900">Recent Search Activity</h2>
@@ -713,7 +815,7 @@ export default function AdminPage() {
                             </div>
                         </div>
 
-                        {/* Recent Quote Activity - New */}
+                        {/* Recent Quote Activity */}
                         <div className="bg-white rounded-lg shadow-sm p-6">
                             <div className="flex items-center justify-between mb-4">
                                 <h2 className="text-lg font-semibold text-gray-900">Recent Quote Templates Generated</h2>
@@ -772,51 +874,8 @@ export default function AdminPage() {
                             </div>
                         </div>
 
-                        {/* Manual Product Import - Second */}
+                        {/* Manual Product Import */}
                         <DistributorImport />
-
-                        {/* Generic Scraper - Last with close option */}
-                        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-                            <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                                        <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h2 className="text-lg font-semibold text-gray-900">Generic Web Scraper</h2>
-                                        <p className="text-sm text-gray-600">Experimental feature - Currently inactive</p>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => setShowScraper(!showScraper)}
-                                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50"
-                                >
-                                    {showScraper ? (
-                                        <>
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                                            </svg>
-                                            Hide
-                                        </>
-                                    ) : (
-                                        <>
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                            Show
-                                        </>
-                                    )}
-                                </button>
-                            </div>
-
-                            {showScraper && (
-                                <div className="p-6">
-                                    <GenericScraper />
-                                </div>
-                            )}
-                        </div>
                     </div>
                 </div>
             </div>

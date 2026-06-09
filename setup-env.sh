@@ -32,6 +32,9 @@ PINNACLE_API_KEY=942709f3-9b39-4e93-9a5e-cdd883453178
 EVENFLOW_EMAIL=blake@smartintegrate.co.za
 EVENFLOW_PASSWORD=Smart@2026!
 
+# Linkqage API
+LINKQAGE_TOKEN=TiZBRxFPIDTM28VhKmQAToLYSDUmkflX9DpOVYJrn6xuOiNTZpv1KgviF2iPP7uT
+
 # Application Settings
 NODE_ENV=development
 NEXT_TELEMETRY_DISABLED=1
@@ -56,6 +59,9 @@ DATABASE_URL=postgresql://bfmacbook@localhost:5432/whosgotstock
 
 # Public environment variables for frontend
 NEXT_PUBLIC_ESQUIRE_EMAIL=blake@smartintegrate.co.za
+
+# Linkqage API
+LINKQAGE_TOKEN=TiZBRxFPIDTM28VhKmQAToLYSDUmkflX9DpOVYJrn6xuOiNTZpv1KgviF2iPP7uT
 
 # Application Settings
 NODE_ENV=development

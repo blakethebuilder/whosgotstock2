@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   // Explicitly set empty turbopack config to use webpack instead
   // This silences the Next.js 16 warning about webpack config without turbopack config
   turbopack: {},
+  serverExternalPackages: ['exceljs'],
   webpack: (config, { dev, isServer }) => {
     // Optimize for production builds
     if (!dev && !isServer) {

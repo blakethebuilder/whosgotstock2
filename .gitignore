@@ -106,10 +106,6 @@ Thumbs.db
 web/data/products.json
 worker/linkqage-products.json
 
-# Debug files
-debug-*.js
-test-*.js
-
-# Documentation files (if not needed in repo)
-REBUILD_WHOSGOTSTOCK_PROMPT.md
-WARP.md
+# AI / IDE tooling
+.kiro/
+.gemini/

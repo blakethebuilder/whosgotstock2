@@ -44,6 +44,7 @@ services:
       - PINNACLE_API_KEY=${PINNACLE_API_KEY}
       - EVENFLOW_API_URL=${EVENFLOW_API_URL}
       - EVENFLOW_API_KEY=${EVENFLOW_API_KEY}
+      - LINKQAGE_TOKEN=${LINKQAGE_TOKEN}
       - UPDATE_INTERVAL_MINUTES=${UPDATE_INTERVAL_MINUTES:-60}
     depends_on:
       postgres:
@@ -65,6 +66,7 @@ services:
       - PGPASSWORD=${POSTGRES_PASSWORD:-postgres}
       - PGDATABASE=${POSTGRES_DB:-whosgotstock}
       - PGHOST=postgres
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-whosgotstock}
     volumes:
       - ./database:/migrations
     entrypoint: ["bash", "-c"]

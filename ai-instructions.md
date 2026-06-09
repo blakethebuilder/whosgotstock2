@@ -70,6 +70,7 @@ docker-compose up -d
 - **Esquire**: XML feed with email/password authentication
 - **Pinnacle/Syntech**: XML feeds with API keys
 - **Evenflow**: JSON API with bearer token
+- **Linkqage**: JSON API (FTGDrop) with token-based URL, paginated feed
 
 **Cross-Component Communication:**
 - Worker queries `suppliers` table to determine which feeds to process

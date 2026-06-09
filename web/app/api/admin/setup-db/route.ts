@@ -66,6 +66,22 @@ export async function POST() {
             );
         `);
 
+        // Create supplier_fetch_log table
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS supplier_fetch_log (
+                id SERIAL PRIMARY KEY,
+                supplier_slug VARCHAR(255) NOT NULL,
+                supplier_name VARCHAR(255) NOT NULL,
+                started_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                finished_at TIMESTAMP,
+                status VARCHAR(50) DEFAULT 'running',
+                products_fetched INTEGER DEFAULT 0,
+                products_ingested INTEGER DEFAULT 0,
+                error_message TEXT,
+                duration_seconds NUMERIC(10,2)
+            );
+        `);
+
         // Insert default settings
         await client.query(`
             INSERT INTO settings (key, value) VALUES
@@ -80,12 +96,16 @@ export async function POST() {
             ON CONFLICT (key) DO NOTHING;
         `);
 
-        // Insert default suppliers
+        // Insert default suppliers (including Linkqage, Mustek, Syntech, Pinnacle)
         await client.query(`
             INSERT INTO suppliers (name, slug, url, type, enabled) VALUES
             ('Scoop', 'scoop', 'https://scoop.co.za/scoop_pricelist.xml', 'xml', true),
             ('Esquire', 'esquire', 'https://api.esquire.co.za/api/DataFeed?u=blake@smartintegrate.co.za&p=Smart@1991&t=xml&m=10&o=ascending&r=RoundNone&rm=10&min=0', 'xml', true),
-            ('Even Flow', 'evenflow', 'https://www.evenflow.online/B2BPricingFeed/GetB2BPricing', 'json', true)
+            ('Even Flow', 'evenflow', 'https://www.evenflow.online/B2BPricingFeed/GetB2BPricing', 'json', true),
+            ('Mustek', 'mustek', 'https://api.mustek.co.za/Customer/ItemsStock.ashx?CustomerToken=f49294f4-cf6b-429c-895f-d27d539cdac4', 'csv', true),
+            ('Syntech', 'syntech', 'https://www.syntech.co.za/feeds/feedhandler.php?key=668EEFF7-494A-43B9-908B-E72B79648CFC&feed=syntech-xml-full', 'xml', true),
+            ('Pinnacle', 'pinnacle', 'https://www.pinnacle.co.za/pinnacle/productfeed/xml/id/8756/uid/942709f3-9b39-4e93-9a5e-cdd883453178/', 'xml', true),
+            ('Linkqage', 'linkqage', 'https://linkqage.ftgdrop.co.za/api/v1/feed/', 'json', true)
             ON CONFLICT (slug) DO NOTHING;
         `);
 
@@ -94,6 +114,8 @@ export async function POST() {
         await client.query(`CREATE INDEX IF NOT EXISTS idx_products_brand ON products(brand);`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_products_master_sku ON products(master_sku);`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_fetch_log_supplier ON supplier_fetch_log(supplier_slug);`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_fetch_log_started ON supplier_fetch_log(started_at DESC);`);
 
         client.release();
         

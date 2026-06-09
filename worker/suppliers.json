@@ -33,5 +33,12 @@
     "url": "https://www.evenflow.online/B2BPricingFeed/GetB2BPricing",
     "type": "evenflow",
     "enabled": true
+  },
+  {
+    "id": "linkqage",
+    "name": "Linkqage",
+    "url": "https://linkqage.ftgdrop.co.za/api/v1/feed/",
+    "type": "json",
+    "enabled": true
   }
 ]
