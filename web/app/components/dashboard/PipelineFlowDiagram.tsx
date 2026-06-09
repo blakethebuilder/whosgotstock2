@@ -184,9 +184,6 @@ export default function PipelineFlowDiagram() {
         
         {/* Header Summary */}
         <div className="text-center max-w-2xl mx-auto space-y-2">
-          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-500 bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/20">
-            Real-Time Engine Visualizer
-          </span>
           <h3 className="text-2xl sm:text-4xl font-black text-white tracking-tighter italic">
             Behind the Search Bar
           </h3>
