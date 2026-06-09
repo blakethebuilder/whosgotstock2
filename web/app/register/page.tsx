@@ -72,34 +72,36 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8 transition-colors duration-300">
+    <div className="min-h-screen bg-[#F3F4F1] dark:bg-gray-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 transition-colors duration-300 font-sans">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-800">WhosGotStock</h1>
-          <h2 className="mt-6 text-2xl font-bold text-gray-900 dark:text-gray-800">
+          <h1 className="text-3xl font-black text-gray-900 dark:text-white uppercase tracking-tighter">
+            WHOSGOT<span className="text-orange-500 ml-0.5">STOCK</span>
+          </h1>
+          <h2 className="mt-6 text-2xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
             Create your account
           </h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-600">
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 font-semibold">
             Or{' '}
-            <Link href="/login" className="font-medium text-orange-600 dark:text-orange-600 hover:text-orange-500 dark:hover:text-orange-500">
-              sign in to existing account
+            <Link href="/login" className="font-bold text-orange-600 dark:text-orange-500 hover:text-orange-500 transition-colors">
+              sign in to existing reseller account
             </Link>
           </p>
         </div>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white dark:bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border border-gray-200 dark:border-gray-200 transition-colors duration-300">
+        <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl py-8 px-4 shadow-2xl sm:rounded-[2.5rem] sm:px-10 border border-white dark:border-gray-800/80 transition-all duration-300">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
+              <div className="bg-red-50 dark:bg-red-955/30 border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 px-4 py-3 rounded-xl text-xs font-bold animate-pulse">
                 {error}
               </div>
             )}
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="firstName" className="block text-xs font-black uppercase text-gray-400 dark:text-gray-550 tracking-wider mb-1">
                   First Name
                 </label>
                 <input
@@ -109,13 +111,13 @@ export default function RegisterPage() {
                   required
                   value={formData.firstName}
                   onChange={handleChange}
-                  className="input-field mt-1"
+                  className="input-field"
                   placeholder="First name"
                 />
               </div>
 
               <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="lastName" className="block text-xs font-black uppercase text-gray-400 dark:text-gray-550 tracking-wider mb-1">
                   Last Name
                 </label>
                 <input
@@ -125,14 +127,14 @@ export default function RegisterPage() {
                   required
                   value={formData.lastName}
                   onChange={handleChange}
-                  className="input-field mt-1"
+                  className="input-field"
                   placeholder="Last name"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-xs font-black uppercase text-gray-400 dark:text-gray-550 tracking-wider mb-1">
                 Email address
               </label>
               <input
@@ -143,13 +145,13 @@ export default function RegisterPage() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="input-field mt-1"
+                className="input-field"
                 placeholder="your.email@company.com"
               />
             </div>
 
             <div>
-              <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="companyName" className="block text-xs font-black uppercase text-gray-400 dark:text-gray-550 tracking-wider mb-1">
                 Company Name
               </label>
               <input
@@ -159,13 +161,13 @@ export default function RegisterPage() {
                 required
                 value={formData.companyName}
                 onChange={handleChange}
-                className="input-field mt-1"
+                className="input-field"
                 placeholder="Company name"
               />
             </div>
 
             <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="role" className="block text-xs font-black uppercase text-gray-400 dark:text-gray-550 tracking-wider mb-1">
                 Account Type
               </label>
               <select
@@ -173,7 +175,7 @@ export default function RegisterPage() {
                 name="role"
                 value={formData.role}
                 onChange={handleChange}
-                className="input-field mt-1"
+                className="input-field cursor-pointer bg-white dark:bg-gray-800"
               >
                 <option value="free">Free (25 searches/month)</option>
                 <option value="professional">Professional (R399/month)</option>
@@ -182,7 +184,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-xs font-black uppercase text-gray-400 dark:text-gray-550 tracking-wider mb-1">
                 Password
               </label>
               <input
@@ -193,13 +195,13 @@ export default function RegisterPage() {
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className="input-field mt-1"
+                className="input-field"
                 placeholder="Create a strong password"
               />
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="confirmPassword" className="block text-xs font-black uppercase text-gray-400 dark:text-gray-550 tracking-wider mb-1">
                 Confirm Password
               </label>
               <input
@@ -210,7 +212,7 @@ export default function RegisterPage() {
                 required
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="input-field mt-1"
+                className="input-field"
                 placeholder="Confirm password"
               />
             </div>
@@ -219,7 +221,7 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed text-xs font-black uppercase tracking-widest py-3.5 rounded-xl active:scale-[0.98] transition-all"
               >
                 {loading ? 'Creating account...' : 'Create account'}
               </button>
@@ -229,17 +231,17 @@ export default function RegisterPage() {
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
+                <div className="w-full border-t border-gray-200 dark:border-gray-800" />
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with legacy access</span>
+              <div className="relative flex justify-center text-[10px] font-black uppercase tracking-wider">
+                <span className="px-3 bg-white/70 dark:bg-gray-900/70 text-gray-400 backdrop-blur rounded-full">Or continue with legacy access</span>
               </div>
             </div>
 
             <div className="mt-6">
               <Link
                 href="/"
-                className="btn-secondary w-full text-center block"
+                className="btn-secondary w-full text-center block text-xs font-black uppercase tracking-widest py-3.5 rounded-xl border border-gray-200/50 dark:border-gray-800 hover:bg-gray-200/50 dark:hover:bg-gray-800 transition-colors"
               >
                 Use Passphrase Access
               </Link>
