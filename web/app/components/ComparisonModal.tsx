@@ -69,13 +69,27 @@ export default function ComparisonModal({
 
                             <div className="flex items-center gap-2">
                                 {products.length > 0 && (
-                                    <button
-                                        onClick={onClearAll}
-                                        className="text-[9px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 px-3 py-2 rounded-lg transition-all"
-                                        title="Clear all compared products"
-                                    >
-                                        Clear
-                                    </button>
+                                    <div className="flex gap-1">
+                                        <button
+                                            onClick={() => {
+                                                const ids = products.map(p => p.id).join(',');
+                                                const shareUrl = `${window.location.origin}/?compare=${ids}`;
+                                                navigator.clipboard.writeText(shareUrl);
+                                                alert('Comparison matrix share link copied to clipboard!');
+                                            }}
+                                            className="text-[9px] font-black uppercase tracking-widest text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-950/20 px-3 py-2 rounded-lg transition-all"
+                                            title="Share this comparison matrix"
+                                        >
+                                            Share
+                                        </button>
+                                        <button
+                                            onClick={onClearAll}
+                                            className="text-[9px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 px-3 py-2 rounded-lg transition-all"
+                                            title="Clear all compared products"
+                                        >
+                                            Clear
+                                        </button>
+                                    </div>
                                 )}
                                 <button
                                     onClick={() => setIsMinimized(true)}

@@ -128,6 +128,80 @@ export default function Home() {
     }
   }, []);
 
+  // Share Link URL Handler
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get('product');
+    const compareIds = params.get('compare');
+    const cartParam = params.get('cart');
+
+    if (productId) {
+      fetch(`/api/search?ids=${productId}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.results && data.results.length > 0) {
+            setSelectedProduct(data.results[0]);
+          }
+        })
+        .catch(console.error);
+    }
+
+    if (compareIds) {
+      fetch(`/api/search?ids=${compareIds}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.results && data.results.length > 0) {
+            setCompareList(data.results);
+            setIsCompareModalOpen(true);
+          }
+        })
+        .catch(console.error);
+    }
+
+    if (cartParam) {
+      const cartMappings = cartParam.split(',').map(item => {
+        const [idStr, qtyStr] = item.split(':');
+        return {
+          id: parseInt(idStr, 10),
+          qty: parseInt(qtyStr, 10) || 1
+        };
+      }).filter(m => !isNaN(m.id));
+
+      if (cartMappings.length > 0) {
+        const ids = cartMappings.map(m => m.id).join(',');
+        fetch(`/api/search?ids=${ids}`)
+          .then(r => r.json())
+          .then(data => {
+            if (data.results && data.results.length > 0) {
+              const newItems = data.results.map((product: Product) => {
+                const mapping = cartMappings.find(m => m.id === parseInt(product.id as any, 10));
+                return {
+                  ...product,
+                  quantity: mapping ? mapping.qty : 1,
+                  projectId: undefined
+                };
+              });
+              setCart(prev => {
+                const merged = [...prev];
+                newItems.forEach((newItem: CartItem) => {
+                  const existingIdx = merged.findIndex(i => i.id === newItem.id);
+                  if (existingIdx > -1) {
+                    merged[existingIdx].quantity += newItem.quantity;
+                  } else {
+                    merged.push(newItem);
+                  }
+                });
+                return merged;
+              });
+              setIsCartOpen(true);
+            }
+          })
+          .catch(console.error);
+      }
+    }
+  }, []);
+
   useEffect(() => { localStorage.setItem('whosgotstock_cart', JSON.stringify(cart)); }, [cart]);
   useEffect(() => { localStorage.setItem('whosgotstock_projects', JSON.stringify(projects)); }, [projects]);
   useEffect(() => { localStorage.setItem('whosgotstock_user_role', userRole); }, [userRole]);

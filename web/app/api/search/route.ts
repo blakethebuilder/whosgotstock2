@@ -23,6 +23,34 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
 
+  const idsParam = searchParams.get('ids');
+  if (idsParam) {
+    const ids = idsParam.split(',').map(id => parseInt(id.trim(), 10)).filter(id => !isNaN(id));
+    if (ids.length > 0) {
+      let client;
+      try {
+        client = await pool.connect();
+        const placeholders = ids.map((_, index) => `$${index + 1}`).join(', ');
+        const result = await client.query(
+          `SELECT
+             p.id::text, p.supplier_sku, p.name, p.brand, p.price_ex_vat,
+             p.qty_on_hand, COALESCE(p.stock_jhb, 0) as stock_jhb, COALESCE(p.stock_cpt, 0) as stock_cpt, p.image_url, p.supplier_name, s.slug as supplier_slug,
+             p.last_updated, p.category, COALESCE(p.description, '') as description, p.raw_data, p.price_on_request
+           FROM products p
+           JOIN suppliers s ON p.supplier_name = s.name
+           WHERE p.id IN (${placeholders}) AND s.enabled = true`,
+          ids
+        );
+        return NextResponse.json({ results: result.rows, total: result.rows.length });
+      } catch (err: any) {
+        console.error('Search IDs API error:', err);
+        return NextResponse.json({ error: 'Search failed', details: err.message, results: [], total: 0 }, { status: 500 });
+      } finally {
+        if (client) client.release();
+      }
+    }
+  }
+
   const rawQuery = searchParams.get('q')?.trim().slice(0, 200) || '';
   const suppliersParam = searchParams.get('suppliers');
   const brand = searchParams.get('brand')?.trim().slice(0, 100);

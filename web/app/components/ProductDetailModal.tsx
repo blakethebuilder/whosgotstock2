@@ -176,6 +176,17 @@ export default function ProductDetailModal({
                         >
                             <svg className="w-6 h-6 transition-transform group-active:scale-125" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" /></svg>
                         </button>
+                        <button
+                            onClick={() => {
+                                const shareUrl = `${window.location.origin}/?product=${product.id}`;
+                                navigator.clipboard.writeText(shareUrl);
+                                alert('Product share link copied to clipboard!');
+                            }}
+                            className="flex-1 font-black py-5 rounded-[1.5rem] bg-gray-50 dark:bg-gray-800 text-gray-500 border border-transparent hover:bg-gray-100 dark:hover:bg-gray-700 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+                            title="Share Product"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8.684 10.742l4.828-2.414m0 0a3 3 0 10-4.828-2.414m4.828 2.414a3 3 0 00-4.828 2.414m0 0L8.684 13.26M13.5 18a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        </button>
                     </div>
                 </div>
             </div>
