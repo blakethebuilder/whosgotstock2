@@ -191,7 +191,16 @@ export default function Navbar({
             >
               <div className="text-right hidden md:block">
                 <p className="text-xs font-bold text-gray-900 dark:text-white leading-none mb-0.5">
-                  {user ? `${user.firstName} ${user.lastName.charAt(0)}.` : 'Guest Access'}
+                  {user 
+                    ? `${user.firstName} ${user.lastName.charAt(0)}.` 
+                    : userRole === 'admin' 
+                      ? 'System Admin' 
+                      : userRole === 'management' 
+                        ? 'Manager Access' 
+                        : userRole === 'team' 
+                          ? 'Team Member' 
+                          : 'Guest Access'
+                  }
                 </p>
                 <p className="text-[10px] font-medium text-gray-400 uppercase tracking-tighter">
                   {userRole} tier

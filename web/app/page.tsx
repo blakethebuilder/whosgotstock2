@@ -16,13 +16,21 @@ import ProductTable from './components/ProductTable';
 import { Product, Supplier, CartItem, UserRole, UsageStats, Project } from './types';
 import { debounce } from '@/lib/debounce';
 import { calculatePrice, formatPrice } from '@/lib/pricing';
+import { useAuth } from './components/AuthProvider';
 
 export default function Home() {
+  const { user } = useAuth();
   const [userRole, setUserRole] = useState<UserRole>('public');
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [passphrase, setPassphrase] = useState('');
   const [passphraseError, setPassphraseError] = useState('');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+
+  useEffect(() => {
+    if (user && user.role) {
+      setUserRole(user.role as UserRole);
+    }
+  }, [user]);
 
   const [usageStats, setUsageStats] = useState<UsageStats>({
     searchesThisMonth: 0,
