@@ -41,6 +41,7 @@ export default function CartDrawer({
     const [activeTab, setActiveTab] = useState<string>('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+    const [isExpanded, setIsExpanded] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -51,6 +52,7 @@ export default function CartDrawer({
             setActiveTab('all');
             setSearchQuery('');
             setCollapsedSections(new Set());
+            setIsExpanded(false);
         }
     }, [isOpen]);
 
@@ -232,7 +234,7 @@ export default function CartDrawer({
                 onClick={onClose}
             />
 
-            <div className={`fixed right-0 top-0 h-full w-full max-w-md bg-gray-50 dark:bg-gray-950 shadow-2xl z-[200] transform transition-transform duration-300 ease-out border-l border-white dark:border-gray-900 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className={`fixed right-0 top-0 h-full w-full ${isExpanded ? 'md:max-w-[50vw] sm:max-w-2xl' : 'max-w-md'} bg-gray-50 dark:bg-gray-950 shadow-2xl z-[200] transform transition-transform duration-300 ease-out border-l border-white dark:border-gray-900 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                 <div className="flex flex-col h-full">
                     {/* Header */}
                     <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-850 px-5 py-4 shrink-0 shadow-sm">
@@ -250,6 +252,17 @@ export default function CartDrawer({
                                         Clear Cart
                                     </button>
                                 )}
+                                <button 
+                                    onClick={() => setIsExpanded(!isExpanded)} 
+                                    className="hidden sm:flex w-8 h-8 items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors text-gray-400 hover:text-gray-700 dark:hover:text-gray-250"
+                                    title={isExpanded ? "Collapse drawer" : "Expand to half screen"}
+                                >
+                                    {isExpanded ? (
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 5l-7 7 7 7M20 5l-7 7 7 7" /></svg>
+                                    ) : (
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 19l7-7-7-7M4 19l7-7-7-7" /></svg>
+                                    )}
+                                </button>
                                 <button onClick={onClose} className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
                                     <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                                 </button>
