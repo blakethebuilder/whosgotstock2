@@ -215,6 +215,21 @@ export async function getUserFromRequest(request: NextRequest): Promise<User | n
   return getUserById(payload.userId);
 }
 
+export async function validateApiKey(apiKey: string): Promise<User | null> {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      `SELECT id, email, role, company_name, first_name, last_name, created_at, last_login, is_active, email_verified
+       FROM users WHERE api_key = $1 AND is_active = true`,
+      [apiKey]
+    );
+    return result.rows[0] || null;
+  } finally {
+    client.release();
+  }
+}
+
+
 // Validation utilities
 export function validateEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

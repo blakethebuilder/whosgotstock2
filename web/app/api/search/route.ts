@@ -1,10 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { normalizeSearchQuery, expandQueryToGroups, expandSearchTerms } from '@/lib/search-utils';
 import { getCached, setCache } from '@/lib/cache';
 import { searchRateLimit } from '@/lib/rate-limit';
+import { validateApiKey, verifyToken, getUserById } from '@/lib/auth';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   // Apply rate limiting
   const rateLimitResult = searchRateLimit(request as any);
   if (!rateLimitResult.success) {
@@ -22,6 +23,47 @@ export async function GET(request: Request) {
   }
 
   const { searchParams } = new URL(request.url);
+
+  // API Key & Session Verification
+  let authorizedUser = null;
+
+  // 1. Check for API key in headers or query params
+  const apiKey = request.headers.get('x-api-key') || 
+                 request.headers.get('X-API-Key') || 
+                 searchParams.get('apiKey') || 
+                 searchParams.get('api_key');
+                 
+  if (apiKey) {
+    authorizedUser = await validateApiKey(apiKey);
+    if (!authorizedUser) {
+      return NextResponse.json({ error: 'Invalid API Key' }, { status: 401 });
+    }
+  } else {
+    // 2. Check for cookie-based session or Bearer token
+    const token = request.cookies.get('auth-token')?.value || 
+                  request.headers.get('authorization')?.replace('Bearer ', '');
+    
+    if (token) {
+      const payload = verifyToken(token);
+      if (payload) {
+        authorizedUser = await getUserById(payload.userId);
+      }
+    }
+  }
+
+  // 3. Fallback: Allow unauthenticated local browser queries for website landing page, but reject external scraper/API bots without keys
+  if (!authorizedUser) {
+    const referer = request.headers.get('referer');
+    const host = request.headers.get('host');
+    const isLocalFrontend = referer && host && (referer.includes(host) || referer.includes('localhost') || referer.includes('127.0.0.1'));
+    
+    if (!isLocalFrontend) {
+      return NextResponse.json(
+        { error: 'API access key required. Please provide a valid x-api-key header.' }, 
+        { status: 401 }
+      );
+    }
+  }
 
   const idsParam = searchParams.get('ids');
   if (idsParam) {

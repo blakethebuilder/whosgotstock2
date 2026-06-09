@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login TIMESTAMP,
     is_active BOOLEAN DEFAULT true,
-    email_verified BOOLEAN DEFAULT false
+    email_verified BOOLEAN DEFAULT false,
+    api_key VARCHAR(255) UNIQUE
 );
 
 -- User sessions for JWT token management
@@ -124,6 +125,9 @@ export async function POST(request: NextRequest) {
     try {
       // Execute the migration
       await client.query(MIGRATION_SQL);
+      
+      // Ensure api_key column exists for existing tables
+      await client.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS api_key VARCHAR(255) UNIQUE;');
       
       // Check if tables were created successfully
       const tablesResult = await client.query(`
