@@ -122,7 +122,7 @@ export default function ProductTable({
                       className={`p-2 rounded-xl transition-all ${compareList.find((p) => p.id === product.id) ? 'bg-orange-500 text-white border-orange-500' : 'bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-orange-500'}`}
                       title="Compare Product"
                     >
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" /></svg>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" /></svg>
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); onAddToCart(product); }}
