@@ -47,6 +47,7 @@ export type UsageStats = {
     quotesGenerated: number;
     isLimitReached: boolean;
     totalProducts?: number;
+    inStockProducts?: number;
     totalSuppliers?: number;
 };
 

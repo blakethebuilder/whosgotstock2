@@ -85,14 +85,6 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
                             </svg>
                         </button>
 
-                        {userRole === 'admin' && (
-                            <a
-                                href="/admin"
-                                className="px-8 py-5 rounded-2xl font-black text-sm border-2 border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center gap-3"
-                            >
-                                Control Center
-                            </a>
-                        )}
                     </div>
                 </div>
             </div>
@@ -122,27 +114,27 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
                 <p className="mt-8 text-sm font-bold text-[#4A5D16] opacity-60 uppercase tracking-widest">Live Network Connected</p>
             </div>
 
-            {/* NETWORK STATUS TILE */}
+            {/* DATABASE INVENTORY STATUS TILE */}
             <div className="md:col-span-4 bg-white dark:bg-gray-900 rounded-[3rem] p-10 border border-white/40 dark:border-gray-800/40 shadow-xl shadow-gray-200/40 flex flex-col justify-between relative group">
                 <div className="absolute top-0 right-0 p-8 opacity-[0.05] group-hover:opacity-[0.1] transition-opacity">
-                    <svg className="w-32 h-32" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" /></svg>
+                    <svg className="w-32 h-32 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
                 </div>
                 <div>
-                    <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2 tracking-tighter italic">Network Load</h3>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Real-time query aggregation</p>
+                    <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2 tracking-tighter italic">Aggregated Inventory</h3>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Synchronized from Live Feeds</p>
                 </div>
-                <div className="mt-6">
-                    <div className="flex items-end gap-2 mb-3">
-                        <span className="text-5xl font-black text-orange-500 tabular-nums">
-                            {(usageStats.totalProducts || 15000).toLocaleString()}+
+                <div className="mt-4 space-y-4">
+                    <div className="flex justify-between items-end pb-2 border-b border-gray-100 dark:border-gray-800">
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Products:</span>
+                        <span className="text-2xl font-black text-orange-500 tabular-nums">
+                            {(usageStats.totalProducts || 12000).toLocaleString()}
                         </span>
-                        <span className="text-[10px] font-black text-gray-300 uppercase pb-2 tracking-widest">Items Synchronized</span>
                     </div>
-                    <div className="w-full h-4 bg-gray-100 dark:bg-gray-800/50 rounded-full overflow-hidden border border-gray-100 dark:border-gray-800">
-                        <div
-                            className="h-full bg-gradient-to-r from-orange-400 to-orange-600 transition-all duration-1000"
-                            style={{ width: `${Math.min(100, (usageStats.searchesThisMonth / usageStats.searchLimit) * 100)}%` }}
-                        />
+                    <div className="flex justify-between items-end">
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">In Stock Now:</span>
+                        <span className="text-2xl font-black text-green-600 dark:text-green-500 tabular-nums">
+                            {(usageStats.inStockProducts || 8000).toLocaleString()}
+                        </span>
                     </div>
                 </div>
             </div>

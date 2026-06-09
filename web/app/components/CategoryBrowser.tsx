@@ -8,67 +8,15 @@ interface Category {
   bySupplier?: Record<string, number>;
 }
 
+// Define explicit types for the hierarchy
+type SubCategoryMap = Record<string, string[]>;
+type CategoryHierarchy = Record<string, SubCategoryMap>;
+
 interface CategoryBrowserProps {
   selectedCategories: string[];
   onCategoriesChange: (categories: string[]) => void;
   onCategoryClick?: (category: string) => void;
 }
-
-// Define explicit types for the hierarchy to ensure robust indexing
-type SubCategoryMap = Record<string, string[]>;
-type CategoryHierarchy = Record<string, SubCategoryMap>;
-
-const IT_CATEGORIES_HIERARCHY: CategoryHierarchy = {
-  'Systems & Computing': {
-    'Enterprise Laptops': ['thinkpad', 'latitude', 'elitebook', 'macbook pro'],
-    'Consumer Notebooks': ['laptop', 'notebook', 'inspiron', 'vivobook', 'macbook air'],
-    'Modern Workstations': ['workstation', 'precision', 'thinkstation', 'zbook'],
-    'All-in-One Systems': ['aio', 'all-in-one', 'imac'],
-    'Tablets & Handhelds': ['tablet', 'ipad', 'surface', 'handheld']
-  },
-  'Enterprise Networking': {
-    'Managed Switches': ['switch', 'managed switch', 'poe switch', 'sfp'],
-    'Core Routing': ['router', 'core router', 'isr', 'asr'],
-    'Wireless Ecosystems': ['access point', 'unifi', 'aruba', 'meraki', 'wifi 6'],
-    'Cybersecurity / UTM': ['firewall', 'fortigate', 'sophos', 'watchguard'],
-    'SFP & Transceivers': ['sfp', 'gbic', 'fiber module']
-  },
-  'Core Components': {
-    'Next-Gen GPUs': ['graphics card', 'rtx', 'quadro', 'geforce', 'radeon'],
-    'Processors (CPU)': ['intel core', 'ryzen', 'xeon', 'epyc'],
-    'High-Speed Memory': ['ram', 'ddr4', 'ddr5', 'so-dimm'],
-    'Motherboards': ['motherboard', 'mainboard', 'gaming board'],
-    'Power Supplies': ['psu', 'power supply', 'modular psu']
-  },
-  'Infrastructure & Power': {
-    'Server Racks': ['rack', 'cabinet', '12u', '42u'],
-    'UPS Systems': ['ups', 'apc', 'eaton', 'mecer', 'inverter'],
-    'Power Rails & PDU': ['pdu', 'power rail', 'intelligent pdu'],
-    'Surge Protection': ['surge', 'power strip', 'overload protection']
-  },
-  'Enterprise Storage': {
-    'NVMe & SSD': ['ssd', 'nvme', 'm.2', 'enterprise ssd'],
-    'NAS / SAN': ['nas', 'synology', 'qnap', 'storage array'],
-    'External Storage': ['portable drive', 'hard drive', 'usb drive'],
-    'Tape & Backup': ['lto', 'tape drive', 'backup system']
-  },
-  'Visual & Audio': {
-    'Monitors & Displays': ['monitor', 'screen', 'ultrasharp', 'prodisplay'],
-    'Video Conferencing': ['webcam', 'poly', 'logitech rally', 'conference cam'],
-    'Professional Audio': ['headset', 'speakers', 'mic', 'jabra', 'yealink']
-  },
-  'Cabling & Connectivity': {
-    'Fiber Optics': ['fiber', 'patch lead', 'lc-lc', 'sc-sc'],
-    'Copper Cabling': ['cat6', 'cat5e', 'patch cable', 'flylead'],
-    'Transceivers': ['transceiver', 'dac cable', 'twinax'],
-    'Adapters / Hubs': ['dongle', 'usb-c hub', 'adapter']
-  },
-  'Specialized Hardware': {
-    'Point of Sale (POS)': ['pos', 'receipt printer', 'barcode scanner'],
-    'IP Surveillance': ['ip camera', 'nvr', 'hikvision', 'dahua'],
-    'Printers & MFP': ['printer', 'laserjet', 'photocopier', 'toner']
-  }
-};
 
 export default function CategoryBrowser({
   selectedCategories,
@@ -76,15 +24,16 @@ export default function CategoryBrowser({
   onCategoryClick
 }: CategoryBrowserProps) {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [hierarchy, setHierarchy] = useState<CategoryHierarchy>({});
   const [loading, setLoading] = useState(true);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'hierarchy' | 'flat'>('hierarchy');
 
   useEffect(() => {
-    if (selectedCategories.length > 0 && viewMode === 'hierarchy') {
+    if (selectedCategories.length > 0 && viewMode === 'hierarchy' && Object.keys(hierarchy).length > 0) {
       const requiredExpansions = new Set<string>();
-      (Object.entries(IT_CATEGORIES_HIERARCHY) as Array<[keyof CategoryHierarchy, SubCategoryMap]>).forEach(([groupName, subcategories]) => {
+      (Object.entries(hierarchy) as Array<[string, SubCategoryMap]>).forEach(([groupName, subcategories]) => {
         (Object.entries(subcategories) as Array<[string, string[]]>).forEach(([subcategoryName, keywords]) => {
           if (selectedCategories.some(selected =>
             subcategoryName.toLowerCase().includes(selected.toLowerCase()) ||
@@ -96,7 +45,7 @@ export default function CategoryBrowser({
       });
       setExpandedGroups(requiredExpansions);
     }
-  }, [selectedCategories, viewMode]);
+  }, [selectedCategories, viewMode, hierarchy]);
 
   useEffect(() => {
     fetchCategories();
@@ -107,6 +56,9 @@ export default function CategoryBrowser({
       const res = await fetch('/api/categories?include_counts=true');
       const data = await res.json();
       setCategories(data.categories || []);
+      if (data.hierarchy) {
+        setHierarchy(data.hierarchy);
+      }
     } catch (err) {
       console.error('Failed to fetch categories:', err);
     } finally {
@@ -146,11 +98,18 @@ export default function CategoryBrowser({
 
   const renderHierarchy = () => {
     if (searchQuery !== '') return renderFlat();
+    if (Object.keys(hierarchy).length === 0) {
+      return (
+        <div className="w-full text-center py-12 text-gray-400 font-bold uppercase text-[10px] tracking-widest animate-pulse">
+          Loading system category map...
+        </div>
+      );
+    }
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {(Object.keys(IT_CATEGORIES_HIERARCHY) as Array<keyof typeof IT_CATEGORIES_HIERARCHY>).map((groupName) => {
-          const subcategories = IT_CATEGORIES_HIERARCHY[groupName];
+        {(Object.keys(hierarchy) as Array<string>).map((groupName) => {
+          const subcategories = hierarchy[groupName];
           const isExpanded = expandedGroups.has(groupName);
 
           const groupHasSelection = selectedCategories.some(selected => {
@@ -164,7 +123,7 @@ export default function CategoryBrowser({
             <div key={groupName} className={`rounded-[2rem] transition-all border ${isExpanded ? 'bg-gray-50/50 dark:bg-gray-800/50 border-orange-500/20' : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 hover:border-orange-500/20 hover:bg-gray-50/30'}`}>
               <button
                 onClick={() => toggleGroup(groupName)}
-                className="w-full p-6 flex items-center justify-between group"
+                className="w-full p-6 flex items-center justify-between group focus:outline-none"
               >
                 <div className="flex items-center gap-4">
                   <div className={`w-2 h-2 rounded-full ${groupHasSelection ? 'bg-orange-500 animate-pulse' : 'bg-gray-200 dark:bg-gray-700'}`} />
@@ -179,7 +138,7 @@ export default function CategoryBrowser({
                     const actualCategoryMatch = categories.find(c =>
                       c.name.toLowerCase() === subcategoryName.toLowerCase() ||
                       c.name.toLowerCase().includes(subcategoryName.toLowerCase()) ||
-                      (IT_CATEGORIES_HIERARCHY[groupName][subcategoryName] as string[]).some(term => c.name.toLowerCase().includes(term.toLowerCase()))
+                      (hierarchy[groupName][subcategoryName] as string[]).some(term => c.name.toLowerCase().includes(term.toLowerCase()))
                     );
 
                     const categoryName = actualCategoryMatch?.name || subcategoryName;
@@ -190,12 +149,12 @@ export default function CategoryBrowser({
                       <button
                         key={subcategoryName}
                         onClick={() => toggleCategory(categoryName)}
-                        className={`px-4 py-2 rounded-2xl text-xs font-black uppercase tracking-widest transition-all border ${isSelected
+                        className={`px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border ${isSelected
                             ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-transparent shadow-lg'
-                            : 'bg-white dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700 hover:text-orange-500 hover:border-orange-500/20'
+                            : 'bg-white dark:bg-gray-800 text-gray-450 border-gray-150 dark:border-gray-700 hover:text-orange-500 hover:border-orange-500/20'
                           }`}
                       >
-                        {subcategoryName} {count > 0 && <span className="opacity-50 ml-1">({count})</span>}
+                        {subcategoryName} {count > 0 && <span className="opacity-55 ml-1">({count})</span>}
                       </button>
                     );
                   })}
@@ -224,9 +183,9 @@ export default function CategoryBrowser({
               <button
                 key={category.name}
                 onClick={() => toggleCategory(category.name)}
-                className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all border ${isSelected
+                className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border ${isSelected
                     ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-transparent shadow-lg'
-                    : 'bg-white dark:bg-gray-900 text-gray-500 border-gray-100 dark:border-gray-800 hover:text-orange-500 hover:border-orange-500/30'
+                    : 'bg-white dark:bg-gray-900 text-gray-550 border-gray-150 dark:border-gray-800 hover:text-orange-500 hover:border-orange-500/30'
                   }`}
               >
                 {category.name} {category.count !== undefined && <span className="opacity-50 ml-2">({category.count})</span>}
@@ -249,8 +208,8 @@ export default function CategoryBrowser({
             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Refine your live feed results</p>
           </div>
           <div className="flex bg-white dark:bg-gray-800 p-1.5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
-            <button onClick={() => setViewMode('hierarchy')} className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'hierarchy' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-lg' : 'text-gray-400 hover:text-gray-900'}`}>Structure</button>
-            <button onClick={() => setViewMode('flat')} className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'flat' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-lg' : 'text-gray-400 hover:text-gray-900'}`}>All Tags</button>
+            <button onClick={() => setViewMode('hierarchy')} className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'hierarchy' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-lg' : 'text-gray-400 hover:text-gray-950 dark:hover:text-white'}`}>Structure</button>
+            <button onClick={() => setViewMode('flat')} className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'flat' ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-lg' : 'text-gray-400 hover:text-gray-950 dark:hover:text-white'}`}>All Tags</button>
           </div>
         </div>
 
@@ -282,7 +241,13 @@ export default function CategoryBrowser({
       </div>
 
       <div className="flex-1 p-8 overflow-y-auto bg-white dark:bg-gray-900">
-        {viewMode === 'hierarchy' ? renderHierarchy() : renderFlat()}
+        {loading ? (
+          <div className="w-full text-center py-24 text-gray-400 font-bold uppercase text-xs tracking-widest animate-pulse">
+            Querying active categories...
+          </div>
+        ) : (
+          viewMode === 'hierarchy' ? renderHierarchy() : renderFlat()
+        )}
       </div>
     </div>
   );

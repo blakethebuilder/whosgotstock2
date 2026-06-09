@@ -8,52 +8,52 @@ interface CategoryTilesProps {
 
 const popularCategories = [
   { 
-    name: 'Laptops', 
-    searchTerms: ['laptop', 'notebook'],
+    name: 'Laptops / PCs', 
+    searchTerms: ['laptop', 'notebook', 'desktop', 'pc'],
     color: 'bg-blue-500/10 text-blue-600',
     icon: '💻'
   },
   { 
-    name: 'Graphics', 
-    searchTerms: ['graphics card', 'gpu', 'video card'],
+    name: 'Servers & Racks', 
+    searchTerms: ['server', 'rack', 'cabinet', 'chassis'],
     color: 'bg-purple-500/10 text-purple-600',
-    icon: '🎮'
+    icon: '🗄️'
   },
   { 
-    name: 'Storage', 
-    searchTerms: ['ssd', 'hard drive', 'storage'],
+    name: 'Storage & NAS', 
+    searchTerms: ['nas', 'ssd', 'hard drive', 'storage'],
     color: 'bg-emerald-500/10 text-emerald-600',
     icon: '💾'
   },
   { 
     name: 'Networking', 
-    searchTerms: ['router', 'switch', 'access point'],
+    searchTerms: ['router', 'switch', 'access point', 'ubiquiti'],
     color: 'bg-[#D8E698] text-[#4A5D16]',
     icon: '🌐'
   },
   { 
-    name: 'Displays', 
-    searchTerms: ['monitor', 'display', 'screen'],
+    name: 'UPS & Power', 
+    searchTerms: ['ups', 'power', 'inverter', 'battery'],
     color: 'bg-amber-500/10 text-amber-600',
-    icon: '🖥️'
-  },
-  { 
-    name: 'Processors', 
-    searchTerms: ['cpu', 'processor', 'intel', 'amd'],
-    color: 'bg-red-500/10 text-red-600',
     icon: '⚡'
   },
   { 
-    name: 'Security', 
-    searchTerms: ['camera', 'security', 'surveillance'],
+    name: 'Security & CCTV', 
+    searchTerms: ['camera', 'security', 'cctv', 'surveillance'],
     color: 'bg-indigo-500/10 text-indigo-600',
     icon: '🔒'
   },
   { 
-    name: 'Cables', 
-    searchTerms: ['cable', 'connector', 'adapter'],
+    name: 'Cables & Leads', 
+    searchTerms: ['cable', 'patch lead', 'connector', 'adapter'],
     color: 'bg-orange-500/10 text-orange-600',
     icon: '🔌'
+  },
+  { 
+    name: 'Monitors & Video', 
+    searchTerms: ['monitor', 'screen', 'display', 'hdmi'],
+    color: 'bg-red-500/10 text-red-600',
+    icon: '🖥️'
   }
 ];
 

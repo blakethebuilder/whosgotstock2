@@ -10,6 +10,10 @@ export async function GET(request: NextRequest) {
     const productCountRes = await client.query('SELECT COUNT(*) FROM products');
     const totalProducts = parseInt(productCountRes.rows[0].count);
 
+    // Get in stock product count
+    const inStockCountRes = await client.query('SELECT COUNT(*) FROM products WHERE qty_on_hand > 0');
+    const inStockProducts = parseInt(inStockCountRes.rows[0].count);
+
     // Get active supplier count
     const supplierCountRes = await client.query('SELECT COUNT(*) FROM suppliers WHERE enabled = true');
     const totalSuppliers = parseInt(supplierCountRes.rows[0].count);
@@ -21,6 +25,7 @@ export async function GET(request: NextRequest) {
       quotesGenerated: 4,
       isLimitReached: false,
       totalProducts,
+      inStockProducts,
       totalSuppliers
     };
 
