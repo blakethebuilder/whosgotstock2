@@ -125,8 +125,12 @@ export default function Home() {
   useEffect(() => { localStorage.setItem('whosgotstock_user_role', userRole); }, [userRole]);
 
   const addProject = (name: string) => {
-    if (projects.length >= 3) {
-      alert("Maximum of 3 sites/projects allowed. Please remove a site to add a new one.");
+    let limit = 3;
+    if (userRole === 'team') limit = 10;
+    else if (userRole === 'management' || userRole === 'admin') limit = 999;
+
+    if (projects.length >= limit) {
+      alert(`Site limit reached (${limit} sites for your ${userRole} tier). Please remove a site to add a new one.`);
       return null;
     }
     const newProject: Project = {
@@ -486,6 +490,7 @@ export default function Home() {
         removeItem={removeCartItem}
         userRole={userRole}
         pricingSettings={pricingSettings}
+        clearCart={() => setCart([])}
       />
       <ProductDetailModal product={selectedProduct} isOpen={selectedProduct !== null} onClose={() => setSelectedProduct(null)} onAddToCart={addToCart} onToggleCompare={toggleCompare} isInCompare={!!selectedProduct && !!compareList.find(p => p.id === selectedProduct.id)} calculatePrice={(basePrice: string) => calculatePrice(basePrice, userRole, pricingSettings)} userRole={userRole} />
       <ComparisonModal products={compareList} isOpen={isCompareModalOpen} onClose={() => setIsCompareModalOpen(false)} onRemove={(id) => setCompareList(prev => prev.filter(p => p.id !== id))} onClearAll={() => setCompareList([])} onAddToCart={addToCart} formatPrice={formatPriceDisplay} displayPrice={displayPrice} calculatePrice={(base) => calculatePrice(base, userRole, pricingSettings)} userRole={userRole} />
