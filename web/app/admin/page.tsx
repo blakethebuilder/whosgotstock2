@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import DistributorImport from '../components/DistributorImport';
-import AdminPanel from '../components/admin/AdminPanel';
 
 interface FetchLog {
     id: number;
@@ -44,6 +43,7 @@ export default function AdminPage() {
     const [passphrase, setPassphrase] = useState('');
     const [authError, setAuthError] = useState('');
 
+    const [activeTab, setActiveTab] = useState<'overview' | 'suppliers' | 'settings' | 'activity' | 'import'>('overview');
     const [suppliers, setSuppliers] = useState<any[]>([]);
     const [supplierStats, setSupplierStats] = useState<any[]>([]);
     const [searchLogs, setSearchLogs] = useState<any[]>([]);
@@ -102,8 +102,8 @@ export default function AdminPage() {
             let supData: any[] = [];
             let setData: any = {};
 
-            if (supRes.ok) supData = await supRes.json();
-            if (setRes.ok) setData = await setRes.json();
+            if (supRes.ok) supData = await supRes.ok ? await supRes.json() : [];
+            if (setRes.ok) setData = await setRes.ok ? await setRes.json() : {};
 
             let statsData: any[] = [];
             if (statsRes.ok) statsData = await statsRes.json();
@@ -134,13 +134,6 @@ export default function AdminPage() {
             setSuppliers([]);
             setSupplierStats([]);
             setFetchLogs([]);
-            setSettings({
-                update_interval_minutes: '60',
-                public_markup: '15',
-                team_markup: '10',
-                management_markup: '5',
-                admin_markup: '0'
-            });
         } finally {
             setLoading(false);
         }
@@ -154,6 +147,7 @@ export default function AdminPage() {
                 body: JSON.stringify(settings)
             });
             alert('Settings updated successfully');
+            refreshData();
         } catch (error) {
             alert('Failed to update settings');
         }
@@ -220,7 +214,6 @@ export default function AdminPage() {
         }
     };
 
-    // Build "last fetch" summary per supplier from fetchLogs
     const lastFetchBySupplier = (() => {
         const map: Record<string, FetchLog> = {};
         for (const log of fetchLogs) {
@@ -246,43 +239,45 @@ export default function AdminPage() {
         }
     }, [isAuthenticated]);
 
-    // Authentication screen
     if (!isAuthenticated) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
+            <div className="min-h-screen bg-[#F3F4F1] dark:bg-gray-950 flex items-center justify-center p-6 relative overflow-hidden font-sans">
+                {/* Visual Ornaments */}
+                <div className="absolute top-0 left-0 w-96 h-96 bg-orange-500/10 rounded-full blur-[100px] pointer-events-none" />
+                <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
+
+                <div className="max-w-md w-full bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-10 border border-white dark:border-gray-800 relative z-10 transition-all duration-300">
                     <div className="text-center mb-8">
-                        <h1 className="text-2xl font-bold text-gray-900">Admin Portal</h1>
-                        <p className="text-gray-600 mt-2">Enter admin passphrase to continue</p>
+                        <div className="inline-flex p-3 bg-orange-500/10 rounded-2xl mb-4">
+                            <svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                        </div>
+                        <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter">Control Center</h1>
+                        <p className="text-gray-500 dark:text-gray-400 text-sm mt-2 font-medium">Verify administrator credentials</p>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         <div>
                             <input
                                 type="password"
                                 value={passphrase}
                                 onChange={(e) => setPassphrase(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleAuth()}
-                                placeholder="Admin passphrase"
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                                placeholder="Admin access code"
+                                className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 dark:text-white text-base placeholder-gray-400 focus:outline-none transition-all"
                                 autoFocus
                                 autoComplete="off"
-                                autoCapitalize="off"
-                                autoCorrect="off"
-                                spellCheck="false"
-                                inputMode="text"
                             />
                         </div>
 
                         {authError && (
-                            <div className="text-red-600 text-sm text-center">{authError}</div>
+                            <div className="text-red-500 text-xs font-bold text-center bg-red-50 dark:bg-red-950/20 py-2.5 rounded-xl border border-red-100 dark:border-red-900/50 animate-shake">{authError}</div>
                         )}
 
                         <button
                             onClick={handleAuth}
-                            className="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+                            className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-black dark:hover:bg-gray-100 py-4 px-6 rounded-2xl font-black text-sm uppercase tracking-widest transition-all active:scale-95 shadow-xl shadow-gray-200 dark:shadow-none"
                         >
-                            Access Admin Portal
+                            Authorize Access
                         </button>
                     </div>
                 </div>
@@ -292,522 +287,554 @@ export default function AdminPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="min-h-screen bg-[#F3F4F1] dark:bg-gray-950 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="w-12 h-12 border-4 border-orange-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading admin portal...</p>
+                    <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-500 text-xs font-bold uppercase tracking-widest">Synthesizing telemetry data...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <div className="bg-white shadow-sm border-b">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center py-4">
-                        <h1 className="text-2xl font-bold text-gray-900">WhosGotStock Admin Portal</h1>
-                        <div className="flex items-center gap-4">
-                            <a
-                                href="/"
-                                className="text-orange-600 hover:text-orange-700 font-medium"
-                            >
-                                Back to Search
-                            </a>
-                            <button
-                                onClick={() => setIsAuthenticated(false)}
-                                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm"
-                            >
-                                Logout
-                            </button>
+        <div className="min-h-screen bg-[#F3F4F1] dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-300 font-sans pb-16">
+            {/* Control Bar */}
+            <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 sticky top-0 z-[100] transition-colors">
+                <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 bg-orange-500/10 rounded-xl">
+                            <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                         </div>
+                        <div>
+                            <h1 className="text-xl font-black text-gray-900 dark:text-white tracking-tighter">Control Center</h1>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">WhosGotStock Orchestrator</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <a
+                            href="/"
+                            className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl text-xs font-black uppercase tracking-widest transition-all"
+                        >
+                            Back to Search
+                        </a>
+                        <button
+                            onClick={() => setIsAuthenticated(false)}
+                            className="px-5 py-2.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl text-xs font-black uppercase tracking-widest transition-all"
+                        >
+                            Lock Console
+                        </button>
                     </div>
                 </div>
-            </div>
+            </header>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                    {/* Left Sidebar - Settings & Quick Actions */}
-                    <div className="lg:col-span-1 space-y-6">
-                        {/* System Settings */}
-                        <div className="bg-white rounded-lg shadow-sm p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">System Settings</h2>
-                            <div className="space-y-4">
+            <div className="max-w-7xl mx-auto px-6 mt-8">
+                {/* Horizontal Navigation Tabs */}
+                <div className="flex bg-white dark:bg-gray-900 rounded-[2rem] p-2 border border-white dark:border-gray-800 shadow-xl shadow-gray-200/40 dark:shadow-none mb-8 overflow-x-auto gap-2">
+                    {[
+                        { id: 'overview', label: 'Overview', icon: '📊' },
+                        { id: 'suppliers', label: 'Supplier Integrations', icon: '🚚' },
+                        { id: 'settings', label: 'System Settings', icon: '⚙️' },
+                        { id: 'activity', label: 'Activity Logs', icon: '📈' },
+                        { id: 'import', label: 'Manual Import', icon: '📤' }
+                    ].map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id as any)}
+                            className={`flex items-center gap-2 px-6 py-3.5 rounded-2xl text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all ${activeTab === tab.id
+                                ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-lg'
+                                : 'text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                                }`}
+                        >
+                            <span>{tab.icon}</span>
+                            <span>{tab.label}</span>
+                        </button>
+                    ))}
+                </div>
+
+                {/* TAB CONTENT: OVERVIEW */}
+                {activeTab === 'overview' && (
+                    <div className="space-y-6 animate-in fade-in duration-500">
+                        {/* Summary Stats Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-6 border border-white dark:border-gray-800 shadow-xl shadow-gray-200/30 dark:shadow-none flex flex-col justify-between">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-900 mb-2">
-                                        Update Interval (minutes)
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={settings.update_interval_minutes}
-                                        onChange={(e) => setSettings({ ...settings, update_interval_minutes: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white"
-                                    />
+                                    <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Items Sync</div>
+                                    <h3 className="text-3xl font-black text-gray-950 dark:text-white tracking-tighter">
+                                        {supplierStats.reduce((sum, s) => sum + s.total_products, 0).toLocaleString()}
+                                    </h3>
                                 </div>
-                                <button
-                                    onClick={handleUpdateSettings}
-                                    className="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 px-4 rounded-md text-sm font-medium"
-                                >
-                                    Save Settings
-                                </button>
+                                <p className="text-gray-400 text-[10px] mt-4 font-bold uppercase tracking-widest">Across all feeds</p>
+                            </div>
+                            <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-6 border border-white dark:border-gray-800 shadow-xl shadow-gray-200/30 dark:shadow-none flex flex-col justify-between">
+                                <div>
+                                    <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Active Suppliers</div>
+                                    <h3 className="text-3xl font-black text-green-600 tracking-tighter">
+                                        {suppliers.filter(s => s.enabled).length} / {suppliers.length}
+                                    </h3>
+                                </div>
+                                <p className="text-gray-400 text-[10px] mt-4 font-bold uppercase tracking-widest">Live integrations</p>
+                            </div>
+                            <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-6 border border-white dark:border-gray-800 shadow-xl shadow-gray-200/30 dark:shadow-none flex flex-col justify-between">
+                                <div>
+                                    <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Searches (Month)</div>
+                                    <h3 className="text-3xl font-black text-orange-600 tracking-tighter">
+                                        {searchLogs.length.toLocaleString()}
+                                    </h3>
+                                </div>
+                                <p className="text-gray-400 text-[10px] mt-4 font-bold uppercase tracking-widest">API traffic</p>
+                            </div>
+                            <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-6 border border-white dark:border-gray-800 shadow-xl shadow-gray-200/30 dark:shadow-none flex flex-col justify-between">
+                                <div>
+                                    <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Quotes Built</div>
+                                    <h3 className="text-3xl font-black text-blue-600 tracking-tighter">
+                                        {quoteLogs.length.toLocaleString()}
+                                    </h3>
+                                </div>
+                                <p className="text-gray-400 text-[10px] mt-4 font-bold uppercase tracking-widest">MSPs Conversions</p>
                             </div>
                         </div>
 
-                        {/* Database Maintenance */}
-                        <div className="bg-white rounded-lg shadow-sm p-6 border-2 border-red-50">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-2">Maintenance</h2>
-                            <p className="text-xs text-gray-500 mb-4">Run database migrations and schema fixes.</p>
-                            <button
-                                onClick={async () => {
-                                    if (!confirm("Initialize or fix database schema? This will ensure all columns exist.")) return;
-                                    try {
-                                        const res = await fetch('/api/admin/setup-db', { method: 'POST' });
-                                        const data = await res.json();
-                                        if (data.success) alert("Database setup/fix complete!");
-                                        else alert("Error: " + data.error);
-                                    } catch (e) {
-                                        alert("Connection failed");
-                                    }
-                                }}
-                                className="w-full bg-gray-900 hover:bg-black text-white py-3 px-4 rounded-md text-sm font-bold flex items-center justify-center gap-2"
-                            >
-                                <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" /></svg>
-                                Setup Database
-                            </button>
-                        </div>
-
-                        {/* Internal Access Levels */}
-                        <div className="bg-white rounded-lg shadow-sm p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Internal Access Levels</h2>
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-semibold text-red-600">Public:</span>
-                                    <div className="flex items-center gap-2">
-                                        <input
-                                            type="number"
-                                            value={settings.public_markup}
-                                            onChange={(e) => setSettings({ ...settings, public_markup: e.target.value })}
-                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white font-medium"
-                                        />
-                                        <span className="text-sm text-gray-900 font-medium">%</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-semibold text-blue-600">Team:</span>
-                                    <div className="flex items-center gap-2">
-                                        <input
-                                            type="number"
-                                            value={settings.team_markup}
-                                            onChange={(e) => setSettings({ ...settings, team_markup: e.target.value })}
-                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white font-medium"
-                                        />
-                                        <span className="text-sm text-gray-900 font-medium">%</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-semibold text-purple-600">Management:</span>
-                                    <div className="flex items-center gap-2">
-                                        <input
-                                            type="number"
-                                            value={settings.management_markup}
-                                            onChange={(e) => setSettings({ ...settings, management_markup: e.target.value })}
-                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white font-medium"
-                                        />
-                                        <span className="text-sm text-gray-900 font-medium">%</span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-semibold text-green-600">Admin:</span>
-                                    <div className="flex items-center gap-2">
-                                        <input
-                                            type="number"
-                                            value={settings.admin_markup}
-                                            onChange={(e) => setSettings({ ...settings, admin_markup: e.target.value })}
-                                            className="w-16 px-2 py-1 border border-gray-300 rounded text-sm text-gray-900 bg-white font-medium"
-                                        />
-                                        <span className="text-sm text-gray-900 font-medium">%</span>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={handleUpdateSettings}
-                                    className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm font-medium mt-3"
-                                >
-                                    Update Access Levels
-                                </button>
+                        {/* Recent Feeds Health Grid */}
+                        <div className="bg-white dark:bg-gray-900 rounded-[3rem] p-8 border border-white dark:border-gray-800 shadow-2xl shadow-gray-200/40 dark:shadow-none">
+                            <h2 className="text-2xl font-black text-gray-950 dark:text-white tracking-tighter mb-2">Ingestion Diagnostics</h2>
+                            <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-6">Real-time status of backend scraper plugins</p>
+                            
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
+                                {suppliers.map(s => {
+                                    const log = lastFetchBySupplier[s.slug];
+                                    const status = log ? log.status : 'never';
+                                    return (
+                                        <div key={s.slug} className={`p-4 rounded-[2rem] border transition-all ${
+                                            status === 'success' ? 'bg-green-500/5 border-green-200/50 dark:border-green-950/50' : 
+                                            status === 'error' ? 'bg-red-500/5 border-red-200/50 dark:border-red-950/50' : 
+                                            'bg-gray-500/5 border-gray-200 dark:border-gray-800'
+                                        }`}>
+                                            <div className="text-sm font-black text-gray-900 dark:text-white truncate">{s.name}</div>
+                                            <div className="text-[10px] font-bold text-gray-400 uppercase mt-1 tracking-widest">{s.type}</div>
+                                            
+                                            <div className="mt-4 flex items-center gap-2">
+                                                <span className={`w-2.5 h-2.5 rounded-full ${
+                                                    status === 'success' ? 'bg-green-500' :
+                                                    status === 'error' ? 'bg-red-500' : 'bg-gray-400'
+                                                }`}></span>
+                                                <span className="text-xs font-bold text-gray-700 dark:text-gray-300 capitalize">{status}</span>
+                                            </div>
+                                            {log && (
+                                                <div className="mt-2 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                                                    {timeAgo(log.started_at)}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
 
-                        {/* Pricing Preview */}
-                        <div className="bg-white rounded-lg shadow-sm p-6">
-                            <h3 className="text-sm font-semibold text-gray-900 mb-3">Pricing Preview</h3>
-                            <p className="text-xs text-gray-700 mb-3">Example: R1,000 base price</p>
-                            <div className="space-y-2 text-xs">
-                                <div className="flex justify-between">
-                                    <span className="text-red-600 font-medium">Public:</span>
-                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.public_markup || '15') / 100)).toFixed(0)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-blue-600 font-medium">Team:</span>
-                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.team_markup || '10') / 100)).toFixed(0)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-purple-600 font-medium">Management:</span>
-                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.management_markup || '5') / 100)).toFixed(0)}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-green-600 font-medium">Admin:</span>
-                                    <span className="font-bold text-gray-900">R{(1000 * (1 + parseInt(settings.admin_markup || '0') / 100)).toFixed(0)}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Main Content Area */}
-                    <div className="lg:col-span-3 space-y-6">
-                        {/* Supplier Management */}
-                        <div className="bg-white rounded-lg shadow-sm p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Supplier Management</h2>
-                            <div className="space-y-4">
+                        {/* Summary Metrics Tables */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Supplier Stock Stats */}
+                            <div className="bg-white dark:bg-gray-900 rounded-[3rem] p-8 border border-white dark:border-gray-800 shadow-2xl">
+                                <h2 className="text-xl font-black text-gray-950 dark:text-white tracking-tighter mb-4">Stock Statistics</h2>
                                 <div className="overflow-x-auto">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
-                                            <tr>
-                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Last Fetch</th>
-                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800 text-xs">
+                                        <thead>
+                                            <tr className="text-left text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 dark:border-gray-800">
+                                                <th className="pb-3">Supplier</th>
+                                                <th className="pb-3">Total Items</th>
+                                                <th className="pb-3">In Stock</th>
+                                                <th className="pb-3">Last Synced</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {suppliers.map((supplier) => {
-                                                const lastFetch = lastFetchBySupplier[supplier.slug];
-                                                return (
-                                                    <tr key={supplier.id}>
-                                                        <td className="px-4 py-2 text-sm font-medium text-gray-900">{supplier.name}</td>
-                                                        <td className="px-4 py-2 text-sm text-gray-700 uppercase">{supplier.type}</td>
-                                                        <td className="px-4 py-2">
-                                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${supplier.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                                                }`}>
-                                                                {supplier.enabled ? 'Active' : 'Inactive'}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-4 py-2 text-xs text-gray-600">
-                                                            {lastFetch ? (
-                                                                <div>
-                                                                    <span className={`inline-flex items-center gap-1 ${lastFetch.status === 'success' ? 'text-green-600' : lastFetch.status === 'error' ? 'text-red-600' : 'text-yellow-600'}`}>
-                                                                        <span className={`w-1.5 h-1.5 rounded-full ${lastFetch.status === 'success' ? 'bg-green-500' : lastFetch.status === 'error' ? 'bg-red-500' : 'bg-yellow-500 animate-pulse'}`}></span>
-                                                                        {timeAgo(lastFetch.started_at)}
-                                                                    </span>
-                                                                    {lastFetch.products_ingested > 0 && (
-                                                                        <span className="text-gray-400 ml-1">({lastFetch.products_ingested.toLocaleString()})</span>
-                                                                    )}
-                                                                </div>
-                                                            ) : (
-                                                                <span className="text-gray-400 italic">Never</span>
-                                                            )}
-                                                        </td>
-                                                        <td className="px-4 py-2 text-sm">
-                                                            <div className="flex gap-2">
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        e.preventDefault();
-                                                                        handleToggleSupplier(supplier.id);
-                                                                    }}
-                                                                    className="text-blue-600 hover:text-blue-700 font-medium"
-                                                                >
-                                                                    {supplier.enabled ? 'Disable' : 'Enable'}
-                                                                </button>
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        e.preventDefault();
-                                                                        handleDeleteSupplier(supplier.id);
-                                                                    }}
-                                                                    className="text-red-600 hover:text-red-700 font-medium"
-                                                                >
-                                                                    Delete
-                                                                </button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
+                                        <tbody className="divide-y divide-gray-100 dark:divide-gray-850">
+                                            {supplierStats.map((stat) => (
+                                                <tr key={stat.supplier_slug} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30">
+                                                    <td className="py-3 font-black text-gray-900 dark:text-white">{stat.supplier_name}</td>
+                                                    <td className="py-3 text-gray-600 dark:text-gray-400 font-bold">{stat.total_products.toLocaleString()}</td>
+                                                    <td className="py-3 text-green-600 font-bold">{stat.products_in_stock.toLocaleString()}</td>
+                                                    <td className="py-3 text-gray-500 font-semibold">{stat.last_updated ? new Date(stat.last_updated).toLocaleDateString() : 'Never'}</td>
+                                                </tr>
+                                            ))}
                                         </tbody>
                                     </table>
                                 </div>
+                            </div>
 
-                                {/* Add New Supplier */}
-                                <div className="border-t pt-4">
-                                    <h3 className="text-md font-medium text-gray-900 mb-3">Add New Supplier</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                            {/* Fetch summary overview */}
+                            <div className="bg-white dark:bg-gray-900 rounded-[3rem] p-8 border border-white dark:border-gray-800 shadow-2xl">
+                                <h2 className="text-xl font-black text-gray-950 dark:text-white tracking-tighter mb-4">Latest Ingestion Runs</h2>
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800 text-xs">
+                                        <thead>
+                                            <tr className="text-left text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 dark:border-gray-800">
+                                                <th className="pb-3">Supplier</th>
+                                                <th className="pb-3">Fetched</th>
+                                                <th className="pb-3">Ingested</th>
+                                                <th className="pb-3">Duration</th>
+                                                <th className="pb-3">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100 dark:divide-gray-850">
+                                            {fetchLogs.slice(0, 5).map((log) => (
+                                                <tr key={log.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30">
+                                                    <td className="py-3 font-black text-gray-900 dark:text-white">{log.supplier_name}</td>
+                                                    <td className="py-3 text-gray-650 dark:text-gray-400">{(log.products_fetched || 0).toLocaleString()}</td>
+                                                    <td className="py-3 text-green-600 font-bold">{(log.products_ingested || 0).toLocaleString()}</td>
+                                                    <td className="py-3 text-gray-500">{formatDuration(log.duration_seconds)}</td>
+                                                    <td className="py-3">
+                                                        <span className={`inline-flex px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-md ${
+                                                            log.status === 'success' ? 'bg-green-500/10 text-green-600' :
+                                                            log.status === 'error' ? 'bg-red-500/10 text-red-600' : 'bg-yellow-500/10 text-yellow-600'
+                                                        }`}>
+                                                            {log.status}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* TAB CONTENT: SUPPLIERS */}
+                {activeTab === 'suppliers' && (
+                    <div className="space-y-6 animate-in fade-in duration-500">
+                        {/* Supplier management list & form */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            {/* Left: Add New Supplier */}
+                            <div className="bg-white dark:bg-gray-900 rounded-[3rem] p-8 border border-white dark:border-gray-800 shadow-2xl h-fit">
+                                <h2 className="text-xl font-black text-gray-950 dark:text-white tracking-tighter mb-1">Add Integration</h2>
+                                <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-6">Wire up a new supplier feed</p>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Display Name</label>
                                         <input
                                             type="text"
-                                            placeholder="Name (e.g. MySupplier)"
+                                            placeholder="e.g. MySupplier"
                                             value={newName}
                                             onChange={(e) => setNewName(e.target.value)}
-                                            className="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-500"
+                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-orange-500 text-sm text-gray-900 dark:text-white focus:outline-none"
                                         />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Supplier Slug</label>
                                         <input
                                             type="text"
-                                            placeholder="Slug (e.g. mysupplier)"
+                                            placeholder="e.g. mysupplier"
                                             value={newSlug}
                                             onChange={(e) => setNewSlug(e.target.value)}
-                                            className="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-500"
+                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-orange-500 text-sm text-gray-900 dark:text-white focus:outline-none"
                                         />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Feed URL</label>
                                         <input
                                             type="url"
-                                            placeholder="Feed URL"
+                                            placeholder="https://api.supplier.co.za/feed"
                                             value={newUrl}
                                             onChange={(e) => setNewUrl(e.target.value)}
-                                            className="md:col-span-2 px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white placeholder-gray-500"
+                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-orange-500 text-sm text-gray-900 dark:text-white focus:outline-none"
                                         />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Format Type</label>
                                         <select
                                             value={newType}
                                             onChange={(e) => setNewType(e.target.value)}
-                                            className="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white"
+                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-orange-500 text-sm text-gray-900 dark:text-white focus:outline-none"
                                         >
-                                            <option value="xml">XML Feed</option>
-                                            <option value="csv">CSV Feed</option>
-                                            <option value="json">JSON API</option>
+                                            <option value="xml">XML Document Feed</option>
+                                            <option value="csv">CSV File Feed</option>
+                                            <option value="json">JSON API endpoint</option>
                                         </select>
                                     </div>
                                     <button
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            handleAddSupplier();
-                                        }}
-                                        className="mt-3 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md text-sm font-medium"
+                                        onClick={handleAddSupplier}
+                                        className="w-full mt-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-black dark:hover:bg-gray-100 py-3.5 px-6 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-md"
                                     >
                                         Add Supplier
                                     </button>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Supplier Fetch History — NEW */}
-                        <div className="bg-white rounded-lg shadow-sm p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <div>
-                                    <h2 className="text-lg font-semibold text-gray-900">Supplier Fetch History</h2>
-                                    <p className="text-sm text-gray-500">Times and details of the last data fetches for each supplier</p>
-                                </div>
-                                <button
-                                    onClick={refreshData}
-                                    className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
-                                >
-                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                    Refresh
-                                </button>
-                            </div>
-
-                            {/* Summary Cards — last fetch per supplier */}
-                            {Object.keys(lastFetchBySupplier).length > 0 && (
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-                                    {Object.values(lastFetchBySupplier).map((log) => (
-                                        <div key={log.supplier_slug} className={`p-3 rounded-lg border ${log.status === 'success' ? 'border-green-200 bg-green-50' : log.status === 'error' ? 'border-red-200 bg-red-50' : 'border-yellow-200 bg-yellow-50'}`}>
-                                            <div className="text-xs font-bold text-gray-900 truncate">{log.supplier_name}</div>
-                                            <div className={`text-[10px] font-semibold mt-1 ${log.status === 'success' ? 'text-green-600' : log.status === 'error' ? 'text-red-600' : 'text-yellow-600'}`}>
-                                                {log.status === 'success' ? '✓' : log.status === 'error' ? '✗' : '⟳'} {timeAgo(log.started_at)}
+                            {/* Right: Active suppliers list */}
+                            <div className="lg:col-span-2 bg-white dark:bg-gray-900 rounded-[3rem] p-8 border border-white dark:border-gray-800 shadow-2xl">
+                                <h2 className="text-xl font-black text-gray-950 dark:text-white tracking-tighter mb-1">Registered Suppliers</h2>
+                                <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-6">Manage live connections</p>
+                                
+                                <div className="space-y-4">
+                                    {suppliers.map(s => (
+                                        <div key={s.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 bg-gray-50 dark:bg-gray-800/40 rounded-[2rem] border border-gray-100 dark:border-gray-800 gap-4">
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-center gap-3">
+                                                    <h3 className="text-lg font-black text-gray-900 dark:text-white tracking-tighter">{s.name}</h3>
+                                                    <span className="px-2.5 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-[9px] font-black uppercase tracking-widest rounded-lg">{s.type}</span>
+                                                    <span className={`w-2 h-2 rounded-full ${s.enabled ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                                                </div>
+                                                <p className="text-xs text-gray-400 truncate mt-1 select-all font-mono" title={s.url}>{s.url}</p>
                                             </div>
-                                            <div className="text-[10px] text-gray-500 mt-0.5">
-                                                {log.products_ingested > 0 ? `${log.products_ingested.toLocaleString()} products` : 'No data'}
+                                            <div className="flex gap-2 w-full sm:w-auto">
+                                                <button
+                                                    onClick={() => handleToggleSupplier(s.id)}
+                                                    className={`flex-1 sm:flex-none px-4 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${
+                                                        s.enabled 
+                                                            ? 'bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 hover:bg-red-100' 
+                                                            : 'bg-green-50 dark:bg-green-950/20 text-green-600 dark:text-green-400 hover:bg-green-100'
+                                                    }`}
+                                                >
+                                                    {s.enabled ? 'Disable' : 'Enable'}
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteSupplier(s.id)}
+                                                    className="px-4 py-2.5 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-all"
+                                                >
+                                                    Delete
+                                                </button>
                                             </div>
-                                            {log.duration_seconds !== null && (
-                                                <div className="text-[10px] text-gray-400">{formatDuration(log.duration_seconds)}</div>
-                                            )}
                                         </div>
                                     ))}
                                 </div>
-                            )}
+                            </div>
+                        </div>
 
-                            {/* Full fetch log table */}
+                        {/* Detailed Ingestion Fetch History logs */}
+                        <div className="bg-white dark:bg-gray-900 rounded-[3rem] p-8 border border-white dark:border-gray-800 shadow-2xl">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                                <div>
+                                    <h2 className="text-xl font-black text-gray-950 dark:text-white tracking-tighter mb-1">Detailed Ingestion History</h2>
+                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Historical trace log of scraper runs</p>
+                                </div>
+                                <button
+                                    onClick={refreshData}
+                                    className="px-4 py-2 bg-gray-50 hover:bg-gray-100 dark:bg-gray-850 dark:hover:bg-gray-800 border border-gray-150 dark:border-gray-800 text-gray-500 text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1.5 transition-all"
+                                >
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                    Refresh Logs
+                                </button>
+                            </div>
+
                             <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200 text-xs">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
-                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Started</th>
-                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Duration</th>
-                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Fetched</th>
-                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ingested</th>
-                                            <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Details</th>
+                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800 text-xs">
+                                    <thead>
+                                        <tr className="text-left text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 dark:border-gray-800">
+                                            <th className="pb-3 px-3">Supplier</th>
+                                            <th className="pb-3 px-3">Started</th>
+                                            <th className="pb-3 px-3">Duration</th>
+                                            <th className="pb-3 px-3">Status</th>
+                                            <th className="pb-3 px-3 text-right">Fetched</th>
+                                            <th className="pb-3 px-3 text-right">Ingested</th>
+                                            <th className="pb-3 px-3 text-right">Diagnostics</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
+                                    <tbody className="divide-y divide-gray-100 dark:divide-gray-850">
                                         {fetchLogs.map((log) => (
-                                            <tr key={log.id} className="hover:bg-gray-50">
-                                                <td className="px-3 py-2 text-xs font-medium text-gray-900">{log.supplier_name}</td>
-                                                <td className="px-3 py-2 text-[10px] text-gray-500" title={new Date(log.started_at).toLocaleString()}>
-                                                    {timeAgo(log.started_at)}
-                                                    <div className="text-[9px] text-gray-400">{new Date(log.started_at).toLocaleTimeString()}</div>
-                                                </td>
-                                                <td className="px-3 py-2 text-xs text-gray-600">{formatDuration(log.duration_seconds)}</td>
-                                                <td className="px-3 py-2">
-                                                    <span className={`inline-flex px-1.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider ${
-                                                        log.status === 'success' ? 'bg-green-100 text-green-700' :
-                                                        log.status === 'error' ? 'bg-red-100 text-red-700' :
-                                                        'bg-yellow-100 text-yellow-700'
-                                                    }`}>
-                                                        {log.status}
-                                                    </span>
-                                                </td>
-                                                <td className="px-3 py-2 text-xs text-gray-600 font-medium">{(log.products_fetched || 0).toLocaleString()}</td>
-                                                <td className="px-3 py-2 text-xs text-green-600 font-bold">{(log.products_ingested || 0).toLocaleString()}</td>
-                                                <td className="px-3 py-2 text-xs">
-                                                    {log.error_message ? (
-                                                        <button
-                                                            onClick={() => toggleError(log.id)}
-                                                            className="text-red-500 hover:text-red-700 text-[10px] font-bold uppercase tracking-wider"
-                                                        >
-                                                            {expandedErrors.has(log.id) ? 'Hide' : 'Error ⚠'}
-                                                        </button>
-                                                    ) : (
-                                                        <span className="text-gray-300 text-[10px]">—</span>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        {/* Expanded error rows */}
-                                        {fetchLogs.filter(l => l.error_message && expandedErrors.has(l.id)).map(log => (
-                                            <tr key={`err-${log.id}`} className="bg-red-50">
-                                                <td colSpan={7} className="px-3 py-2 text-xs text-red-700 font-mono">
-                                                    <strong>{log.supplier_name}:</strong> {log.error_message}
-                                                </td>
-                                            </tr>
+                                            <React.Fragment key={log.id}>
+                                                <tr className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30">
+                                                    <td className="py-3.5 px-3 font-black text-gray-900 dark:text-white">{log.supplier_name}</td>
+                                                    <td className="py-3.5 px-3 text-gray-500">
+                                                        <span>{timeAgo(log.started_at)}</span>
+                                                        <span className="text-[9px] text-gray-400/80 block">{new Date(log.started_at).toLocaleTimeString()}</span>
+                                                    </td>
+                                                    <td className="py-3.5 px-3 text-gray-500">{formatDuration(log.duration_seconds)}</td>
+                                                    <td className="py-3.5 px-3">
+                                                        <span className={`inline-flex px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-md ${
+                                                            log.status === 'success' ? 'bg-green-500/10 text-green-600' :
+                                                            log.status === 'error' ? 'bg-red-500/10 text-red-600' : 'bg-yellow-500/10 text-yellow-600'
+                                                        }`}>
+                                                            {log.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-3.5 px-3 text-right text-gray-600 dark:text-gray-450 font-bold">{(log.products_fetched || 0).toLocaleString()}</td>
+                                                    <td className="py-3.5 px-3 text-right text-green-600 font-extrabold">{(log.products_ingested || 0).toLocaleString()}</td>
+                                                    <td className="py-3.5 px-3 text-right">
+                                                        {log.error_message ? (
+                                                            <button
+                                                                onClick={() => toggleError(log.id)}
+                                                                className="px-3 py-1 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 text-red-600 dark:text-red-400 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all"
+                                                            >
+                                                                {expandedErrors.has(log.id) ? 'Hide' : 'Inspect ⚠'}
+                                                            </button>
+                                                        ) : (
+                                                            <span className="text-gray-300 dark:text-gray-700">—</span>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                                {/* Expanded Error block */}
+                                                {log.error_message && expandedErrors.has(log.id) && (
+                                                    <tr className="bg-red-50/50 dark:bg-red-950/5">
+                                                        <td colSpan={7} className="px-4 py-3 border-l-2 border-red-500">
+                                                            <div className="text-[10px] font-bold text-red-500 uppercase tracking-widest mb-1">Trace Log Error:</div>
+                                                            <pre className="text-xs text-red-700 dark:text-red-400 font-mono whitespace-pre-wrap">{log.error_message}</pre>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </React.Fragment>
                                         ))}
                                         {fetchLogs.length === 0 && (
                                             <tr>
-                                                <td colSpan={7} className="px-3 py-8 text-center text-xs text-gray-500">
-                                                    No fetch history yet. Data will appear after the worker runs its first ingestion cycle.
-                                                </td>
+                                                <td colSpan={7} className="py-12 text-center text-gray-400 italic font-semibold">No fetch log histories recorded yet.</td>
                                             </tr>
                                         )}
                                     </tbody>
                                 </table>
                             </div>
                         </div>
+                    </div>
+                )}
 
-                        {/* Supplier Statistics */}
-                        <div className="bg-white rounded-lg shadow-sm p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Supplier Statistics</h2>
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200 text-xs">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
-                                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
-                                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">In Stock</th>
-                                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Last Updated</th>
-                                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Price Range</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
-                                        {supplierStats.map((stat) => (
-                                            <tr key={stat.supplier_slug}>
-                                                <td className="px-2 py-2 text-xs font-medium text-gray-900 truncate max-w-[120px]" title={stat.supplier_name}>
-                                                    {stat.supplier_name}
-                                                </td>
-                                                <td className="px-2 py-2 text-xs text-gray-600 uppercase">{stat.supplier_type}</td>
-                                                <td className="px-2 py-2">
-                                                    <span className={`inline-flex px-1.5 py-0.5 text-xs font-medium rounded-full ${stat.enabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                                                        }`}>
-                                                        {stat.enabled ? 'Active' : 'Inactive'}
-                                                    </span>
-                                                </td>
-                                                <td className="px-2 py-2 text-xs text-gray-900 font-medium">{stat.total_products.toLocaleString()}</td>
-                                                <td className="px-2 py-2 text-xs text-green-600 font-medium">{stat.products_in_stock.toLocaleString()}</td>
-                                                <td className="px-2 py-2 text-xs text-gray-600 truncate max-w-[100px]" title={stat.last_updated ? new Date(stat.last_updated).toLocaleString() : 'Never'}>
-                                                    {stat.last_updated ? new Date(stat.last_updated).toLocaleDateString() : 'Never'}
-                                                </td>
-                                                <td className="px-2 py-2 text-xs text-gray-600">
-                                                    {stat.min_price !== '0.00' ? `R${stat.min_price}-${stat.max_price}` : 'N/A'}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                        {supplierStats.length === 0 && (
-                                            <tr>
-                                                <td colSpan={7} className="px-2 py-4 text-center text-xs text-gray-500">
-                                                    No supplier statistics available
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
+                {/* TAB CONTENT: SETTINGS */}
+                {activeTab === 'settings' && (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-500">
+                        {/* Settings & Access markup */}
+                        <div className="lg:col-span-2 space-y-6">
+                            {/* Access Tier Markups */}
+                            <div className="bg-white dark:bg-gray-900 rounded-[3rem] p-8 border border-white dark:border-gray-800 shadow-2xl">
+                                <h2 className="text-xl font-black text-gray-950 dark:text-white tracking-tighter mb-1">Pricing Markups</h2>
+                                <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-6">Manage markups applied by access role</p>
+
+                                <div className="space-y-4">
+                                    {[
+                                        { key: 'public_markup', label: 'Public Tier Markup', color: 'text-red-500 bg-red-500/10' },
+                                        { key: 'team_markup', label: 'Team Tier Markup', color: 'text-blue-500 bg-blue-500/10' },
+                                        { key: 'management_markup', label: 'Management Tier Markup', color: 'text-purple-500 bg-purple-500/10' },
+                                        { key: 'admin_markup', label: 'Admin/Partner Tier Markup', color: 'text-green-500 bg-green-500/10' }
+                                    ].map(markup => (
+                                        <div key={markup.key} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-850 rounded-2xl border border-gray-100 dark:border-gray-800/80">
+                                            <div className="flex items-center gap-3">
+                                                <span className={`px-2.5 py-1 text-[9px] font-black uppercase rounded-lg ${markup.color}`}>{markup.label.split(' ')[0]}</span>
+                                                <span className="text-sm font-semibold text-gray-900 dark:text-white">{markup.label}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="number"
+                                                    value={(settings as any)[markup.key]}
+                                                    onChange={(e) => setSettings({ ...settings, [markup.key]: e.target.value })}
+                                                    className="w-20 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-bold text-gray-900 dark:text-white text-center focus:outline-none"
+                                                />
+                                                <span className="text-sm font-bold">%</span>
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    <button
+                                        onClick={handleUpdateSettings}
+                                        className="w-full mt-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-black dark:hover:bg-gray-100 py-4 px-6 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-md"
+                                    >
+                                        Update access level markups
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* System Configurations */}
+                            <div className="bg-white dark:bg-gray-900 rounded-[3rem] p-8 border border-white dark:border-gray-800 shadow-2xl">
+                                <h2 className="text-xl font-black text-gray-950 dark:text-white tracking-tighter mb-1">System Configurations</h2>
+                                <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-6">Tweak global settings parameters</p>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Automated Update Interval (minutes)</label>
+                                        <input
+                                            type="number"
+                                            value={settings.update_interval_minutes}
+                                            onChange={(e) => setSettings({ ...settings, update_interval_minutes: e.target.value })}
+                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-orange-500 text-sm font-bold text-gray-900 dark:text-white focus:outline-none"
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={handleUpdateSettings}
+                                        className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-black dark:hover:bg-gray-100 py-4 px-6 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-md"
+                                    >
+                                        Save configuration parameters
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Recent Search Logs */}
-                        <div className="bg-white rounded-lg shadow-sm p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-lg font-semibold text-gray-900">Recent Search Activity</h2>
+                        {/* Right sidebar: DB Setup, pricing previews */}
+                        <div className="space-y-6">
+                            {/* Maintenance schema setup */}
+                            <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-6 border-2 border-red-500/10 dark:border-red-500/20 shadow-2xl">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-red-500 font-black">⚠</span>
+                                    <h2 className="text-md font-black text-gray-900 dark:text-white tracking-tighter">Database Maintenance</h2>
+                                </div>
+                                <p className="text-xs text-gray-400 font-semibold mb-4 leading-relaxed">Initialize database tables, rebuild trigram indexes, repair missing schemas, and fix Linkqage S3 image paths in your DB.</p>
                                 <button
-                                    onClick={refreshData}
-                                    className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                                    onClick={async () => {
+                                        if (!confirm("Rebuild database schemas, setup missing indexes, and apply relative image repairs?")) return;
+                                        try {
+                                            const res = await fetch('/api/admin/setup-db', { method: 'POST' });
+                                            const data = await res.json();
+                                            if (data.success) alert("Database maintenance finished successfully!");
+                                            else alert("Error: " + data.error);
+                                        } catch (e) {
+                                            alert("Request connection failed");
+                                        }
+                                    }}
+                                    className="w-full bg-red-600 hover:bg-red-700 text-white py-3.5 px-4 rounded-2xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-red-200 dark:shadow-none"
                                 >
-                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                    Refresh logs
+                                    Rebuild/Repair DB
                                 </button>
                             </div>
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200 text-xs">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Query</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Results</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Filters Applied</th>
+
+                            {/* Pricing preview widget */}
+                            <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-6 border border-white dark:border-gray-800 shadow-2xl">
+                                <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest mb-4">Pricing Preview Model</h3>
+                                <p className="text-[10px] text-gray-400 font-bold mb-4 uppercase tracking-widest">Sample: R1,000 baseline price</p>
+                                <div className="space-y-3 text-xs">
+                                    <div className="flex justify-between items-center p-2.5 bg-red-500/5 rounded-xl">
+                                        <span className="text-red-650 dark:text-red-400 font-black">Public Portal Price:</span>
+                                        <span className="font-black text-gray-900 dark:text-white">R {(1000 * (1 + parseInt(settings.public_markup || '15') / 100)).toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center p-2.5 bg-blue-500/5 rounded-xl">
+                                        <span className="text-blue-650 dark:text-blue-400 font-black">Team Price:</span>
+                                        <span className="font-black text-gray-900 dark:text-white">R {(1000 * (1 + parseInt(settings.team_markup || '10') / 100)).toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center p-2.5 bg-purple-500/5 rounded-xl">
+                                        <span className="text-purple-650 dark:text-purple-400 font-black">Management Price:</span>
+                                        <span className="font-black text-gray-900 dark:text-white">R {(1000 * (1 + parseInt(settings.management_markup || '5') / 100)).toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center p-2.5 bg-green-500/5 rounded-xl">
+                                        <span className="text-green-650 dark:text-green-400 font-black">Admin Cost Price:</span>
+                                        <span className="font-black text-gray-900 dark:text-white">R {(1000 * (1 + parseInt(settings.admin_markup || '0') / 100)).toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* TAB CONTENT: ACTIVITY */}
+                {activeTab === 'activity' && (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in fade-in duration-500">
+                        {/* Searches */}
+                        <div className="bg-white dark:bg-gray-900 rounded-[3rem] p-8 border border-white dark:border-gray-800 shadow-2xl">
+                            <h2 className="text-xl font-black text-gray-950 dark:text-white tracking-tighter mb-1">Search Analytics</h2>
+                            <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-6">Audit trace logs of MSP searches</p>
+                            
+                            <div className="overflow-y-auto max-h-[600px]">
+                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800 text-xs">
+                                    <thead>
+                                        <tr className="text-left text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 dark:border-gray-800">
+                                            <th className="pb-3 px-2">Time</th>
+                                            <th className="pb-3 px-2">Query String</th>
+                                            <th className="pb-3 px-2 text-right">Items Found</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
+                                    <tbody className="divide-y divide-gray-100 dark:divide-gray-850">
                                         {searchLogs.map((log) => (
-                                            <tr key={log.id} className="hover:bg-gray-50">
-                                                <td className="px-4 py-3 whitespace-nowrap text-gray-500 text-[10px]">
-                                                    {new Date(log.created_at).toLocaleString()}
-                                                </td>
-                                                <td className="px-4 py-3 font-medium text-gray-900">
-                                                    {log.query || <span className="text-gray-400 italic font-normal text-[10px]">Aggregated View</span>}
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-500 font-bold">
-                                                    {log.results_count.toLocaleString()}
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-500">
-                                                    <div className="flex flex-wrap gap-1">
-                                                        {log.filters?.suppliers?.length > 0 && (
-                                                            <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md text-[9px] font-black border border-blue-100 uppercase tracking-tighter">
-                                                                {log.filters.suppliers.join(', ')}
-                                                            </span>
-                                                        )}
-                                                        {log.filters?.categories?.length > 0 && (
-                                                            <span className="px-2 py-0.5 bg-purple-50 text-purple-600 rounded-md text-[9px] font-black border border-purple-100 uppercase tracking-tighter">
-                                                                {log.filters.categories.length} Cat
-                                                            </span>
-                                                        )}
-                                                        {log.filters?.brand && (
-                                                            <span className="px-2 py-0.5 bg-green-50 text-green-600 rounded-md text-[9px] font-black border border-green-100 uppercase tracking-tighter">
-                                                                {log.filters.brand}
-                                                            </span>
-                                                        )}
-                                                        {(log.filters?.minPrice > 0 || log.filters?.maxPrice < 999999) && (
-                                                            <span className="px-2 py-0.5 bg-yellow-50 text-yellow-600 rounded-md text-[9px] font-black border border-yellow-100 uppercase tracking-tighter">
-                                                                R{log.filters.minPrice}-R{log.filters.maxPrice}
-                                                            </span>
-                                                        )}
-                                                        {!log.filters?.suppliers?.length && !log.filters?.categories?.length && !log.filters?.brand && log.filters?.minPrice === 0 && log.filters?.maxPrice === 999999 && (
-                                                            <span className="text-gray-300 text-[9px] font-bold uppercase tracking-tighter">Clean Search</span>
-                                                        )}
-                                                    </div>
-                                                </td>
+                                            <tr key={log.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30">
+                                                <td className="py-3 px-2 text-[10px] text-gray-500 whitespace-nowrap">{new Date(log.created_at).toLocaleString()}</td>
+                                                <td className="py-3 px-2 font-bold text-gray-900 dark:text-white select-all">{log.query || <span className="italic text-gray-300">Explored Feed</span>}</td>
+                                                <td className="py-3 px-2 text-right text-orange-600 font-extrabold">{log.results_count.toLocaleString()}</td>
                                             </tr>
                                         ))}
                                         {searchLogs.length === 0 && (
                                             <tr>
-                                                <td colSpan={4} className="px-4 py-10 text-center text-gray-500">
-                                                    No search logs recorded yet.
-                                                </td>
+                                                <td colSpan={3} className="py-8 text-center text-gray-400 italic">No search entries logged.</td>
                                             </tr>
                                         )}
                                     </tbody>
@@ -815,69 +842,60 @@ export default function AdminPage() {
                             </div>
                         </div>
 
-                        {/* Recent Quote Activity */}
-                        <div className="bg-white rounded-lg shadow-sm p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-lg font-semibold text-gray-900">Recent Quote Templates Generated</h2>
-                            </div>
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200 text-xs">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total (Inc VAT)</th>
-                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                        {/* Quote activity */}
+                        <div className="bg-white dark:bg-gray-900 rounded-[3rem] p-8 border border-white dark:border-gray-800 shadow-2xl">
+                            <h2 className="text-xl font-black text-gray-950 dark:text-white tracking-tighter mb-1">Quote Invoices Generated</h2>
+                            <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-6">Audit logs of PDF client exports</p>
+                            
+                            <div className="overflow-y-auto max-h-[600px]">
+                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800 text-xs">
+                                    <thead>
+                                        <tr className="text-left text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 dark:border-gray-800">
+                                            <th className="pb-3 px-2">Time</th>
+                                            <th className="pb-3 px-2">Role</th>
+                                            <th className="pb-3 px-2">Items Count</th>
+                                            <th className="pb-3 px-2 text-right">Total (Incl VAT)</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
+                                    <tbody className="divide-y divide-gray-100 dark:divide-gray-850">
                                         {quoteLogs.map((log) => (
-                                            <tr key={log.id} className="hover:bg-gray-50">
-                                                <td className="px-4 py-3 whitespace-nowrap text-gray-500 text-[10px]">
-                                                    {new Date(log.created_at).toLocaleString()}
-                                                </td>
-                                                <td className="px-4 py-3">
+                                            <tr key={log.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30">
+                                                <td className="py-3 px-2 text-[10px] text-gray-500 whitespace-nowrap">{new Date(log.created_at).toLocaleString()}</td>
+                                                <td className="py-3 px-2">
                                                     <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tighter border ${log.user_role === 'admin' ? 'bg-green-50 text-green-600 border-green-100' :
                                                             log.user_role === 'management' ? 'bg-purple-50 text-purple-600 border-purple-100' :
                                                                 log.user_role === 'team' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                                                                    'bg-gray-50 text-gray-600 border-gray-100'
+                                                                    'bg-gray-50 text-gray-650 border-gray-100'
                                                         }`}>
                                                         {log.user_role}
                                                     </span>
                                                 </td>
-                                                <td className="px-4 py-3 text-gray-900 font-medium">
-                                                    {log.items?.length || 0} Products
-                                                </td>
-                                                <td className="px-4 py-3 text-orange-600 font-black">
-                                                    R {parseFloat(log.total_inc_vat).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}
-                                                </td>
-                                                <td className="px-4 py-3 text-right">
-                                                    <button
-                                                        onClick={() => alert(JSON.stringify(log.items, null, 2))}
-                                                        className="text-[10px] font-bold text-gray-400 hover:text-gray-900 uppercase tracking-widest"
-                                                    >
-                                                        View
-                                                    </button>
-                                                </td>
+                                                <td className="py-3 px-2 text-gray-900 dark:text-white font-bold">{log.items?.length || 0} Products</td>
+                                                <td className="py-3 px-2 text-right text-orange-600 font-extrabold">R {parseFloat(log.total_inc_vat).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}</td>
                                             </tr>
                                         ))}
                                         {quoteLogs.length === 0 && (
                                             <tr>
-                                                <td colSpan={5} className="px-4 py-10 text-center text-gray-500">
-                                                    No quotes generated yet.
-                                                </td>
+                                                <td colSpan={4} className="py-8 text-center text-gray-400 italic">No quote templates generated.</td>
                                             </tr>
                                         )}
                                     </tbody>
                                 </table>
                             </div>
                         </div>
+                    </div>
+                )}
 
-                        {/* Manual Product Import */}
+                {/* TAB CONTENT: IMPORT */}
+                {activeTab === 'import' && (
+                    <div className="bg-white dark:bg-gray-900 rounded-[3rem] p-8 border border-white dark:border-gray-800 shadow-2xl max-w-4xl mx-auto animate-in fade-in duration-500">
+                        <div className="mb-6">
+                            <h2 className="text-2xl font-black text-gray-950 dark:text-white tracking-tighter mb-1">Upload Product Lists</h2>
+                            <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Import custom pricing catalogs manually (Excel/CSV)</p>
+                        </div>
                         <DistributorImport />
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );
