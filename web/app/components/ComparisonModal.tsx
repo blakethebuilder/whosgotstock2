@@ -133,90 +133,90 @@ export default function ComparisonModal({
                         ) : (
                             <div className="space-y-2.5">
                                 {/* Product Cards Headers Row */}
-                                <div className="grid gap-2" style={{ gridTemplateColumns: `80px repeat(${products.length}, minmax(110px, 1fr))` }}>
+                                <div className="grid gap-2" style={{ gridTemplateColumns: isExpanded ? `120px repeat(${products.length}, minmax(140px, 1fr))` : `80px repeat(${products.length}, minmax(110px, 1fr))` }}>
                                     <div className="flex items-end pb-1.5">
-                                        <span className="text-[8px] font-black uppercase tracking-wider text-gray-400">Specs</span>
+                                        <span className={`${isExpanded ? 'text-xs' : 'text-[8px]'} font-black uppercase tracking-wider text-gray-400`}>Specs</span>
                                     </div>
                                     {products.map(product => (
-                                        <div key={product.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-150 dark:border-gray-800 p-1.5 relative group shadow-sm flex flex-col justify-between">
+                                        <div key={product.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-150 dark:border-gray-800 p-2.5 relative group shadow-sm flex flex-col justify-between">
                                             <button
                                                 onClick={() => onRemove(product.id)}
-                                                className="absolute -top-1 -right-1 w-4 h-4 bg-red-150 hover:bg-red-500 hover:text-white text-red-600 rounded-full transition-all flex items-center justify-center text-[8px] font-bold shadow-md active:scale-90"
+                                                className="absolute -top-1 -right-1 w-4.5 h-4.5 bg-red-150 hover:bg-red-500 hover:text-white text-red-600 rounded-full transition-all flex items-center justify-center text-[9px] font-bold shadow-md active:scale-90"
                                                 title="Remove"
                                             >
                                                 ✕
                                             </button>
-
-                                            <div className={`${isExpanded ? 'h-32 sm:h-36' : 'h-20'} flex items-center justify-center bg-gray-50/50 dark:bg-gray-800 rounded-lg p-1 mb-1 transition-all duration-300`}>
+ 
+                                            <div className={`${isExpanded ? 'h-36 sm:h-44 md:h-52' : 'h-20'} flex items-center justify-center bg-gray-50/50 dark:bg-gray-850 rounded-lg p-1 mb-1.5 transition-all duration-300`}>
                                                 {product.image_url ? (
                                                     <img src={product.image_url} alt="" className="max-h-full max-w-full object-contain mix-blend-multiply dark:mix-blend-normal" />
                                                 ) : (
-                                                    <svg className={`${isExpanded ? 'w-10 h-10' : 'w-7 h-7'} text-gray-300 transition-all`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                                    <svg className={`${isExpanded ? 'w-14 h-14' : 'w-7 h-7'} text-gray-300 transition-all`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                                 )}
                                             </div>
-
-                                            <div className="text-center min-h-[30px] flex flex-col justify-center mb-1">
-                                                <p className="text-[9px] font-black text-gray-900 dark:text-white leading-tight line-clamp-2" title={product.name}>{product.name}</p>
-                                                <span className="text-[7px] font-bold uppercase text-orange-500 tracking-wider mt-0.5">{product.brand}</span>
+ 
+                                            <div className="text-center min-h-[36px] flex flex-col justify-center mb-1.5">
+                                                <p className={`${isExpanded ? 'text-xs' : 'text-[9px]'} font-black text-gray-900 dark:text-white leading-tight line-clamp-2`} title={product.name}>{product.name}</p>
+                                                <span className={`${isExpanded ? 'text-[9px]' : 'text-[7px]'} font-bold uppercase text-orange-500 tracking-wider mt-0.5`}>{product.brand}</span>
                                             </div>
-
+ 
                                             <button
                                                 onClick={() => onAddToCart(product)}
-                                                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black py-1 rounded-md text-[8px] uppercase tracking-wider transition-all active:scale-95 shadow-sm"
+                                                className={`w-full bg-orange-500 hover:bg-orange-600 text-white font-black rounded-md ${isExpanded ? 'py-2 text-[10px]' : 'py-1 text-[8px]'} uppercase tracking-wider transition-all active:scale-95 shadow-sm`}
                                             >
                                                 + Quote
                                             </button>
                                         </div>
                                     ))}
                                 </div>
-
+ 
                                 {/* Dynamic Spec Rows */}
                                 <div className="space-y-1">
                                     {attributes.map(attr => (
-                                        <div key={attr.label} className="grid gap-2" style={{ gridTemplateColumns: `80px repeat(${products.length}, minmax(110px, 1fr))` }}>
+                                        <div key={attr.label} className="grid gap-2" style={{ gridTemplateColumns: isExpanded ? `120px repeat(${products.length}, minmax(140px, 1fr))` : `80px repeat(${products.length}, minmax(110px, 1fr))` }}>
                                             {/* Spec Title Column */}
-                                            <div className="flex items-center px-1.5 py-1 bg-gray-150/40 dark:bg-gray-900 rounded-lg border border-gray-200/50 dark:border-gray-800 min-h-[36px]">
-                                                <span className="text-[8px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider leading-none">{attr.label}</span>
+                                            <div className={`flex items-center px-1.5 py-1 bg-gray-150/40 dark:bg-gray-900 rounded-lg border border-gray-200/50 dark:border-gray-800 ${isExpanded ? 'min-h-[56px] px-3' : 'min-h-[36px]'}`}>
+                                                <span className={`${isExpanded ? 'text-[10px] tracking-widest' : 'text-[8px]'} font-black text-gray-400 dark:text-gray-500 uppercase tracking-wider leading-none`}>{attr.label}</span>
                                             </div>
-
+ 
                                             {/* Compared Values Columns */}
                                             {products.map(product => {
                                                 const prices = calculatePrice(product.price_ex_vat);
                                                 let cellContent;
-
+ 
                                                 switch (attr.key) {
                                                     case 'brand':
-                                                        cellContent = <span className="text-[8px] font-black uppercase tracking-wider text-orange-600 bg-orange-50 dark:bg-orange-950/20 px-1.5 py-0.5 rounded">{product.brand}</span>;
+                                                        cellContent = <span className={`${isExpanded ? 'text-[10px] px-2.5 py-1' : 'text-[8px] px-1.5 py-0.5'} font-black uppercase tracking-wider text-orange-600 bg-orange-50 dark:bg-orange-950/20 rounded`}>{product.brand}</span>;
                                                         break;
                                                     case 'category':
-                                                        cellContent = <span className="text-[8px] font-bold text-gray-500 dark:text-gray-400 truncate max-w-full">{product.category || '—'}</span>;
+                                                        cellContent = <span className={`${isExpanded ? 'text-[10px]' : 'text-[8px]'} font-bold text-gray-500 dark:text-gray-400 truncate max-w-full`}>{product.category || '—'}</span>;
                                                         break;
                                                     case 'pricing_ex':
                                                         const priceData = displayPrice(product);
                                                         cellContent = (
                                                             <div className="leading-tight">
-                                                                <p className="text-[10px] font-black text-gray-950 dark:text-white tabular-nums">
+                                                                <p className={`${isExpanded ? 'text-sm' : 'text-[10px]'} font-black text-gray-950 dark:text-white tabular-nums`}>
                                                                     {userRole === 'public' ? 'Hidden' : priceData.isPOR ? 'POR' : `R ${priceData.exVat}`}
                                                                 </p>
-                                                                <span className="text-[7px] text-gray-400 uppercase tracking-widest font-bold">Ex VAT</span>
+                                                                <span className={`${isExpanded ? 'text-[8px]' : 'text-[7px]'} text-gray-400 uppercase tracking-widest font-bold`}>Ex VAT</span>
                                                             </div>
                                                         );
                                                         break;
                                                     case 'pricing_inc':
                                                         cellContent = (
                                                             <div className="leading-tight">
-                                                                <p className="text-[9px] font-bold text-gray-500 dark:text-gray-400 tabular-nums">
+                                                                <p className={`${isExpanded ? 'text-xs' : 'text-[9px]'} font-bold text-gray-500 dark:text-gray-400 tabular-nums`}>
                                                                     {userRole === 'public' ? 'Hidden' : `R ${formatPrice(prices.incVat)}`}
                                                                 </p>
-                                                                <span className="text-[7px] text-gray-400 uppercase tracking-widest font-bold">Inc VAT</span>
+                                                                <span className={`${isExpanded ? 'text-[8px]' : 'text-[7px]'} text-gray-400 uppercase tracking-widest font-bold`}>Inc VAT</span>
                                                             </div>
                                                         );
                                                         break;
                                                     case 'availability':
                                                         const isStocked = product.qty_on_hand > 0;
                                                         cellContent = (
-                                                            <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-tighter ${isStocked ? 'bg-[#D8E698] text-[#4A5D16]' : 'bg-red-50 text-red-600'}`}>
-                                                                <span className={`w-1 h-1 rounded-full ${isStocked ? 'bg-[#4A5D16]' : 'bg-red-500'}`} />
+                                                            <span className={`inline-flex items-center gap-1.5 rounded-full ${isExpanded ? 'text-[10px] px-3 py-1' : 'text-[8px] px-1.5 py-0.5'} font-black uppercase tracking-tighter ${isStocked ? 'bg-[#D8E698] text-[#4A5D16]' : 'bg-red-50 text-red-600'}`}>
+                                                                <span className={`w-1.5 h-1.5 rounded-full ${isStocked ? 'bg-[#4A5D16]' : 'bg-red-500'}`} />
                                                                 {isStocked ? `${product.qty_on_hand} Stock` : 'Out'}
                                                             </span>
                                                         );
@@ -224,26 +224,26 @@ export default function ComparisonModal({
                                                     case 'description':
                                                         const description = product.description || product.name || '—';
                                                         cellContent = (
-                                                            <div className="max-h-12 overflow-y-auto text-[8px] text-gray-500 dark:text-gray-400 font-medium leading-normal custom-scrollbar">
+                                                            <div className={`${isExpanded ? 'max-h-36 text-xs' : 'max-h-12 text-[8px]'} overflow-y-auto text-gray-500 dark:text-gray-400 font-medium leading-normal custom-scrollbar`}>
                                                                 {description}
                                                             </div>
                                                         );
                                                         break;
                                                     case 'supplier_name':
                                                         cellContent = (
-                                                            <span className="px-1 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-[8px] font-black uppercase text-gray-400">
+                                                            <span className={`px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded ${isExpanded ? 'text-[10px] px-2.5 py-1' : 'text-[8px]'} font-black uppercase text-gray-400`}>
                                                                 {(userRole === 'public' || userRole === 'team') ? 'Smart' : product.supplier_name}
                                                             </span>
                                                         );
                                                         break;
                                                     default:
-                                                        cellContent = <p className="text-[8px] font-bold text-gray-700 dark:text-gray-300">{(product as any)[attr.key] || '—'}</p>;
+                                                        cellContent = <p className={`${isExpanded ? 'text-xs' : 'text-[8px]'} font-bold text-gray-700 dark:text-gray-300`}>{(product as any)[attr.key] || '—'}</p>;
                                                 }
-
+ 
                                                 return (
                                                     <div
                                                         key={`${product.id}-${attr.key}`}
-                                                        className="p-1 px-1.5 bg-white dark:bg-gray-900 rounded-lg border border-gray-150 dark:border-gray-800 flex items-center min-h-[36px] shadow-sm overflow-hidden"
+                                                        className={`bg-white dark:bg-gray-900 rounded-lg border border-gray-150 dark:border-gray-800 flex items-center shadow-sm overflow-hidden ${isExpanded ? 'min-h-[56px] p-3' : 'min-h-[36px] p-1 px-1.5'}`}
                                                     >
                                                         {cellContent}
                                                     </div>

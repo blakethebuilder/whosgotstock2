@@ -15,13 +15,6 @@ export default function DashboardHero({ usageStats, onViewAllProducts }: Dashboa
       <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
       <div className="relative z-10 space-y-6 max-w-4xl mx-auto text-center">
-        <div className="inline-flex items-center gap-3 px-5 py-2 bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 border border-white/50 dark:border-gray-700/50">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-          </span>
-          Unified Supply Intelligence
-        </div>
 
         <div className="space-y-3">
           <h2 className="text-orange-500 font-black text-xl md:text-2xl tracking-tighter italic">Instant Supplier Visibility.</h2>
@@ -32,7 +25,7 @@ export default function DashboardHero({ usageStats, onViewAllProducts }: Dashboa
 
         <div className="space-y-4">
           <p className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white leading-relaxed max-w-4xl mx-auto">
-            The ultimate search engine for South Africa's IT and electronics channel. Aggregated live inventory from <span className="text-orange-500 font-black">{usageStats.totalSuppliers || 7} Major Distributors.</span> Stop switching tabs. Just ask: <span className="underline decoration-orange-500 decoration-3">Whos Got Stock?</span>
+            The ultimate search engine for South Africa's technology distribution channel. Access live, aggregated inventory across all major IT, power, and electronic categories in one place. Stop switching tabs. Just ask: <span className="underline decoration-orange-500 decoration-3">Who's Got Stock?</span>
           </p>
 
           <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 text-[10px] font-black uppercase tracking-widest text-gray-400/80">

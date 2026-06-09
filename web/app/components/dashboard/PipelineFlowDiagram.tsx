@@ -29,7 +29,10 @@ const PRESETS = [
       { name: 'Linkqage', slug: 'linkqage', latency: 112, count: 4 },
       { name: 'Rectron', slug: 'rectron', latency: 85, count: 0 },
       { name: 'Pinnacle', slug: 'pinnacle', latency: 142, count: 2 },
-      { name: 'Scoop Distribution', slug: 'scoop', latency: 98, count: 3 }
+      { name: 'Scoop Distribution', slug: 'scoop', latency: 98, count: 3 },
+      { name: 'Syntech', slug: 'syntech', latency: 120, count: 0 },
+      { name: 'Mustek', slug: 'mustek', latency: 150, count: 0 },
+      { name: 'Esquire', slug: 'esquire', latency: 130, count: 0 }
     ],
     results: [
       { sku: 'USW-24-POE', name: 'UniFi 24-Port Gigabit PoE Switch', brand: 'Ubiquiti', qty: 14, priceEx: 7850, supplier: 'Linkqage' },
@@ -46,7 +49,10 @@ const PRESETS = [
       { name: 'Linkqage', slug: 'linkqage', latency: 64, count: 8 },
       { name: 'Rectron', slug: 'rectron', latency: 72, count: 2 },
       { name: 'Pinnacle', slug: 'pinnacle', latency: 120, count: 0 },
-      { name: 'Scoop Distribution', slug: 'scoop', latency: 105, count: 4 }
+      { name: 'Scoop Distribution', slug: 'scoop', latency: 105, count: 4 },
+      { name: 'Syntech', slug: 'syntech', latency: 90, count: 1 },
+      { name: 'Mustek', slug: 'mustek', latency: 110, count: 0 },
+      { name: 'Esquire', slug: 'esquire', latency: 115, count: 0 }
     ],
     results: [
       { sku: 'FL-C6-3M-BL', name: 'Cat6 Flylead UTP 3m Blue Molded', brand: 'Linkqage', qty: 450, priceEx: 45, supplier: 'Linkqage' },
@@ -63,13 +69,28 @@ const PRESETS = [
       { name: 'Linkqage', slug: 'linkqage', latency: 95, count: 0 },
       { name: 'Rectron', slug: 'rectron', latency: 110, count: 6 },
       { name: 'Pinnacle', slug: 'pinnacle', latency: 135, count: 4 },
-      { name: 'Scoop Distribution', slug: 'scoop', latency: 80, count: 0 }
+      { name: 'Scoop Distribution', slug: 'scoop', latency: 80, count: 0 },
+      { name: 'Syntech', slug: 'syntech', latency: 100, count: 0 },
+      { name: 'Mustek', slug: 'mustek', latency: 125, count: 2 },
+      { name: 'Esquire', slug: 'esquire', latency: 140, count: 1 }
     ],
     results: [
       { sku: 'BX8071512700', name: 'Intel Core i7-12700 12-Core Processor', brand: 'Intel', qty: 22, priceEx: 6200, supplier: 'Rectron' },
-      { sku: 'BX8071512700', name: 'Intel Core i7-12700 CPU Boxed', brand: 'Intel', qty: 15, priceEx: 6150, supplier: 'Pinnacle' }
+      { sku: 'BX8071512700', name: 'Intel Core i7-12700 CPU Boxed', brand: 'Intel', qty: 15, priceEx: 6150, supplier: 'Pinnacle' },
+      { sku: 'BX8071512700', name: 'Intel i7-12700 Processor Retail Pack', brand: 'Intel', qty: 2, priceEx: 6350, supplier: 'Mustek' }
     ]
   }
+];
+
+// Layout coordinates for 7 suppliers surrounding the center (50%, 50%)
+const SUPPLIER_POSITIONS = [
+  { name: 'Linkqage', x: '18%', y: '22%' },
+  { name: 'Pinnacle', x: '82%', y: '22%' },
+  { name: 'Scoop Distribution', x: '16%', y: '50%' },
+  { name: 'Rectron', x: '84%', y: '50%' },
+  { name: 'Syntech', x: '18%', y: '78%' },
+  { name: 'Mustek', x: '82%', y: '78%' },
+  { name: 'Esquire', x: '50%', y: '16%' }
 ];
 
 export default function PipelineFlowDiagram() {
@@ -121,7 +142,7 @@ export default function PipelineFlowDiagram() {
             ));
           }, s.latency * 3.5); // artificial scale factor to make it look organic
 
-        }, idx * 150);
+        }, idx * 100);
       });
 
       // Step 3: Match & Deduplicate when queries finish
@@ -147,6 +168,16 @@ export default function PipelineFlowDiagram() {
 
   return (
     <div className="md:col-span-12 mt-8 bg-gray-900 dark:bg-gray-900/60 rounded-[3rem] border border-gray-800 p-6 sm:p-12 relative overflow-hidden shadow-2xl">
+      <style>{`
+        @keyframes pulseFlow {
+          from {
+            stroke-dashoffset: 24;
+          }
+          to {
+            stroke-dashoffset: 0;
+          }
+        }
+      `}</style>
       <div className="absolute inset-0 opacity-[0.02] bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
       
       <div className="relative z-10 space-y-8">
@@ -160,7 +191,7 @@ export default function PipelineFlowDiagram() {
             Behind the Search Bar
           </h3>
           <p className="text-gray-400 text-xs font-semibold leading-relaxed">
-            See how WhosGotStock orchestrates concurrent supplier API queries, normalizes item descriptions, and filters markup in under 2 seconds.
+            See how WhosGotStock orchestrates concurrent supplier API queries, normalizes item descriptions, and aggregates live stock matches in under 2 seconds.
           </p>
         </div>
 
@@ -185,153 +216,141 @@ export default function PipelineFlowDiagram() {
         {/* Dynamic Visualizer Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch pt-6 border-t border-gray-800/80">
           
-          {/* Step 1 & 2: Search Pipeline Operations */}
-          <div className="lg:col-span-7 bg-gray-950/40 border border-gray-800/60 rounded-[2rem] p-6 flex flex-col justify-between space-y-6">
+          {/* Mindmap Panel */}
+          <div className="lg:col-span-7 bg-gray-950/40 border border-gray-800/60 rounded-[2rem] p-6 flex flex-col justify-between relative min-h-[480px]">
             
-            {/* Simulation Steps Indicator */}
-            <div className="flex justify-between items-center pb-4 border-b border-gray-800/60">
-              <span className="text-xs font-bold text-gray-400">Pipeline Pipeline Flow</span>
-              <div className="flex gap-1.5">
-                {['parsing', 'querying', 'matching', 'complete'].map((step, i) => {
-                  const states = ['parsing', 'querying', 'matching', 'complete'];
-                  const curIdx = states.indexOf(pipelineState);
-                  const stepIdx = states.indexOf(step);
-                  const isDone = curIdx >= stepIdx;
-                  const isActive = pipelineState === step;
+            {/* SVG Connections Layer */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
+              {SUPPLIER_POSITIONS.map((pos) => {
+                const supplierState = suppliers.find(s => s.name === pos.name) || { status: 'idle' };
+                const isPinging = supplierState.status === 'pinging';
+                const isSuccess = supplierState.status === 'success';
+                const isEmpty = supplierState.status === 'empty';
+                
+                let strokeColor = 'rgba(75, 85, 99, 0.2)'; // Gray muted
+                if (isPinging) strokeColor = '#f97316'; // Orange
+                else if (isSuccess) strokeColor = '#22c55e'; // Green
+                else if (isEmpty) strokeColor = 'rgba(234, 179, 8, 0.4)'; // Yellow-orange dim
 
-                  return (
-                    <span
-                      key={step}
-                      className={`w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] font-black ${
-                        isActive 
-                          ? 'bg-orange-500 text-white animate-pulse'
-                          : isDone 
-                            ? 'bg-green-500 text-white' 
-                            : 'bg-gray-800 text-gray-500'
-                      }`}
-                    >
-                      {i + 1}
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Simulated Live Query Bar */}
-            <div className="space-y-2">
-              <label className="text-[10px] uppercase font-black tracking-wider text-gray-500">1. Query Analysis</label>
-              <div className="flex items-center gap-3 bg-gray-900 border border-gray-800 rounded-xl px-4 py-2.5">
-                <span className="text-orange-500 animate-pulse">⚡</span>
-                <span className="text-sm font-bold text-white font-mono">{simulatedQuery}</span>
-                {pipelineState === 'parsing' && (
-                  <span className="ml-auto text-[10px] font-black text-orange-500 uppercase tracking-widest animate-pulse">
-                    Parsing SKUs...
-                  </span>
-                )}
-              </div>
-
-              {/* Parsed Meta Tags */}
-              <div className="flex gap-2 flex-wrap min-h-[28px] pt-1">
-                {pipelineState !== 'idle' && (
-                  <>
-                    <span className="px-2 py-0.5 bg-orange-500/10 border border-orange-500/20 text-[9px] font-black text-orange-400 rounded-md uppercase">
-                      Query: {currentPreset.query}
-                    </span>
-                    {pipelineState !== 'parsing' && (
-                      <>
-                        <span className="px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 text-[9px] font-black text-blue-400 rounded-md uppercase">
-                          Target SKU: {currentPreset.sku}
-                        </span>
-                        <span className="px-2 py-0.5 bg-green-500/10 border border-green-500/20 text-[9px] font-black text-green-400 rounded-md uppercase">
-                          Category: {currentPreset.category}
-                        </span>
-                      </>
+                return (
+                  <g key={pos.name}>
+                    {/* Primary link line */}
+                    <line
+                      x1="50%"
+                      y1="50%"
+                      x2={pos.x}
+                      y2={pos.y}
+                      stroke={strokeColor}
+                      strokeWidth={isPinging || isSuccess ? 2.5 : 1.5}
+                      className="transition-colors duration-300"
+                    />
+                    {/* Animated pulse flow */}
+                    {(isPinging || isSuccess) && (
+                      <line
+                        x1="50%"
+                        y1="50%"
+                        x2={pos.x}
+                        y2={pos.y}
+                        stroke={isSuccess ? '#22c55e' : '#f97316'}
+                        strokeWidth={2.5}
+                        strokeDasharray="8, 8"
+                        style={{
+                          animation: 'pulseFlow 0.8s linear infinite',
+                        }}
+                      />
                     )}
-                  </>
-                )}
-              </div>
-            </div>
+                  </g>
+                );
+              })}
+            </svg>
 
-            {/* Parallel Scrapers Simulation */}
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <label className="text-[10px] uppercase font-black tracking-wider text-gray-500">2. Live Sourcing Broadcast (Concurrent Requests)</label>
-                {pipelineState === 'querying' && (
-                  <span className="text-[9px] text-green-500 font-bold animate-pulse flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span> Firing Parallel API Pings
-                  </span>
-                )}
-              </div>
+            {/* Mindmap Nodes */}
+            <div className="absolute inset-0 z-10 pointer-events-none">
               
-              <div className="grid grid-cols-2 gap-3">
-                {suppliers.map((sup) => (
+              {/* Central Search Bar Node */}
+              <div 
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 sm:w-60 bg-gray-900 border border-gray-700/80 rounded-2xl p-3 shadow-2xl flex flex-col items-center gap-1.5 text-center transition-all duration-300 pointer-events-auto"
+                style={{ boxShadow: '0 0 35px rgba(249, 115, 22, 0.15)' }}
+              >
+                <div className="flex items-center gap-2 bg-gray-950/80 border border-gray-800 rounded-lg px-2.5 py-1.5 w-full">
+                  <span className="text-orange-500 text-xs animate-pulse">⚡</span>
+                  <span className="text-[11px] font-bold text-white font-mono truncate">{simulatedQuery}</span>
+                </div>
+                
+                <span className="text-[8px] font-black uppercase tracking-widest text-orange-500">
+                  {pipelineState === 'idle' && 'Ready'}
+                  {pipelineState === 'parsing' && 'Parsing Query...'}
+                  {pipelineState === 'querying' && 'Broadcasting Queries'}
+                  {pipelineState === 'matching' && 'Matching Inventory'}
+                  {pipelineState === 'complete' && 'Results Normalized'}
+                </span>
+              </div>
+
+              {/* Surrounding Supplier Nodes */}
+              {SUPPLIER_POSITIONS.map((pos) => {
+                const sup = suppliers.find(s => s.name === pos.name) || { name: pos.name, status: 'idle', count: 0, latency: 0 };
+                const isIdle = sup.status === 'idle';
+                const isPinging = sup.status === 'pinging';
+                const isSuccess = sup.status === 'success';
+                const isEmpty = sup.status === 'empty';
+
+                return (
                   <div
-                    key={sup.name}
-                    className={`p-3 rounded-xl border transition-all duration-300 ${
-                      sup.status === 'success'
-                        ? 'bg-green-500/5 border-green-500/20'
-                        : sup.status === 'empty'
-                          ? 'bg-gray-900 border-gray-800 opacity-60'
-                          : sup.status === 'pinging'
-                            ? 'bg-orange-500/5 border-orange-500/30 shadow-lg shadow-orange-500/5 animate-pulse'
-                            : 'bg-gray-900/40 border-gray-850 opacity-40'
+                    key={pos.name}
+                    style={{ left: pos.x, top: pos.y }}
+                    className={`absolute -translate-x-1/2 -translate-y-1/2 p-2 rounded-xl border flex flex-col items-center gap-1 w-24 sm:w-28 text-center transition-all duration-300 pointer-events-auto ${
+                      isSuccess
+                        ? 'bg-green-950/90 border-green-500/40 shadow-lg shadow-green-500/10 scale-105'
+                        : isEmpty
+                        ? 'bg-gray-900/90 border-yellow-600/30 opacity-70'
+                        : isPinging
+                        ? 'bg-orange-950/90 border-orange-500/50 shadow-lg shadow-orange-500/10 scale-105 animate-pulse'
+                        : 'bg-gray-950/70 border-gray-850 opacity-40'
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-black text-white">{sup.name}</span>
-                      <span className={`w-2 h-2 rounded-full ${
-                        sup.status === 'success'
-                          ? 'bg-green-500'
-                          : sup.status === 'empty'
-                            ? 'bg-yellow-500'
-                            : sup.status === 'pinging'
-                              ? 'bg-orange-500'
-                              : 'bg-gray-700'
+                    <span className="text-[10px] font-black text-white truncate max-w-full">
+                      {pos.name.replace(' Distribution', '')}
+                    </span>
+                    
+                    <div className="flex items-center gap-1">
+                      <span className={`w-1.5 h-1.5 rounded-full ${
+                        isSuccess ? 'bg-green-500' : isEmpty ? 'bg-yellow-500' : isPinging ? 'bg-orange-500' : 'bg-gray-600'
                       }`} />
-                    </div>
-                    <div className="flex justify-between items-center mt-2.5 text-[10px] font-semibold text-gray-400">
-                      <span>Status:</span>
-                      <span className="font-bold text-white capitalize">
-                        {sup.status === 'idle' ? 'Idle' : sup.status === 'pinging' ? 'Querying...' : sup.status === 'success' ? 'Matches Found' : 'No Stocks'}
+                      <span className="text-[8px] font-bold text-gray-400 capitalize">
+                        {isIdle && 'Idle'}
+                        {isPinging && 'Pinging'}
+                        {isSuccess && `${sup.count} hits`}
+                        {isEmpty && 'No stock'}
                       </span>
                     </div>
-                    {sup.status === 'success' && (
-                      <div className="flex justify-between items-center mt-1 text-[10px] font-semibold text-gray-500">
-                        <span>Latency:</span>
-                        <span className="text-green-400 font-black">{sup.latency}ms</span>
-                      </div>
+
+                    {isSuccess && sup.latency && (
+                      <span className="text-[8px] font-black text-green-400 leading-none">
+                        {sup.latency}ms
+                      </span>
                     )}
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
 
-            {/* Deduplication & Matching Logic */}
-            <div className="space-y-2 pt-2">
-              <label className="text-[10px] uppercase font-black tracking-wider text-gray-500">3. Match Consolidation & Margins</label>
-              <div className="bg-gray-900/80 border border-gray-850 rounded-xl p-4 space-y-2 text-xs">
-                <div className="flex justify-between items-center text-gray-400">
-                  <span>Cross-Supplier Deduplication:</span>
+            {/* Bottom normalization status widget */}
+            <div className="relative z-20 mt-auto bg-gray-900/80 border border-gray-850 rounded-2xl p-4 grid grid-cols-2 gap-4 text-[11px] backdrop-blur-sm">
+              <div className="space-y-1">
+                <div className="text-gray-400 font-medium">Cross-Supplier Deduplication:</div>
+                <div className="font-bold text-white">
                   {pipelineState === 'matching' || pipelineState === 'complete' ? (
-                    <span className="text-green-500 font-bold flex items-center gap-1">
-                      ✅ Found SKU {matchedSku}
-                    </span>
+                    <span className="text-green-500">✅ Found SKU {matchedSku}</span>
                   ) : (
                     <span className="text-gray-600 italic">Waiting...</span>
                   )}
                 </div>
-                <div className="flex justify-between items-center text-gray-400">
-                  <span>Fuzzy Match Accuracy:</span>
+              </div>
+              <div className="space-y-1">
+                <div className="text-gray-400 font-medium">Pricing Normalization:</div>
+                <div className="font-bold text-white">
                   {pipelineState === 'matching' || pipelineState === 'complete' ? (
-                    <span className="text-white font-bold">100% SKU Align</span>
-                  ) : (
-                    <span className="text-gray-600 italic">Waiting...</span>
-                  )}
-                </div>
-                <div className="flex justify-between items-center text-gray-400">
-                  <span>Pricing Normalization:</span>
-                  {pipelineState === 'matching' || pipelineState === 'complete' ? (
-                    <span className="text-orange-500 font-bold">Standardized VAT & Feed</span>
+                    <span className="text-orange-500">Standardized VAT & Feed</span>
                   ) : (
                     <span className="text-gray-600 italic">Waiting...</span>
                   )}
@@ -368,7 +387,7 @@ export default function PipelineFlowDiagram() {
                     {pipelineState === 'idle' && 'Select a preset above to begin...'}
                     {pipelineState === 'parsing' && 'Parsing search tokens...'}
                     {pipelineState === 'querying' && 'Pinging distributor database inventories...'}
-                    {pipelineState === 'matching' && 'Matching products & calculating markups...'}
+                    {pipelineState === 'matching' && 'Matching products...'}
                   </p>
                 </div>
               ) : (
@@ -419,3 +438,4 @@ export default function PipelineFlowDiagram() {
     </div>
   );
 }
+
