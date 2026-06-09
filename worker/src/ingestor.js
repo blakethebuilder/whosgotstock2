@@ -81,11 +81,14 @@ async function ingestData(client) {
             suppliers = res.rows.map(r => ({ id: r.slug, name: r.name, url: r.url, type: r.type, enabled: r.enabled }));
         } catch (err) {
             console.error('DB Supplier Load Failed:', err);
+            return;
         }
     }
 
-    for (const supplier of suppliers) {
-        console.log(`\n>>> Ingesting ${supplier.name} via Driver Plugin...`);
+    console.log(`Starting parallel feed fetching and parsing for ${suppliers.length} suppliers...`);
+
+    // Define a task for fetching and parsing a single supplier
+    const fetchTasks = suppliers.map(async (supplier) => {
         const startedAt = new Date();
         let logId = null;
 
@@ -115,21 +118,12 @@ async function ingestData(client) {
             }
 
             if (!fs.existsSync(driverPath)) {
-                console.error(`Driver missing: ${driverKey} at ${driverPath}`);
-                if (logId) {
-                    await client.query(
-                        `UPDATE supplier_fetch_log SET status = 'error', finished_at = NOW(), error_message = $1,
-                         duration_seconds = EXTRACT(EPOCH FROM (NOW() - started_at)) WHERE id = $2`,
-                        [`Driver missing: ${driverKey}`, logId]
-                    ).catch(() => {});
-                }
-                continue;
+                throw new Error(`Driver missing: ${driverKey}`);
             }
 
             const driver = require(driverPath);
 
-            // For JSON APIs (like Evenflow, Linkqage), let the driver handle HTTP requests itself
-            // For traditional APIs, fetch the data first
+            console.log(`[Fetch] Starting: ${supplier.name}`);
             let products;
             if (supplier.type === 'json') {
                 products = await driver(supplier, null, driverHelpers);
@@ -138,9 +132,51 @@ async function ingestData(client) {
                 products = await driver(supplier, feedData, driverHelpers);
             }
 
-            const productsFetched = products ? products.length : 0;
+            console.log(`[Fetch] Completed: ${supplier.name} (${products ? products.length : 0} items fetched)`);
+            return {
+                supplier,
+                products,
+                startedAt,
+                logId,
+                error: null
+            };
+        } catch (err) {
+            console.error(`[Fetch] Failed: ${supplier.name} - Error: ${err.message}`);
+            return {
+                supplier,
+                products: null,
+                startedAt,
+                logId,
+                error: err
+            };
+        }
+    });
 
+    // Process all fetches in parallel
+    const results = await Promise.all(fetchTasks);
+
+    // Now write to the database sequentially to prevent connection pool clogging and lock conflicts
+    for (const result of results) {
+        const { supplier, products, startedAt, logId, error } = result;
+
+        if (error) {
+            // Update fetch log with error
+            if (logId) {
+                await client.query(
+                    `UPDATE supplier_fetch_log SET status = 'error', finished_at = NOW(),
+                     error_message = $1, duration_seconds = EXTRACT(EPOCH FROM (NOW() - started_at)) WHERE id = $2`,
+                    [error.message, logId]
+                ).catch(() => {});
+            }
+            continue;
+        }
+
+        const productsFetched = products ? products.length : 0;
+
+        try {
             if (products && products.length > 0) {
+                console.log(`\n>>> Writing products to DB for ${supplier.name}...`);
+
                 // Deduplication and Normalization Step
                 const uniqueProducts = new Map();
                 products.forEach(p => {
@@ -199,6 +235,18 @@ async function ingestData(client) {
                     `;
                     await client.query(query, values);
                 }
+
+                // Stale Cleanup: Delete discontinued products for this supplier
+                // Any product belonging to this supplier whose last_updated is older than startedAt (minus a margin of 2 seconds)
+                const deleteMarginTime = new Date(startedAt.getTime() - 2000);
+                const deleteRes = await client.query(
+                    `DELETE FROM products WHERE supplier_name = $1 AND last_updated < $2`,
+                    [supplier.name, deleteMarginTime]
+                );
+                if (deleteRes.rowCount > 0) {
+                    console.log(`Stale Cleanup: Deleted ${deleteRes.rowCount} discontinued products for ${supplier.name}.`);
+                }
+
                 console.log(`Success: Ingested ${finalProducts.length} products for ${supplier.name}.`);
 
                 // Update fetch log with success
