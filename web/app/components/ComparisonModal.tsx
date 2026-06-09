@@ -196,7 +196,7 @@ export default function ComparisonModal({
                                                         cellContent = (
                                                             <div className="leading-tight">
                                                                 <p className="text-[10px] font-black text-gray-950 dark:text-white tabular-nums">
-                                                                    {priceData.isPOR ? 'POR' : `R ${priceData.exVat}`}
+                                                                    {userRole === 'public' ? 'Hidden' : priceData.isPOR ? 'POR' : `R ${priceData.exVat}`}
                                                                 </p>
                                                                 <span className="text-[7px] text-gray-400 uppercase tracking-widest font-bold">Ex VAT</span>
                                                             </div>
@@ -205,7 +205,9 @@ export default function ComparisonModal({
                                                     case 'pricing_inc':
                                                         cellContent = (
                                                             <div className="leading-tight">
-                                                                <p className="text-[9px] font-bold text-gray-500 dark:text-gray-400 tabular-nums">R {formatPrice(prices.incVat)}</p>
+                                                                <p className="text-[9px] font-bold text-gray-500 dark:text-gray-400 tabular-nums">
+                                                                    {userRole === 'public' ? 'Hidden' : `R ${formatPrice(prices.incVat)}`}
+                                                                </p>
                                                                 <span className="text-[7px] text-gray-400 uppercase tracking-widest font-bold">Inc VAT</span>
                                                             </div>
                                                         );

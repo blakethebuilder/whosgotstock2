@@ -76,12 +76,20 @@ export default function CartItemRow({
           </button>
         </div>
         <div className="text-right flex flex-col items-end">
-          <span className="text-[11px] font-black text-gray-900 dark:text-white tabular-nums">
-            R {formatPrice(lineTotal)}
-          </span>
-          <span className="text-[8px] font-bold text-gray-400 dark:text-gray-500">
-            R {formatPrice(parseFloat(itemPrice.exVat))} ea
-          </span>
+          {userRole === 'public' ? (
+            <span className="text-[11px] font-black text-orange-500 uppercase tracking-tighter">
+              Price Hidden
+            </span>
+          ) : (
+            <>
+              <span className="text-[11px] font-black text-gray-900 dark:text-white tabular-nums">
+                R {formatPrice(lineTotal)}
+              </span>
+              <span className="text-[8px] font-bold text-gray-400 dark:text-gray-500">
+                R {formatPrice(parseFloat(itemPrice.exVat))} ea
+              </span>
+            </>
+          )}
         </div>
       </div>
 

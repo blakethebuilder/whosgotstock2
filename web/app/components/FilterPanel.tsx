@@ -125,7 +125,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             </div>
 
             <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8 pt-8 border-t border-gray-50 dark:border-gray-800">
-                {(userRole === 'management' || userRole === 'admin') ? (
+                {(userRole === 'reseller' || userRole === 'admin') ? (
                     <div>
                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 block">Supplier Network</label>
                         <div className="flex flex-wrap gap-2">

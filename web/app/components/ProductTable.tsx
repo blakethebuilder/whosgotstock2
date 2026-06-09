@@ -101,7 +101,9 @@ export default function ProductTable({
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex flex-col items-end">
-                    {displayPrice(product).isPOR ? (
+                    {userRole === 'public' ? (
+                      <span className="font-black text-orange-505 text-xs text-orange-500">Hidden</span>
+                    ) : displayPrice(product).isPOR ? (
                       <span className="font-black text-gray-900 dark:text-white text-sm">POR</span>
                     ) : (
                       <>

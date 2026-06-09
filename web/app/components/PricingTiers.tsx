@@ -24,15 +24,6 @@ export default function PricingTiers({ pricingSettings, onUpdate }: PricingTiers
 
   const tiers = [
     {
-      key: 'public_markup' as keyof PricingSettings,
-      name: 'Public',
-      description: 'External users and general access',
-      color: 'bg-red-500',
-      textColor: 'text-red-600',
-      bgColor: 'bg-red-50 dark:bg-red-50',
-      borderColor: 'border-red-200 dark:border-red-200'
-    },
-    {
       key: 'team_markup' as keyof PricingSettings,
       name: 'Team',
       description: 'Internal team members',
@@ -43,8 +34,8 @@ export default function PricingTiers({ pricingSettings, onUpdate }: PricingTiers
     },
     {
       key: 'management_markup' as keyof PricingSettings,
-      name: 'Management',
-      description: 'Management level access',
+      name: 'Reseller',
+      description: 'Reseller access tier (pays platform fee)',
       color: 'bg-purple-500',
       textColor: 'text-purple-600',
       bgColor: 'bg-purple-50 dark:bg-purple-50',
@@ -72,7 +63,7 @@ export default function PricingTiers({ pricingSettings, onUpdate }: PricingTiers
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         {tiers.map((tier) => (
           <div
             key={tier.key}
@@ -91,23 +82,28 @@ export default function PricingTiers({ pricingSettings, onUpdate }: PricingTiers
                 </div>
               </div>
               <div className="flex items-center space-x-2">
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="1"
-                  value={settings[tier.key]}
-                  onChange={(e) => handleChange(tier.key, parseInt(e.target.value) || 0)}
-                  className="w-16 px-2 py-1 text-sm font-bold text-center border border-gray-300 dark:border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white dark:bg-white text-gray-900 dark:text-gray-900"
-                />
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-600">%</span>
+                {tier.key === 'team_markup' ? (
+                  <>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="1"
+                      value={settings[tier.key]}
+                      onChange={(e) => handleChange(tier.key, parseInt(e.target.value) || 0)}
+                      className="w-16 px-2 py-1 text-sm font-bold text-center border border-gray-300 dark:border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white dark:bg-white text-gray-900 dark:text-gray-900"
+                    />
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-600">%</span>
+                  </>
+                ) : (
+                  <span className="text-[10px] font-black text-gray-700 bg-gray-200/60 dark:bg-gray-150 px-2 py-1 rounded-md">Fixed 0%</span>
+                )}
               </div>
             </div>
             
             <div className="text-xs text-gray-500 dark:text-gray-500">
-              {tier.key === 'public_markup' && 'Highest markup for external users'}
               {tier.key === 'team_markup' && 'Standard internal team pricing'}
-              {tier.key === 'management_markup' && 'Reduced markup for management'}
+              {tier.key === 'management_markup' && 'Resellers pay a platform fee and get cost pricing (0% markup)'}
               {tier.key === 'admin_markup' && 'Cost pricing for administrators'}
             </div>
           </div>

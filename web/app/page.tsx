@@ -123,7 +123,7 @@ export default function Home() {
       try { setProjects(JSON.parse(savedProjects)); } catch (e) { console.error("Failed to parse projects", e); }
     }
     const savedRole = localStorage.getItem('whosgotstock_user_role');
-    if (savedRole && ['public', 'team', 'management', 'admin'].includes(savedRole)) {
+    if (savedRole && ['public', 'team', 'reseller', 'admin'].includes(savedRole)) {
       setUserRole(savedRole as UserRole);
     }
   }, []);
@@ -209,7 +209,7 @@ export default function Home() {
   const addProject = (name: string) => {
     let limit = 3;
     if (userRole === 'team') limit = 10;
-    else if (userRole === 'management' || userRole === 'admin') limit = 999;
+    else if (userRole === 'reseller' || userRole === 'admin') limit = 999;
 
     if (projects.length >= limit) {
       alert(`Site limit reached (${limit} sites for your ${userRole} tier). Please remove a site to add a new one.`);
@@ -413,7 +413,7 @@ export default function Home() {
   const verifyPassphrase = async () => {
     setPassphraseError('');
     setIsAuthenticating(true);
-    const roles = ['team', 'management', 'admin'];
+    const roles = ['team', 'reseller', 'admin'];
     for (const role of roles) {
       try {
         const response = await fetch('/api/auth/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ passphrase, role }), credentials: 'include' });

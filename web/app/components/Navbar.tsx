@@ -48,7 +48,7 @@ export default function Navbar({
     switch (role) {
       case 'public': return 'bg-gray-400';
       case 'team': return 'bg-blue-500';
-      case 'management': return 'bg-indigo-600';
+      case 'reseller': return 'bg-indigo-600';
       case 'admin': return 'bg-emerald-500';
       default: return 'bg-gray-400';
     }
@@ -222,8 +222,8 @@ export default function Navbar({
                        ? `${user.firstName} ${user.lastName.charAt(0)}.` 
                        : userRole === 'admin' 
                          ? 'System Admin' 
-                         : userRole === 'management' 
-                           ? 'Manager Access' 
+                         : userRole === 'reseller' 
+                           ? 'Reseller Access' 
                            : userRole === 'team' 
                              ? 'Team Member' 
                              : 'Guest Access'

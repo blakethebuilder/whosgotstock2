@@ -70,7 +70,7 @@ export default function CartDrawer({
 
     const siteLimit = useMemo(() => {
         if (userRole === 'team') return 10;
-        if (userRole === 'management' || userRole === 'admin') return 999;
+        if (userRole === 'reseller' || userRole === 'admin') return 999;
         return 3;
     }, [userRole]);
 
@@ -423,6 +423,7 @@ export default function CartDrawer({
                             totalExVat={totalExVat}
                             totalIncVat={totalIncVat}
                             generateEmailTemplate={generateEmailTemplate}
+                            userRole={userRole}
                         />
                     )}
                 </div>

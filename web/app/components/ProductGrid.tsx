@@ -85,7 +85,11 @@ export default function ProductGrid({
           
           <div className="px-1 mt-3 pt-2 border-t border-gray-100 dark:border-gray-800 flex items-end justify-between gap-2">
             <div className="space-y-0.5">
-              {displayPrice(product).isPOR ? (
+              {userRole === 'public' ? (
+                <div className="text-xs font-black text-orange-500 leading-none py-1">
+                  Price Hidden
+                </div>
+              ) : displayPrice(product).isPOR ? (
                 <div className="text-xs font-black text-gray-900 dark:text-white leading-none">
                   Price on Request
                 </div>

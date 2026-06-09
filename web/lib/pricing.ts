@@ -29,21 +29,21 @@ export function calculatePrice(
 
   // Get markup percentage based on user role
   let markup = 0;
-  switch (userRole) {
+  switch (userRole as string) {
     case 'public':
-      markup = pricingSettings.public_markup;
+      markup = 0; // Public has no price visibility and no markup
       break;
     case 'team':
       markup = pricingSettings.team_markup;
       break;
-    case 'management':
-      markup = pricingSettings.management_markup;
+    case 'reseller':
+      markup = 0; // Resellers pay a platform fee and get cost pricing (0% markup)
       break;
     case 'admin':
-      markup = pricingSettings.admin_markup;
+      markup = 0; // Admin gets cost pricing (0% markup)
       break;
     default:
-      markup = pricingSettings.public_markup; // Default to public tier
+      markup = 0;
   }
 
   const markedUp = raw * (1 + (markup / 100));
@@ -70,11 +70,11 @@ export function formatPrice(amount: string | number): string {
  * Get markup percentage for a given user role
  */
 export function getMarkupPercentage(userRole: UserRole, pricingSettings: PricingSettings): number {
-  switch (userRole) {
-    case 'public': return pricingSettings.public_markup;
+  switch (userRole as string) {
+    case 'public': return 0;
     case 'team': return pricingSettings.team_markup;
-    case 'management': return pricingSettings.management_markup;
-    case 'admin': return pricingSettings.admin_markup;
-    default: return pricingSettings.public_markup;
+    case 'reseller': return 0;
+    case 'admin': return 0;
+    default: return 0;
   }
 }

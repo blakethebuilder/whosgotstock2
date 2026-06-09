@@ -814,10 +814,7 @@ export default function AdminPage() {
 
                                 <div className="space-y-4">
                                     {[
-                                        { key: 'public_markup', label: 'Public Tier Markup', color: 'text-red-500 bg-red-500/10' },
-                                        { key: 'team_markup', label: 'Team Tier Markup', color: 'text-blue-500 bg-blue-500/10' },
-                                        { key: 'management_markup', label: 'Management Tier Markup', color: 'text-purple-500 bg-purple-500/10' },
-                                        { key: 'admin_markup', label: 'Admin/Partner Tier Markup', color: 'text-green-500 bg-green-500/10' }
+                                        { key: 'team_markup', label: 'Team Tier Markup', color: 'text-blue-500 bg-blue-500/10', editable: true }
                                     ].map(markup => (
                                         <div key={markup.key} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-850 rounded-2xl border border-gray-100 dark:border-gray-800/80">
                                             <div className="flex items-center gap-3">
@@ -835,6 +832,26 @@ export default function AdminPage() {
                                             </div>
                                         </div>
                                     ))}
+
+                                    <div className="flex items-center justify-between p-4 bg-gray-50/50 dark:bg-gray-850/50 rounded-2xl border border-gray-100 dark:border-gray-800/80 opacity-70">
+                                        <div className="flex items-center gap-3">
+                                            <span className="px-2.5 py-1 text-[9px] font-black uppercase rounded-lg text-purple-500 bg-purple-500/10">Reseller</span>
+                                            <span className="text-sm font-semibold text-gray-900 dark:text-white">Reseller Tier Markup</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs font-black text-gray-400 bg-gray-200/50 dark:bg-gray-800 px-3 py-1.5 rounded-xl">Fixed 0%</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between p-4 bg-gray-50/50 dark:bg-gray-850/50 rounded-2xl border border-gray-100 dark:border-gray-800/80 opacity-70">
+                                        <div className="flex items-center gap-3">
+                                            <span className="px-2.5 py-1 text-[9px] font-black uppercase rounded-lg text-green-500 bg-green-500/10">Admin</span>
+                                            <span className="text-sm font-semibold text-gray-900 dark:text-white">Admin/Partner Tier Markup</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs font-black text-gray-400 bg-gray-200/50 dark:bg-gray-800 px-3 py-1.5 rounded-xl">Fixed 0%</span>
+                                        </div>
+                                    </div>
 
                                     <button
                                         onClick={handleUpdateSettings}
@@ -904,19 +921,19 @@ export default function AdminPage() {
                                 <div className="space-y-3 text-xs">
                                     <div className="flex justify-between items-center p-2.5 bg-red-500/5 rounded-xl">
                                         <span className="text-red-650 dark:text-red-400 font-black">Public Portal Price:</span>
-                                        <span className="font-black text-gray-900 dark:text-white">R {(1000 * (1 + parseInt(settings.public_markup || '15') / 100)).toFixed(2)}</span>
+                                        <span className="font-black text-orange-500">Hidden (Prices Hidden)</span>
                                     </div>
                                     <div className="flex justify-between items-center p-2.5 bg-blue-500/5 rounded-xl">
                                         <span className="text-blue-650 dark:text-blue-400 font-black">Team Price:</span>
                                         <span className="font-black text-gray-900 dark:text-white">R {(1000 * (1 + parseInt(settings.team_markup || '10') / 100)).toFixed(2)}</span>
                                     </div>
                                     <div className="flex justify-between items-center p-2.5 bg-purple-500/5 rounded-xl">
-                                        <span className="text-purple-650 dark:text-purple-400 font-black">Management Price:</span>
-                                        <span className="font-black text-gray-900 dark:text-white">R {(1000 * (1 + parseInt(settings.management_markup || '5') / 100)).toFixed(2)}</span>
+                                        <span className="text-purple-650 dark:text-purple-400 font-black">Reseller Price:</span>
+                                        <span className="font-black text-gray-900 dark:text-white">R 1000.00</span>
                                     </div>
                                     <div className="flex justify-between items-center p-2.5 bg-green-500/5 rounded-xl">
                                         <span className="text-green-650 dark:text-green-400 font-black">Admin Cost Price:</span>
-                                        <span className="font-black text-gray-900 dark:text-white">R {(1000 * (1 + parseInt(settings.admin_markup || '0') / 100)).toFixed(2)}</span>
+                                        <span className="font-black text-gray-900 dark:text-white">R 1000.00</span>
                                     </div>
                                 </div>
                             </div>
@@ -980,7 +997,7 @@ export default function AdminPage() {
                                                 <td className="py-3 px-2 text-[10px] text-gray-500 whitespace-nowrap">{new Date(log.created_at).toLocaleString()}</td>
                                                 <td className="py-3 px-2">
                                                     <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tighter border ${log.user_role === 'admin' ? 'bg-green-50 text-green-600 border-green-100' :
-                                                            log.user_role === 'management' ? 'bg-purple-50 text-purple-600 border-purple-100' :
+                                                            log.user_role === 'reseller' ? 'bg-purple-50 text-purple-600 border-purple-100' :
                                                                 log.user_role === 'team' ? 'bg-blue-50 text-blue-600 border-blue-100' :
                                                                     'bg-gray-50 text-gray-650 border-gray-100'
                                                         }`}>
@@ -1101,9 +1118,9 @@ export default function AdminPage() {
                                         onChange={e => setNewUserRole(e.target.value)}
                                         className="w-full bg-gray-50 dark:bg-gray-850 border border-gray-150 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs font-bold focus:outline-none focus:border-orange-500 dark:text-white cursor-pointer"
                                     >
-                                        <option value="public">Free / Public Tier</option>
-                                        <option value="team">Reseller / Team Tier</option>
-                                        <option value="management">Manager Access Tier</option>
+                                        <option value="public">Free / Public Tier (pricing hidden)</option>
+                                        <option value="team">Team Tier (controlled markup)</option>
+                                        <option value="reseller">Reseller Tier (fixed 0% markup)</option>
                                         <option value="admin">System Administrator</option>
                                     </select>
                                 </div>
@@ -1159,7 +1176,7 @@ export default function AdminPage() {
                                                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-tighter ${
                                                         u.role === 'admin' 
                                                             ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20' 
-                                                            : u.role === 'management'
+                                                            : u.role === 'reseller'
                                                                 ? 'bg-indigo-50 text-indigo-650 dark:bg-indigo-950/20'
                                                                 : u.role === 'team'
                                                                     ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/20'

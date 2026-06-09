@@ -2,7 +2,7 @@
  * Global Type Definitions for WhosGotStock
  */
 
-export type UserRole = 'public' | 'team' | 'management' | 'admin';
+export type UserRole = 'public' | 'team' | 'reseller' | 'admin';
 
 export type Product = {
     id: number;

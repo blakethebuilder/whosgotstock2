@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       const roleHierarchy = {
         'public': 0,
         'team': 1,
-        'management': 2,
+        'reseller': 2,
         'admin': 3
       };
       
@@ -47,9 +47,9 @@ export async function POST(request: NextRequest) {
     if (role === 'admin' && passphrase === adminPassphrase) {
       isValid = true;
       userRole = 'admin';
-    } else if (role === 'management' && passphrase === managementPassphrase) {
+    } else if (role === 'reseller' && passphrase === managementPassphrase) {
       isValid = true;
-      userRole = 'management';
+      userRole = 'reseller';
     } else if (role === 'team' && passphrase === teamPassphrase) {
       isValid = true;
       userRole = 'team';

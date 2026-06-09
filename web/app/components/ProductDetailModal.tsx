@@ -100,7 +100,12 @@ export default function ProductDetailModal({
                         <h3 className="text-4xl font-black text-gray-900 dark:text-white leading-[0.95] tracking-tighter mb-6">{product.name}</h3>
 
                         <div className="grid grid-cols-2 gap-4 p-6 bg-gray-50 dark:bg-gray-800/50 rounded-[2rem] border border-gray-100 dark:border-gray-800">
-                            {product.price_on_request ? (
+                            {userRole === 'public' ? (
+                                <div className="col-span-2">
+                                    <p className="text-3xl font-black text-orange-500 tracking-tighter uppercase italic">Price Hidden</p>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">Sign in as Reseller or Team to view prices</p>
+                                </div>
+                            ) : product.price_on_request ? (
                                 <div className="col-span-2">
                                     <p className="text-3xl font-black text-orange-500 tracking-tighter uppercase italic">Price on Request</p>
                                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-2">Contact for official quotation</p>
