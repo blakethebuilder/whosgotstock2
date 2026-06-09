@@ -12,9 +12,10 @@ export async function POST(request: NextRequest) {
       // User is authenticated, check if they have the required role
       const roleHierarchy = {
         'public': 0,
-        'team': 1,
-        'reseller': 2,
-        'admin': 3
+        'guest': 1,
+        'team': 2,
+        'reseller': 3,
+        'admin': 4
       };
       
       const userLevel = roleHierarchy[user.role as keyof typeof roleHierarchy] || 0;
@@ -36,6 +37,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Fall back to legacy passphrase system for internal access codes
+    const guestPassphrase = process.env.GUEST_ACCESS_CODE || 'guest123';
     const teamPassphrase = process.env.TEAM_ACCESS_CODE;
     const managementPassphrase = process.env.MANAGEMENT_ACCESS_CODE;
     const adminPassphrase = process.env.ADMIN_ACCESS_CODE;
@@ -53,6 +55,9 @@ export async function POST(request: NextRequest) {
     } else if (role === 'team' && passphrase === teamPassphrase) {
       isValid = true;
       userRole = 'team';
+    } else if (role === 'guest' && passphrase === guestPassphrase) {
+      isValid = true;
+      userRole = 'guest';
     }
     
     return NextResponse.json({

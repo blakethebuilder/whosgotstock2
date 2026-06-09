@@ -47,6 +47,7 @@ export default function Navbar({
   const getRoleColor = (role: string) => {
     switch (role) {
       case 'public': return 'bg-gray-400';
+      case 'guest': return 'bg-amber-500';
       case 'team': return 'bg-blue-500';
       case 'reseller': return 'bg-indigo-600';
       case 'admin': return 'bg-emerald-500';
@@ -226,7 +227,9 @@ export default function Navbar({
                            ? 'Reseller Access' 
                            : userRole === 'team' 
                              ? 'Team Member' 
-                             : 'Guest Access'
+                             : userRole === 'guest'
+                               ? 'Guest Access'
+                               : 'Public Access'
                      }
                    </p>
                    <p className="text-[10px] font-medium text-gray-400 uppercase tracking-tighter">

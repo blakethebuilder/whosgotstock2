@@ -814,6 +814,7 @@ export default function AdminPage() {
 
                                 <div className="space-y-4">
                                     {[
+                                        { key: 'public_markup', label: 'Guest Tier Markup', color: 'text-amber-500 bg-amber-500/10', editable: true },
                                         { key: 'team_markup', label: 'Team Tier Markup', color: 'text-blue-500 bg-blue-500/10', editable: true }
                                     ].map(markup => (
                                         <div key={markup.key} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-850 rounded-2xl border border-gray-100 dark:border-gray-800/80">
@@ -923,6 +924,10 @@ export default function AdminPage() {
                                         <span className="text-red-650 dark:text-red-400 font-black">Public Portal Price:</span>
                                         <span className="font-black text-orange-500">Hidden (Prices Hidden)</span>
                                     </div>
+                                    <div className="flex justify-between items-center p-2.5 bg-amber-500/5 rounded-xl">
+                                        <span className="text-amber-600 dark:text-amber-400 font-black">Guest Price:</span>
+                                        <span className="font-black text-gray-900 dark:text-white">R {(1000 * (1 + parseInt(settings.public_markup || '15') / 100)).toFixed(2)}</span>
+                                    </div>
                                     <div className="flex justify-between items-center p-2.5 bg-blue-500/5 rounded-xl">
                                         <span className="text-blue-650 dark:text-blue-400 font-black">Team Price:</span>
                                         <span className="font-black text-gray-900 dark:text-white">R {(1000 * (1 + parseInt(settings.team_markup || '10') / 100)).toFixed(2)}</span>
@@ -999,7 +1004,8 @@ export default function AdminPage() {
                                                     <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-tighter border ${log.user_role === 'admin' ? 'bg-green-50 text-green-600 border-green-100' :
                                                             log.user_role === 'reseller' ? 'bg-purple-50 text-purple-600 border-purple-100' :
                                                                 log.user_role === 'team' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                                                                    'bg-gray-50 text-gray-650 border-gray-100'
+                                                                    log.user_role === 'guest' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                                                        'bg-gray-50 text-gray-650 border-gray-100'
                                                         }`}>
                                                         {log.user_role}
                                                     </span>
@@ -1119,6 +1125,7 @@ export default function AdminPage() {
                                         className="w-full bg-gray-50 dark:bg-gray-850 border border-gray-150 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs font-bold focus:outline-none focus:border-orange-500 dark:text-white cursor-pointer"
                                     >
                                         <option value="public">Free / Public Tier (pricing hidden)</option>
+                                        <option value="guest">Guest Tier (15% markup)</option>
                                         <option value="team">Team Tier (controlled markup)</option>
                                         <option value="reseller">Reseller Tier (fixed 0% markup)</option>
                                         <option value="admin">System Administrator</option>
@@ -1180,7 +1187,9 @@ export default function AdminPage() {
                                                                 ? 'bg-indigo-50 text-indigo-650 dark:bg-indigo-950/20'
                                                                 : u.role === 'team'
                                                                     ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/20'
-                                                                    : 'bg-gray-100 text-gray-500 dark:bg-gray-800'
+                                                                    : u.role === 'guest'
+                                                                        ? 'bg-amber-50 text-amber-600 dark:bg-amber-950/20'
+                                                                        : 'bg-gray-100 text-gray-500 dark:bg-gray-800'
                                                     }`}>
                                                         {u.role}
                                                     </span>

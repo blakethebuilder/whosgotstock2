@@ -24,6 +24,15 @@ export default function PricingTiers({ pricingSettings, onUpdate }: PricingTiers
 
   const tiers = [
     {
+      key: 'public_markup' as keyof PricingSettings,
+      name: 'Guest',
+      description: 'External guest accounts access',
+      color: 'bg-amber-500',
+      textColor: 'text-amber-600',
+      bgColor: 'bg-amber-50 dark:bg-amber-50',
+      borderColor: 'border-amber-200 dark:border-amber-200'
+    },
+    {
       key: 'team_markup' as keyof PricingSettings,
       name: 'Team',
       description: 'Internal team members',
@@ -63,7 +72,7 @@ export default function PricingTiers({ pricingSettings, onUpdate }: PricingTiers
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {tiers.map((tier) => (
           <div
             key={tier.key}
@@ -82,7 +91,7 @@ export default function PricingTiers({ pricingSettings, onUpdate }: PricingTiers
                 </div>
               </div>
               <div className="flex items-center space-x-2">
-                {tier.key === 'team_markup' ? (
+                {(tier.key === 'team_markup' || tier.key === 'public_markup') ? (
                   <>
                     <input
                       type="number"
@@ -102,6 +111,7 @@ export default function PricingTiers({ pricingSettings, onUpdate }: PricingTiers
             </div>
             
             <div className="text-xs text-gray-500 dark:text-gray-500">
+              {tier.key === 'public_markup' && 'Customizable markup for external guest tier access'}
               {tier.key === 'team_markup' && 'Standard internal team pricing'}
               {tier.key === 'management_markup' && 'Resellers pay a platform fee and get cost pricing (0% markup)'}
               {tier.key === 'admin_markup' && 'Cost pricing for administrators'}

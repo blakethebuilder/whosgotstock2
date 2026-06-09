@@ -123,7 +123,7 @@ export default function Home() {
       try { setProjects(JSON.parse(savedProjects)); } catch (e) { console.error("Failed to parse projects", e); }
     }
     const savedRole = localStorage.getItem('whosgotstock_user_role');
-    if (savedRole && ['public', 'team', 'reseller', 'admin'].includes(savedRole)) {
+    if (savedRole && ['public', 'guest', 'team', 'reseller', 'admin'].includes(savedRole)) {
       setUserRole(savedRole as UserRole);
     }
   }, []);
@@ -413,7 +413,7 @@ export default function Home() {
   const verifyPassphrase = async () => {
     setPassphraseError('');
     setIsAuthenticating(true);
-    const roles = ['team', 'reseller', 'admin'];
+    const roles = ['guest', 'team', 'reseller', 'admin'];
     for (const role of roles) {
       try {
         const response = await fetch('/api/auth/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ passphrase, role }), credentials: 'include' });

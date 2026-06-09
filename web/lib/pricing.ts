@@ -33,6 +33,9 @@ export function calculatePrice(
     case 'public':
       markup = 0; // Public has no price visibility and no markup
       break;
+    case 'guest':
+      markup = pricingSettings.public_markup; // Re-uses public_markup setting for Guest (default 15%)
+      break;
     case 'team':
       markup = pricingSettings.team_markup;
       break;
@@ -72,6 +75,7 @@ export function formatPrice(amount: string | number): string {
 export function getMarkupPercentage(userRole: UserRole, pricingSettings: PricingSettings): number {
   switch (userRole as string) {
     case 'public': return 0;
+    case 'guest': return pricingSettings.public_markup;
     case 'team': return pricingSettings.team_markup;
     case 'reseller': return 0;
     case 'admin': return 0;
