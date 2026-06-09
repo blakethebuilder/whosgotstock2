@@ -32,6 +32,7 @@ MIGRATIONS=(
     "migrations/005_create_user_auth_tables.sql"
     "migrations/006_add_linkqage_supplier.sql"
     "migrations/007_create_supplier_fetch_log.sql"
+    "migrations/008_add_trigram_search_indexes.sql"
 )
 
 # Get the directory where this script is located

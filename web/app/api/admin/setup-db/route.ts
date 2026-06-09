@@ -117,6 +117,13 @@ export async function POST() {
         await client.query(`CREATE INDEX IF NOT EXISTS idx_fetch_log_supplier ON supplier_fetch_log(supplier_slug);`);
         await client.query(`CREATE INDEX IF NOT EXISTS idx_fetch_log_started ON supplier_fetch_log(started_at DESC);`);
 
+        // Enable trigram search extension and indexes for high performance search
+        await client.query(`CREATE EXTENSION IF NOT EXISTS pg_trgm;`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_products_name_trgm ON products USING gin (name gin_trgm_ops);`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_products_brand_trgm ON products USING gin (brand gin_trgm_ops);`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_products_sku_trgm ON products USING gin (supplier_sku gin_trgm_ops);`);
+        await client.query(`CREATE INDEX IF NOT EXISTS idx_products_desc_trgm ON products USING gin (description gin_trgm_ops);`);
+
         // Fix existing Linkqage relative image URLs in the database
         await client.query(`
             UPDATE products 
