@@ -92,6 +92,46 @@ async function ingestData(client) {
         const startedAt = new Date();
         let logId = null;
 
+        // Rate limit: Skip if the supplier was fetched too recently
+        if (client) {
+            try {
+                const lastRunRes = await client.query(
+                    `SELECT started_at, status FROM supplier_fetch_log 
+                     WHERE supplier_slug = $1 
+                     ORDER BY started_at DESC LIMIT 1`,
+                    [supplier.id]
+                );
+                if (lastRunRes.rows.length > 0) {
+                    const lastRun = new Date(lastRunRes.rows[0].started_at);
+                    const lastStatus = lastRunRes.rows[0].status;
+                    const diffMs = startedAt - lastRun;
+                    const diffMins = diffMs / (1000 * 60);
+                    
+                    // Enforce a minimum interval to prevent rate limit blocks:
+                    // 15 mins default for successful fetches, 5 mins default for errors/other statuses
+                    const minInterval = lastStatus === 'success'
+                        ? (parseInt(process.env.MIN_FETCH_INTERVAL_MINUTES) || 15)
+                        : (parseInt(process.env.MIN_RETRY_INTERVAL_MINUTES) || 5);
+
+                    if (diffMins < minInterval) {
+                        console.log(`[Rate Limit] Skipping ${supplier.name}: Last fetch (${lastStatus}) was ${diffMins.toFixed(1)} minutes ago (min interval: ${minInterval} mins).`);
+                        return {
+                            supplier,
+                            products: null,
+                            startedAt,
+                            logId: null,
+                            error: null,
+                            skipped: true
+                        };
+                    }
+                }
+            } catch (checkErr) {
+                if (!checkErr.message.includes('does not exist')) {
+                    console.warn(`Rate limit check warning for ${supplier.name}: ${checkErr.message}`);
+                }
+            }
+        }
+
         // Insert a fetch log entry (if table exists)
         try {
             const logRes = await client.query(
@@ -157,7 +197,11 @@ async function ingestData(client) {
 
     // Now write to the database sequentially to prevent connection pool clogging and lock conflicts
     for (const result of results) {
-        const { supplier, products, startedAt, logId, error } = result;
+        const { supplier, products, startedAt, logId, error, skipped } = result;
+
+        if (skipped) {
+            continue;
+        }
 
         if (error) {
             // Update fetch log with error
