@@ -167,7 +167,7 @@ export default function PipelineFlowDiagram() {
   }, []);
 
   return (
-    <div className="md:col-span-12 mt-8 bg-gray-900 dark:bg-gray-900/60 rounded-[3rem] border border-gray-800 p-6 sm:p-12 relative overflow-hidden shadow-2xl">
+    <div className="md:col-span-12 mt-8 bg-gray-900 dark:bg-gray-900/60 rounded-[2rem] sm:rounded-[3rem] border border-gray-800 p-4 sm:p-12 relative overflow-hidden shadow-2xl">
       <style>{`
         @keyframes pulseFlow {
           from {
@@ -214,10 +214,10 @@ export default function PipelineFlowDiagram() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch pt-6 border-t border-gray-800/80">
           
           {/* Mindmap Panel */}
-          <div className="lg:col-span-7 bg-gray-950/40 border border-gray-800/60 rounded-[2rem] p-6 flex flex-col justify-between relative min-h-[480px]">
+          <div className="lg:col-span-7 bg-gray-950/40 border border-gray-800/60 rounded-[2rem] p-4 sm:p-6 flex flex-col justify-between relative min-h-[360px] sm:min-h-[480px]">
             
-            {/* SVG Connections Layer */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
+            {/* SVG Connections Layer (Desktop Only) */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none z-0 hidden sm:block">
               {SUPPLIER_POSITIONS.map((pos) => {
                 const supplierState = suppliers.find(s => s.name === pos.name) || { status: 'idle' };
                 const isPinging = supplierState.status === 'pinging';
@@ -261,10 +261,10 @@ export default function PipelineFlowDiagram() {
               })}
             </svg>
 
-            {/* Mindmap Nodes */}
-            <div className="absolute inset-0 z-10 pointer-events-none">
+            {/* Mindmap Nodes (Desktop / SVG-based) */}
+            <div className="absolute inset-0 z-10 pointer-events-none hidden sm:block">
               
-              {/* Central Search Bar Node */}
+              {/* Central Search Bar Node (Desktop) */}
               <div 
                 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 sm:w-60 bg-gray-900 border border-gray-700/80 rounded-2xl p-3 shadow-2xl flex flex-col items-center gap-1.5 text-center transition-all duration-300 pointer-events-auto"
                 style={{ boxShadow: '0 0 35px rgba(249, 115, 22, 0.15)' }}
@@ -331,8 +331,77 @@ export default function PipelineFlowDiagram() {
               })}
             </div>
 
+            {/* Mobile View Layout (Normal Flow instead of absolute overlay) */}
+            <div className="sm:hidden flex flex-col items-center w-full z-10 space-y-6 py-4">
+              {/* Central Search Bar Node (Mobile) */}
+              <div 
+                className="w-full max-w-xs bg-gray-900 border border-gray-700/80 rounded-2xl p-4 shadow-2xl flex flex-col items-center gap-2 text-center"
+                style={{ boxShadow: '0 0 35px rgba(249, 115, 22, 0.15)' }}
+              >
+                <div className="flex items-center gap-2 bg-gray-950/80 border border-gray-800 rounded-lg px-2.5 py-1.5 w-full">
+                  <span className="text-orange-500 text-xs animate-pulse">⚡</span>
+                  <span className="text-[11px] font-bold text-white font-mono truncate">{simulatedQuery}</span>
+                </div>
+                
+                <span className="text-[9px] font-black uppercase tracking-widest text-orange-500">
+                  {pipelineState === 'idle' && 'Ready'}
+                  {pipelineState === 'parsing' && 'Parsing Query...'}
+                  {pipelineState === 'querying' && 'Broadcasting Queries'}
+                  {pipelineState === 'matching' && 'Matching Inventory'}
+                  {pipelineState === 'complete' && 'Results Normalized'}
+                </span>
+              </div>
+
+              {/* Grid of Pinging Suppliers (Mobile) */}
+              <div className="grid grid-cols-2 gap-2.5 w-full">
+                {suppliers.map((sup) => {
+                  const isIdle = sup.status === 'idle';
+                  const isPinging = sup.status === 'pinging';
+                  const isSuccess = sup.status === 'success';
+                  const isEmpty = sup.status === 'empty';
+
+                  return (
+                    <div
+                      key={sup.name}
+                      className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 transition-all duration-300 ${
+                        isSuccess
+                          ? 'bg-green-950/80 border-green-500/30'
+                          : isEmpty
+                          ? 'bg-gray-900/85 border-yellow-600/20 opacity-70'
+                          : isPinging
+                          ? 'bg-orange-950/80 border-orange-500/40 animate-pulse'
+                          : 'bg-gray-950/60 border-gray-850 opacity-40'
+                      }`}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] font-black text-white truncate">
+                          {sup.name.replace(' Distribution', '')}
+                        </p>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <span className={`w-1.5 h-1.5 rounded-full ${
+                            isSuccess ? 'bg-green-500' : isEmpty ? 'bg-yellow-500' : isPinging ? 'bg-orange-500' : 'bg-gray-650'
+                          }`} />
+                          <span className="text-[8px] font-bold text-gray-400 capitalize">
+                            {isIdle && 'Idle'}
+                            {isPinging && 'Pinging'}
+                            {isSuccess && `${sup.count} hits`}
+                            {isEmpty && 'No stock'}
+                          </span>
+                        </div>
+                      </div>
+                      {isSuccess && sup.latency && (
+                        <span className="text-[9px] font-black text-green-400 flex-shrink-0">
+                          {sup.latency}ms
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Bottom normalization status widget */}
-            <div className="relative z-20 mt-auto bg-gray-900/80 border border-gray-850 rounded-2xl p-4 grid grid-cols-2 gap-4 text-[11px] backdrop-blur-sm">
+            <div className="relative z-20 mt-auto bg-gray-900/80 border border-gray-850 rounded-2xl p-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-[11px] backdrop-blur-sm">
               <div className="space-y-1">
                 <div className="text-gray-400 font-medium">Cross-Supplier Deduplication:</div>
                 <div className="font-bold text-white">

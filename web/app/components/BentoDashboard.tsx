@@ -38,7 +38,7 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
             <DashboardHero usageStats={usageStats} onViewAllProducts={onViewAllProducts} />
 
             {/* INTEGRATED SUPPLIERS TILE */}
-            <div className="md:col-span-4 bg-gradient-to-br from-[#D8E698] to-[#C5D67A] rounded-[3rem] p-10 flex flex-col justify-between group cursor-pointer hover:shadow-2xl hover:shadow-[#D8E698]/30 transition-all border border-white/20">
+            <div className="md:col-span-4 bg-gradient-to-br from-[#D8E698] to-[#C5D67A] rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-10 flex flex-col justify-between group cursor-pointer hover:shadow-2xl hover:shadow-[#D8E698]/30 transition-all border border-white/20">
                 <div>
                     <div className="flex justify-between items-start mb-6">
                         <h3 className="text-3xl font-black text-gray-900 leading-[0.9] tracking-tighter">Verified <br />Distributors</h3>
@@ -63,7 +63,7 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
             </div>
 
             {/* DATABASE INVENTORY STATUS TILE */}
-            <div className="md:col-span-4 bg-white dark:bg-gray-900 rounded-[3rem] p-10 border border-white/40 dark:border-gray-800/40 shadow-xl shadow-gray-200/40 flex flex-col justify-between relative group">
+            <div className="md:col-span-4 bg-white dark:bg-gray-900 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-10 border border-white/40 dark:border-gray-800/40 shadow-xl shadow-gray-200/40 flex flex-col justify-between relative group">
                 <div className="absolute top-0 right-0 p-8 opacity-[0.05] group-hover:opacity-[0.1] transition-opacity">
                     <svg className="w-32 h-32 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
                 </div>
@@ -90,7 +90,7 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
             {/* CATEGORY EXPLORER CUE */}
             <div
                 onClick={onShowCategoryBrowser}
-                className="md:col-span-4 bg-[#FF6B6B] rounded-[3rem] p-10 flex flex-col justify-between group cursor-pointer relative overflow-hidden hover:brightness-105 transition-all shadow-2xl shadow-red-200/50"
+                className="md:col-span-4 bg-[#FF6B6B] rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-10 flex flex-col justify-between group cursor-pointer relative overflow-hidden hover:brightness-105 transition-all shadow-2xl shadow-red-200/50"
             >
                 <div className="absolute -right-8 -bottom-8 bg-white/10 w-32 h-32 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
                 <div className="flex flex-col gap-6 relative z-10 h-full justify-between">
@@ -118,16 +118,16 @@ const BentoDashboard: React.FC<BentoDashboardProps> = ({
             </div>
 
             {/* QUICK TAGS / COLLECTIONS */}
-            <div className="md:col-span-12 bg-white dark:bg-gray-900 rounded-[3rem] p-10 border border-white/40 dark:border-gray-800/40 shadow-xl shadow-gray-200/40 min-h-[250px] relative overflow-hidden group">
+            <div className="md:col-span-12 bg-white dark:bg-gray-900 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-10 border border-white/40 dark:border-gray-800/40 shadow-xl shadow-gray-200/40 min-h-[250px] relative overflow-hidden group">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-orange-500/20 to-transparent" />
-                <div className="flex items-center justify-between mb-8 relative z-10">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8 relative z-10">
                     <div>
                         <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tighter">Curated Collections</h3>
                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-1">Instant filtering for top hardware</p>
                     </div>
                     <button
                         onClick={onShowCategoryBrowser}
-                        className="group flex items-center gap-3 px-6 py-3 bg-gray-50 dark:bg-gray-800 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-orange-500 transition-all border border-gray-100 dark:border-gray-700"
+                        className="group flex items-center justify-center gap-3 px-6 py-3 bg-gray-50 dark:bg-gray-800 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-orange-500 transition-all border border-gray-100 dark:border-gray-700 w-full sm:w-auto"
                     >
                         View System Tree
                         <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>

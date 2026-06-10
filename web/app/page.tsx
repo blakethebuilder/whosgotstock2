@@ -472,7 +472,7 @@ export default function Home() {
         onProjectChange={(projectId) => setCurrentProjectId(projectId || '')}
       />
 
-      <div className="max-w-[1400px] mx-auto px-6 pt-32">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 pt-24 sm:pt-32">
         {!hasSearched ? (
           <BentoDashboard
             suppliers={suppliers}
