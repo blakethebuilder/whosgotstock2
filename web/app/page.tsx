@@ -455,7 +455,7 @@ export default function Home() {
   const hasActiveFilters = selectedSuppliers.length > 0 || selectedCategories.length > 0 || minPrice || maxPrice || inStockOnly || selectedBrand || searchInDescription;
 
   return (
-    <main className="min-h-screen bg-[#F3F4F1] dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-sans selection:bg-orange-100 transition-colors duration-300 pb-12">
+    <main className="min-h-screen overflow-x-hidden w-full bg-[#F3F4F1] dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-sans selection:bg-orange-100 transition-colors duration-300 pb-12">
       <Navbar
         cart={cart}
         onCartOpen={() => setIsCartOpen(true)}
