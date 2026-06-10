@@ -33,6 +33,7 @@ MIGRATIONS=(
     "migrations/006_add_linkqage_supplier.sql"
     "migrations/007_create_supplier_fetch_log.sql"
     "migrations/008_add_trigram_search_indexes.sql"
+    "migrations/009_add_miro_supplier.sql"
 )
 
 # Get the directory where this script is located

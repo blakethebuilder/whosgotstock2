@@ -115,7 +115,10 @@ export async function POST() {
             ('staff_markup', '10'),
             ('partner_markup', '0'),
             ('EVENFLOW_EMAIL', 'blake@smartintegrate.co.za'),
-            ('EVENFLOW_PASSWORD', 'Smart@2026!')
+            ('EVENFLOW_PASSWORD', 'Smart@2026!'),
+            ('MIRO_USER', 'blake-foster'),
+            ('MIRO_KEY', '64055d56367c68545b1ad9b86faee20c'),
+            ('MIRO_DATASET', '292')
             ON CONFLICT (key) DO NOTHING;
         `);
 
@@ -128,7 +131,8 @@ export async function POST() {
             ('Mustek', 'mustek', 'https://api.mustek.co.za/Customer/ItemsStock.ashx?CustomerToken=f49294f4-cf6b-429c-895f-d27d539cdac4', 'csv', true),
             ('Syntech', 'syntech', 'https://www.syntech.co.za/feeds/feedhandler.php?key=668EEFF7-494A-43B9-908B-E72B79648CFC&feed=syntech-xml-full', 'xml', true),
             ('Pinnacle', 'pinnacle', 'https://www.pinnacle.co.za/pinnacle/productfeed/xml/id/8756/uid/942709f3-9b39-4e93-9a5e-cdd883453178/', 'xml', true),
-            ('Linkqage', 'linkqage', 'https://linkqage.ftgdrop.co.za/api/v1/feed/', 'json', true)
+            ('Linkqage', 'linkqage', 'https://linkqage.ftgdrop.co.za/api/v1/feed/', 'json', true),
+            ('Miro', 'miro', 'https://miro.co.za/custom_xml_feed/getproductfeeds.php?user=blake-foster&key=64055d56367c68545b1ad9b86faee20c&dataset=292', 'xml', true)
             ON CONFLICT (slug) DO NOTHING;
         `);
 

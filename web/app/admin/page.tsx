@@ -77,6 +77,13 @@ export default function AdminPage() {
 
     // Expanded error rows in fetch logs
     const [expandedErrors, setExpandedErrors] = useState<Set<number>>(new Set());
+    // API Key state per user: { has_key, masked_key, loading, newKey }
+    const [apiKeyState, setApiKeyState] = useState<Record<number, {
+        has_key: boolean;
+        masked_key: string | null;
+        loading: boolean;
+        newKey: string | null;
+    }>>({});
 
     const handleAuth = async () => {
         try {
@@ -311,6 +318,35 @@ export default function AdminPage() {
             else next.add(id);
             return next;
         });
+    };
+
+    const handleApiKey = async (userId: number, action: 'generate' | 'revoke') => {
+        setApiKeyState(prev => ({ ...prev, [userId]: { ...prev[userId], loading: true, newKey: null } }));
+        try {
+            const res = await fetch('/api/admin/users/api-key', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, action })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setApiKeyState(prev => ({
+                    ...prev,
+                    [userId]: {
+                        has_key: !!data.api_key,
+                        masked_key: data.api_key ? `${data.api_key.substring(0, 12)}...${data.api_key.slice(-4)}` : null,
+                        loading: false,
+                        newKey: action === 'generate' ? data.api_key : null,
+                    }
+                }));
+            } else {
+                alert(data.error || 'API key action failed');
+                setApiKeyState(prev => ({ ...prev, [userId]: { ...prev[userId], loading: false } }));
+            }
+        } catch {
+            alert('Network error');
+            setApiKeyState(prev => ({ ...prev, [userId]: { ...prev[userId], loading: false } }));
+        }
     };
 
     useEffect(() => {
@@ -1164,11 +1200,15 @@ export default function AdminPage() {
                                             <th className="py-3 px-2 text-[9px] font-black uppercase tracking-widest text-gray-450">Reseller Details</th>
                                             <th className="py-3 px-2 text-[9px] font-black uppercase tracking-widest text-gray-450">Company</th>
                                             <th className="py-3 px-2 text-[9px] font-black uppercase tracking-widest text-gray-450">Role Tier</th>
+                                            <th className="py-3 px-2 text-[9px] font-black uppercase tracking-widest text-gray-450">API Key</th>
                                             <th className="py-3 px-2 text-[9px] font-black uppercase tracking-widest text-gray-450 text-right">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-50 dark:divide-gray-850">
-                                        {users.map(u => (
+                                        {users.map(u => {
+                                            const ks = apiKeyState[u.id];
+                                            const newKey = ks?.newKey;
+                                            return (
                                             <tr key={u.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors">
                                                 <td className="py-3 px-2">
                                                     <div className="flex items-center gap-2.5">
@@ -1203,16 +1243,59 @@ export default function AdminPage() {
                                                         {u.role}
                                                     </span>
                                                 </td>
+                                                {/* API Key column */}
+                                                <td className="py-3 px-2">
+                                                    {newKey ? (
+                                                        <div className="space-y-1">
+                                                            <p className="text-[9px] font-black text-green-600 uppercase tracking-widest">Key generated!</p>
+                                                            <code className="text-[9px] font-mono text-orange-500 bg-orange-50 dark:bg-orange-950/20 px-1.5 py-0.5 rounded block max-w-[160px] truncate" title={newKey}>{newKey}</code>
+                                                            <p className="text-[8px] text-red-500 font-bold">⚠ Copy now — not shown again</p>
+                                                        </div>
+                                                    ) : ks?.has_key ? (
+                                                        <div className="space-y-1">
+                                                            <span className="inline-flex items-center gap-1 text-[9px] font-bold text-green-600">
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                                                                Active
+                                                            </span>
+                                                            <code className="text-[8px] font-mono text-gray-400 block">{ks.masked_key}</code>
+                                                        </div>
+                                                    ) : ks?.has_key === false ? (
+                                                        <span className="text-[9px] font-bold text-gray-400">No key</span>
+                                                    ) : (
+                                                        <span className="text-[9px] text-gray-300 italic">—</span>
+                                                    )}
+                                                </td>
                                                 <td className="py-3 px-2 text-right">
-                                                    <button
-                                                        onClick={() => handleDeleteUser(u.id, u.email)}
-                                                        className="text-[9px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 px-2.5 py-1.5 rounded-lg transition-all"
-                                                    >
-                                                        Delete
-                                                    </button>
+                                                    <div className="flex items-center justify-end gap-1.5">
+                                                        {/* Generate / Revoke key */}
+                                                        {ks?.has_key ? (
+                                                            <button
+                                                                onClick={() => handleApiKey(u.id, 'revoke')}
+                                                                disabled={ks?.loading}
+                                                                className="text-[9px] font-black uppercase tracking-widest text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-950/20 px-2 py-1.5 rounded-lg transition-all disabled:opacity-50"
+                                                            >
+                                                                {ks?.loading ? '…' : 'Revoke Key'}
+                                                            </button>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => handleApiKey(u.id, 'generate')}
+                                                                disabled={ks?.loading}
+                                                                className="text-[9px] font-black uppercase tracking-widest text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20 px-2 py-1.5 rounded-lg transition-all disabled:opacity-50"
+                                                            >
+                                                                {ks?.loading ? '…' : 'Gen Key'}
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            onClick={() => handleDeleteUser(u.id, u.email)}
+                                                            className="text-[9px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 px-2 py-1.5 rounded-lg transition-all"
+                                                        >
+                                                            Delete
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
-                                        ))}
+                                            );
+                                        })}
                                         {users.length === 0 && (
                                             <tr>
                                                 <td colSpan={4} className="py-8 text-center text-gray-400 italic">No registered user accounts found.</td>

@@ -40,5 +40,12 @@
     "url": "https://linkqage.ftgdrop.co.za/api/v1/feed/",
     "type": "json",
     "enabled": true
+  },
+  {
+    "id": "miro",
+    "name": "Miro",
+    "url": "https://miro.co.za/custom_xml_feed/getproductfeeds.php?user=blake-foster&key=64055d56367c68545b1ad9b86faee20c&dataset=292",
+    "type": "xml",
+    "enabled": true
   }
 ]
